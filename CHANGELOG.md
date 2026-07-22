@@ -6,6 +6,7 @@
 
 ### Added
 
+- CSV 导入器支持 TSV、分号分隔文件，以及从 Excel/飞书表格直接复制的制表符数据。
 - 增加电商 KPI 统一词典，页面和飞书共用同一套指标解释。
 - 增加小白工作步骤 `workSession`，用于提示用户下一步要补什么、Agent 接下来会做什么。
 - `/api/agent/analyze` 增加 `workSession` 返回值。
@@ -16,7 +17,7 @@
 - 导入失败时优先追问具体错误行和字段，而不是泛泛要求确认周期。
 - 增加 `pnpm run agent:smoke`，一条命令验证 CSV 导入、分析、飞书问答和异常数据拦截。
 - 真实数据导入工作台会在本机浏览器保存草稿，刷新页面不会丢掉刚粘贴的数据。
-- 增加 `pnpm run feishu:doctor`，在连接飞书前检查密钥和本地 CSV 配置。
+- 增加 `pnpm run feishu:doctor`，在连接飞书前检查密钥和本地 CSV/TSV 配置。
 - 更新用户回来后的操作清单，加入 smoke、本地页面和飞书体检顺序。
 
 ### Fixed

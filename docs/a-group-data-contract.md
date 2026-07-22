@@ -32,7 +32,7 @@
 | grossProfit | 毛利 | 可选 | 1380 |
 | returns | 退款或退货数 | 可选 | 3 |
 
-当前导入器已经支持 CSV，不要求字段名完全一致。常见别名会自动识别：
+当前导入器已经支持 CSV/TSV，不要求字段名完全一致。从 Excel、飞书表格或 Google Sheets 直接复制出来的制表符表格也能识别。常见别名会自动识别：
 
 `week` 可以直接写 `previous/current`、`上周/本周`，也可以写真实日期或周，例如 `2026-07-08`、`2026-W29`。如果导出的表里超过两个周期，Agent 会自动选择最近两期做对比，并在导入报告里说明它选了哪两期。
 
@@ -63,7 +63,7 @@
 | reviews | 评论数 | 可选 | 1280 |
 | keySellingPoints | 主要卖点 | 可选 | 温显、轻量、礼盒 |
 
-竞品 CSV 也支持别名，例如 `name/竞品名称`、`url/竞品链接`、`price/价格`、`promotion/促销`、`key_selling_points/卖点`。
+竞品 CSV/TSV 也支持别名，例如 `name/竞品名称`、`url/竞品链接`、`price/价格`、`promotion/促销`、`key_selling_points/卖点`。
 
 ## Agent 自动计算指标
 

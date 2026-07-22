@@ -63,7 +63,20 @@ describe("feishu agent reply", () => {
       ].join("\n"),
     );
 
-    expect(reply).toContain("刚粘贴的 CSV");
+    expect(reply).toContain("刚粘贴的表格");
+    expect(reply).toContain("飞书粘贴数据店铺");
+  });
+
+  it("analyzes pasted spreadsheet-style tsv directly", () => {
+    const reply = buildFeishuAgentReply(
+      [
+        "week\tproduct_name\torders\trevenue\tunits_sold",
+        "previous\t黑杯\t10\t500\t12",
+        "current\t黑杯\t8\t420\t9",
+      ].join("\n"),
+    );
+
+    expect(reply).toContain("刚粘贴的表格");
     expect(reply).toContain("飞书粘贴数据店铺");
   });
 });

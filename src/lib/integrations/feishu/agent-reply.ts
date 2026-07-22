@@ -135,7 +135,7 @@ export function buildFeishuDataChecklistReply() {
   return [
     buildKpiGuideReply(),
     "",
-    "最小 CSV 只要先有：week、product_name、orders、revenue、units_sold。",
+    "最小 CSV/TSV 只要先有：week、product_name、orders、revenue、units_sold。",
     "如果你有广告、库存、毛利和竞品，我会把结论从“能复盘”升级成“能安排动作”。",
     "缺什么我会继续问，不会假装看懂。",
   ].join("\n");
@@ -151,7 +151,7 @@ export function buildFeishuUsageReply() {
     "- “这周目标是保销量/保利润”",
     "- “我现在做什么？”",
     "",
-    "也可以直接粘贴一小段 CSV。我会先检查字段，缺什么就问你，不会把缺失项说成确定结论。",
+    "也可以直接粘贴一小段 CSV/TSV，或从 Excel/飞书表格复制几行。我会先检查字段，缺什么就问你，不会把缺失项说成确定结论。",
   ].join("\n");
 }
 
@@ -239,15 +239,16 @@ export function buildCompetitorsReply(analysis: EcommerceAgentAnalysis) {
   return [
     "竞品我会先看三件事：价格、促销、卖点。",
     ...analysis.competitorInsights.map((insight, index) => `${index + 1}. ${insight}`),
-    "第一步：给我 1 到 3 个你最在意的竞品链接；如果已经有竞品 CSV，就补价格、促销、评分、评论数和核心卖点。",
+    "第一步：给我 1 到 3 个你最在意的竞品链接；如果已经有竞品 CSV/TSV，就补价格、促销、评分、评论数和核心卖点。",
   ].join("\n");
 }
 
-function looksLikePastedMetricsCsv(text: string) {
+function looksLikePastedMetricsTable(text: string) {
   const normalized = text.toLowerCase();
+  const hasTableDelimiter = [",", "\t", ";"].some((delimiter) => text.includes(delimiter));
 
   return (
-    text.includes(",") &&
+    hasTableDelimiter &&
     text.includes("\n") &&
     (normalized.includes("week") || text.includes("周期")) &&
     (normalized.includes("orders") || text.includes("订单")) &&
@@ -255,7 +256,7 @@ function looksLikePastedMetricsCsv(text: string) {
   );
 }
 
-function buildPastedCsvReply(text: string) {
+function buildPastedMetricsTableReply(text: string) {
   const result = buildEcommerceInputFromCsv({
     metricsCsv: text,
     store: {
@@ -273,14 +274,14 @@ function buildPastedCsvReply(text: string) {
       .map((issue, index) => `${index + 1}. ${issue.message}`);
 
     return [
-      "我看到了你贴的 CSV，但现在还不能直接复盘。",
+      "我看到了你贴的表格，但现在还不能直接复盘。",
       "需要你先补这些信息：",
       ...issues,
-      "最小格式需要：week、product_name、orders、revenue、units_sold，并且要同时有 previous/current 两段数据。",
+      "最小格式需要：week、product_name、orders、revenue、units_sold，并且要同时有 previous/current 两段数据。CSV、TSV 或复制表格都可以。",
     ].join("\n");
   }
 
-  return formatEcommerceAnalysisForFeishu(analyzeEcommerceStore(result.input), "刚粘贴的 CSV");
+  return formatEcommerceAnalysisForFeishu(analyzeEcommerceStore(result.input), "刚粘贴的表格");
 }
 
 export function buildFeishuAgentReply(
@@ -290,8 +291,8 @@ export function buildFeishuAgentReply(
     sourceLabel?: string;
 } = {},
 ) {
-  if (looksLikePastedMetricsCsv(text)) {
-    return buildPastedCsvReply(text);
+  if (looksLikePastedMetricsTable(text)) {
+    return buildPastedMetricsTableReply(text);
   }
 
   const sourceLabel = options.sourceLabel ?? "样例店铺";

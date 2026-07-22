@@ -36,8 +36,8 @@ npx pnpm@10.13.1 run agent:smoke
 
 当前已经可以在 `/agent` 首页的“真实数据导入工作台”测试：
 
-- 上传或粘贴经营数据 CSV。
-- 上传或粘贴竞品数据 CSV。
+- 上传或粘贴经营数据 CSV/TSV。
+- 上传或粘贴竞品数据 CSV/TSV。
 - 查看字段识别结果。
 - 查看缺失字段追问。
 - 生成基于导入数据的复盘和飞书回写文本。
@@ -58,11 +58,12 @@ API 会返回 `analysis`、`feishuReply` 和 `markdownReport`。
 
 - 字段缺失时，Agent 会追问，不会硬编。
 - 字段名称不同也能映射，例如“GMV/销售额/revenue”都能识别。
+- CSV、TSV 和从 Excel/飞书表格直接复制出来的制表符数据都能识别。
 - 如果表里有三周或更多周期，Agent 会自动选择最近两期作为上周和本周。
 - 输出仍然是小白可读的自然语言。
 - 返回的 `workSession.nextQuestion` 能直接作为 Agent 追问用户的下一句话。
 
-本地飞书 worker 也可以读取 CSV。`.env` 示例：
+本地飞书 worker 也可以读取 CSV/TSV。`.env` 示例：
 
 ```bash
 ECOMMERCE_STORE_NAME="我的店铺"
@@ -73,7 +74,7 @@ ECOMMERCE_WEEKLY_METRICS_CSV="data/samples/aurora-cup-weekly-metrics.csv"
 ECOMMERCE_COMPETITORS_CSV="data/samples/aurora-cup-competitors.csv"
 ```
 
-如果不配置 CSV 路径，飞书 worker 会使用样例店铺回复；配置后会按“当前导入数据”回复。
+如果不配置 CSV/TSV 路径，飞书 worker 会使用样例店铺回复；配置后会按“当前导入数据”回复。
 
 ## 阶段 3：飞书机器人测试
 
@@ -111,7 +112,7 @@ npx pnpm@10.13.1 run feishu:doctor
 pnpm run feishu:worker
 ```
 
-先跑 `feishu:doctor` 检查 `.env` 和本地 CSV 路径；通过后再跑 `feishu:worker` 建立长连接。
+先跑 `feishu:doctor` 检查 `.env` 和本地 CSV/TSV 路径；通过后再跑 `feishu:worker` 建立长连接。
 
 运行前只在本机 `.env` 填：
 
@@ -139,7 +140,7 @@ FEISHU_EVENT_SUBSCRIPTION_MODE="long_connection"
 - `竞品怎么看`
 - `怎么用`
 
-也可以直接在飞书里粘贴一小段经营 CSV：
+也可以直接在飞书里粘贴一小段经营 CSV/TSV：
 
 ```csv
 week,product_name,orders,revenue,units_sold

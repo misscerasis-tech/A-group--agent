@@ -173,20 +173,20 @@ export function DataImportPanel() {
             <div className="csv-box-header">
               <span>
                 <Database size={16} aria-hidden="true" />
-                经营数据 CSV
+                经营数据 CSV/TSV
               </span>
               <label className="button secondary file-button">
                 <FileUp size={16} aria-hidden="true" />
                 上传
                 <input
-                  accept=".csv,text/csv"
+                  accept=".csv,.tsv,text/csv,text/tab-separated-values"
                   type="file"
                   onChange={(event) => void readFileIntoState(event, setMetricsCsv)}
                 />
               </label>
             </div>
             <textarea
-              aria-label="经营数据 CSV"
+              aria-label="经营数据 CSV 或 TSV"
               spellCheck={false}
               value={metricsCsv}
               onChange={(event) => setMetricsCsv(event.target.value)}
@@ -197,20 +197,20 @@ export function DataImportPanel() {
             <div className="csv-box-header">
               <span>
                 <ClipboardList size={16} aria-hidden="true" />
-                竞品数据 CSV
+                竞品数据 CSV/TSV
               </span>
               <label className="button secondary file-button">
                 <FileUp size={16} aria-hidden="true" />
                 上传
                 <input
-                  accept=".csv,text/csv"
+                  accept=".csv,.tsv,text/csv,text/tab-separated-values"
                   type="file"
                   onChange={(event) => void readFileIntoState(event, setCompetitorCsv)}
                 />
               </label>
             </div>
             <textarea
-              aria-label="竞品数据 CSV"
+              aria-label="竞品数据 CSV 或 TSV"
               spellCheck={false}
               value={competitorCsv}
               onChange={(event) => setCompetitorCsv(event.target.value)}

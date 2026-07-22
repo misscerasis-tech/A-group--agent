@@ -6,6 +6,33 @@ describe("ecommerce csv import", () => {
     const table = parseCsv('name,revenue\n"Aurora, black",1234');
 
     expect(table.rows[0].name).toBe("Aurora, black");
+    expect(table.delimiter).toBe(",");
+  });
+
+  it("parses tab-separated data copied from spreadsheets", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "week\tproduct_name\torders\trevenue\tunits_sold",
+        "previous\t黑杯\t10\t500\t12",
+        "current\t黑杯\t9\t450\t10",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.currentWeek.products[0].revenue).toBe(450);
+  });
+
+  it("parses semicolon-separated platform exports", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "week;product_name;orders;revenue;units_sold",
+        "previous;黑杯;10;500;12",
+        "current;黑杯;9;450;10",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.currentWeek.products[0].orders).toBe(9);
   });
 
   it("maps Chinese ecommerce headers into agent input", () => {

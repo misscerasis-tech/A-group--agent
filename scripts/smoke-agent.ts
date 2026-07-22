@@ -42,10 +42,28 @@ function main() {
   assert(analysis.nextActions.length > 0, "分析应该生成下一步行动。");
   assert(analysis.nextActions[0].title === "先核对利润口径", "保利润目标应该优先核对利润口径。");
 
+  const tsvImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "week\tproduct_name\torders\trevenue\tunits_sold",
+      "previous\t黑杯\t10\t500\t12",
+      "current\t黑杯\t9\t450\t10",
+    ].join("\n"),
+  });
+
+  assert(tsvImport.report.ok, "从 Excel/飞书表格复制的 TSV 应该可以导入。");
+
   const workPlanReply = buildFeishuAgentReply("我现在做什么");
+  const pastedTableReply = buildFeishuAgentReply(
+    [
+      "week\tproduct_name\torders\trevenue\tunits_sold",
+      "previous\t黑杯\t10\t500\t12",
+      "current\t黑杯\t9\t450\t10",
+    ].join("\n"),
+  );
   const testingReply = buildFeishuAgentReply("怎么真正测试，接入飞书吗");
 
-  assert(workPlanReply.includes("经营数据 CSV"), "飞书工作计划回复应该提示经营 CSV。");
+  assert(workPlanReply.includes("经营数据 CSV/TSV"), "飞书工作计划回复应该提示经营 CSV/TSV。");
+  assert(pastedTableReply.includes("刚粘贴的表格"), "飞书应该能分析直接粘贴的表格。");
   assert(testingReply.includes("App Secret"), "飞书测试回复应该提示 App Secret。");
 
   const invalidImport = buildEcommerceInputFromCsv({

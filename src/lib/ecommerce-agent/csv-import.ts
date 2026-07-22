@@ -38,6 +38,7 @@ export type EcommerceCsvImportResult = {
 type CsvTable = {
   headers: string[];
   rows: Array<Record<string, string>>;
+  delimiter: string;
 };
 
 type MetricSourceRow = {
@@ -171,7 +172,7 @@ function normalizeAlias(alias: string) {
   return normalizeHeader(alias);
 }
 
-function parseCsvLine(line: string) {
+function splitDelimitedLine(line: string, delimiter: string) {
   const cells: string[] = [];
   let current = "";
   let inQuotes = false;
@@ -191,7 +192,7 @@ function parseCsvLine(line: string) {
       continue;
     }
 
-    if (char === "," && !inQuotes) {
+    if (char === delimiter && !inQuotes) {
       cells.push(current.trim());
       current = "";
       continue;
@@ -204,6 +205,28 @@ function parseCsvLine(line: string) {
   return cells;
 }
 
+function countDelimitedCells(line: string, delimiter: string) {
+  return splitDelimitedLine(line, delimiter).length;
+}
+
+function detectDelimiter(lines: string[]) {
+  const candidates = [",", "\t", ";"];
+  const scoredCandidates = candidates.map((delimiter) => {
+    const counts = lines.slice(0, 5).map((line) => countDelimitedCells(line, delimiter));
+    const usableCounts = counts.filter((count) => count > 1);
+    const consistency = new Set(usableCounts).size <= 1 ? 1 : 0;
+    const averageCells =
+      usableCounts.reduce((sum, count) => sum + count, 0) / Math.max(usableCounts.length, 1);
+
+    return {
+      delimiter,
+      score: usableCounts.length * 10 + averageCells + consistency,
+    };
+  });
+
+  return scoredCandidates.sort((a, b) => b.score - a.score)[0]?.delimiter ?? ",";
+}
+
 export function parseCsv(text: string): CsvTable {
   const lines = text
     .split(/\r?\n/)
@@ -211,16 +234,17 @@ export function parseCsv(text: string): CsvTable {
     .filter(Boolean);
 
   if (lines.length === 0) {
-    return { headers: [], rows: [] };
+    return { headers: [], rows: [], delimiter: "," };
   }
 
-  const headers = parseCsvLine(lines[0]).map((header) => header.replace(/^\uFEFF/, ""));
+  const delimiter = detectDelimiter(lines);
+  const headers = splitDelimitedLine(lines[0], delimiter).map((header) => header.replace(/^\uFEFF/, ""));
   const rows = lines.slice(1).map((line) => {
-    const cells = parseCsvLine(line);
+    const cells = splitDelimitedLine(line, delimiter);
     return Object.fromEntries(headers.map((header, index) => [header, cells[index] ?? ""]));
   });
 
-  return { headers, rows };
+  return { headers, rows, delimiter };
 }
 
 function buildHeaderMap<TField extends string>(
@@ -519,7 +543,7 @@ function buildCompetitors(
   if (!text?.trim()) {
     issues.push({
       severity: "warning",
-      message: "还没有竞品 CSV。Agent 可以先做店铺复盘，但竞品价格和促销判断会弱一些。",
+      message: "还没有竞品 CSV/TSV。Agent 可以先做店铺复盘，但竞品价格和促销判断会弱一些。",
     });
     return { competitors: [], rows: 0 };
   }
@@ -608,7 +632,7 @@ export function buildEcommerceInputFromCsv({
   if (metricsTable.rows.length === 0) {
     issues.push({
       severity: "error",
-      message: "经营数据 CSV 里没有可读取的数据行。",
+      message: "经营数据 CSV/TSV 里没有可读取的数据行。",
     });
   }
 

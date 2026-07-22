@@ -51,7 +51,7 @@ export function buildBeginnerWorkSession(report?: EcommerceCsvImportReport): Beg
   const warningQuestions = report?.questionsForUser ?? [];
 
   const nextQuestion = !hasMetrics
-    ? "你能先给我一份经营数据 CSV 吗？最少要有周期、商品名称、订单数、销售额和销量。"
+    ? "你能先给我一份经营数据 CSV/TSV 吗？最少要有周期、商品名称、订单数、销售额和销量。"
     : missingRequired.length > 0
       ? `我先需要你补这几个字段：${missingRequired.join("、")}。`
       : warningQuestions[0] ?? "这周你更想保销量，还是更想保利润？";
@@ -73,7 +73,7 @@ export function buildBeginnerWorkSession(report?: EcommerceCsvImportReport): Beg
         userAction:
           missingRequired.length > 0
             ? `补齐 ${missingRequired.join("、")}。`
-            : "上传或粘贴平台导出的经营 CSV。",
+            : "上传或粘贴平台导出的经营 CSV/TSV，也可以直接复制表格。",
         agentAction: "识别字段、检查上周和本周是否都有数据，缺字段时直接追问。",
         output: canAnalyze ? "可以生成本周复盘。" : "先得到一份可分析的数据表。",
       },
