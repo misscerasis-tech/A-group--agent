@@ -637,6 +637,7 @@ textarea {
 }
 
 .button-row {
+  flex-wrap: wrap;
   justify-content: flex-start;
 }
 
