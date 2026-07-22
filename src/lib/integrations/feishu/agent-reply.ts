@@ -241,6 +241,7 @@ export function buildFeishuUsageReply() {
     "- “这周目标是保销量/保利润”",
     "- “给我待办清单”",
     "- “给我风险商品表”",
+    "- “这是竞品链接：https://example.com/item”",
     "- “清空这份数据”",
     "- “我现在做什么？”",
     "",
@@ -422,6 +423,25 @@ export function buildReturnsReply(analysis: EcommerceAgentAnalysis) {
           .join("；")}`
       : "2. 当前没有明显高退款/退货 SKU；如果真实数据里没有退款字段，我会先追问你补。",
     "3. 第一张表先给到 SKU、订单数、销售额、退款单数、退款金额。下一步再看退款原因、差评关键词和物流异常。",
+  ].join("\n");
+}
+
+function extractUrls(text: string) {
+  return [...text.matchAll(/https?:\/\/[^\s<>"'）)]+/g)].map((match) => match[0]);
+}
+
+export function buildCompetitorLinksReply(urls: string[]) {
+  const uniqueUrls = [...new Set(urls)].slice(0, 5);
+
+  return [
+    `我收到了 ${uniqueUrls.length} 个竞品链接。`,
+    "我先不会拿样例竞品硬套这些链接，也不会假装已经实时读取页面价格。",
+    "要继续判断价格、促销和卖点压力，请把这些链接补成一张竞品数据表：",
+    "",
+    "name,url,source,observed_at,price,price_note,promotion,rating,reviews,key_selling_points",
+    ...uniqueUrls.map((url, index) => `竞品 ${index + 1},${url},手动记录,观察日期,价格数字,price_note,促销,评分,评论数,核心卖点`),
+    "",
+    "填完后直接粘回飞书；如果只想先让我列补数清单，也可以发“我还缺什么数据”。",
   ].join("\n");
 }
 
@@ -844,6 +864,12 @@ export function buildFeishuAgentReply(
   }
 
   if (intent === "competitors") {
+    const urls = extractUrls(text);
+
+    if (urls.length > 0) {
+      return buildCompetitorLinksReply(urls);
+    }
+
     return buildCompetitorsReply(analysis);
   }
 

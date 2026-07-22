@@ -134,6 +134,17 @@ describe("feishu agent reply", () => {
     expect(buildFeishuAgentReply("先保销量")).toContain("目标是保销量");
   });
 
+  it("turns raw competitor links into a data request instead of using sample competitors", () => {
+    const reply = buildFeishuAgentReply(
+      "这几个竞品帮我看 https://ember.com/products/ember-travel-mug-2 https://nextmug.com/",
+    );
+
+    expect(reply).toContain("我收到了 2 个竞品链接");
+    expect(reply).toContain("不会拿样例竞品硬套");
+    expect(reply).toContain("price_note");
+    expect(reply).not.toContain("正在做促销");
+  });
+
   it("mentions refund reasons in direct returns replies when provided", () => {
     const reply = buildFeishuAgentReply("退款退货怎么看", {
       input: {
