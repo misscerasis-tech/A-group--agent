@@ -130,7 +130,7 @@ type CopyTarget =
   | `template-${EcommerceTableTemplateId}`;
 
 function formatMoney(value: number) {
-  return `$${value.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+  return value.toLocaleString("zh-CN", { maximumFractionDigits: 2 });
 }
 
 function formatWorkStepStatus(status: string) {

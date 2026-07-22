@@ -149,7 +149,7 @@ function formatPercent(value: number) {
 }
 
 function formatMoney(value: number) {
-  return `$${value.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+  return value.toLocaleString("zh-CN", { maximumFractionDigits: 2 });
 }
 
 function formatPointChange(previous: number, current: number) {
@@ -494,7 +494,7 @@ function buildProductFindings(input: EcommerceAgentInput): ProductFinding[] {
         sku: currentProduct.sku,
         productName: currentProduct.productName,
         issue: "广告回本偏弱",
-        plainReason: `这款商品广告每花 $1，大约带回 $${productAdReturn.toFixed(2)} 的成交额，当前不适合继续盲目加预算。`,
+        plainReason: `这款商品广告每花 1 个金额单位，大约带回 ${productAdReturn.toFixed(2)} 个金额单位的成交额，当前不适合继续盲目加预算。`,
         suggestedAction: "暂停效果最差的广告组，先保留能稳定带来订单的关键词或素材。",
         priority: "medium",
       });
@@ -930,7 +930,7 @@ export function analyzeEcommerceStore(input: EcommerceAgentInput): EcommerceAgen
       : `进店后下单比例${conversionRateChange >= 0 ? "提高" : "下降"}了 ${formatPercent(conversionRateChange)}。这能帮助我们判断问题更靠近商品页、价格和促销，而不只是流量。`,
     adReturnChange === null
       ? "广告数据不完整，我不会强行判断广告好坏。"
-      : `广告回本${adReturnChange >= 0 ? "变好" : "变差"}了 ${formatPercent(adReturnChange)}。简单说，每花 1 美元广告费，带回来的成交额变${adReturnChange >= 0 ? "多" : "少"}了。`,
+      : `广告回本${adReturnChange >= 0 ? "变好" : "变差"}了 ${formatPercent(adReturnChange)}。简单说，每花 1 个金额单位广告费，带回来的成交额变${adReturnChange >= 0 ? "多" : "少"}了。`,
     grossProfitChangeRate === null
       ? "成本或毛利数据不完整，所以我不会把“卖得多”直接说成“赚得多”。"
       : `毛利${grossProfitChangeRate >= 0 ? "增长" : "下降"}了 ${formatPercent(grossProfitChangeRate)}。这说明本周不只要看销售额，还要看每单留下多少钱。`,

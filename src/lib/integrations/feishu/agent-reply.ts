@@ -410,9 +410,9 @@ export function buildReturnsReply(analysis: EcommerceAgentAnalysis) {
       ? `1. 当前数据里，退款/退货单数是 ${analysis.totals.current.refundOrders ?? "待补充"}，退款金额是 ${
           analysis.totals.current.refundAmount === null
             ? "待补充"
-            : `$${analysis.totals.current.refundAmount.toLocaleString("en-US", {
-                maximumFractionDigits: 0,
-              })}`
+            : analysis.totals.current.refundAmount.toLocaleString("zh-CN", {
+                maximumFractionDigits: 2,
+              })
         }。`
       : "1. 先补退款单数、退货数或退款金额。不完整时，我不会判断售后风险高低。",
     returnFindings.length > 0

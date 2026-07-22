@@ -67,7 +67,7 @@ export const ecommerceKpiGuide: EcommerceKpiGuideItem[] = [
     name: "广告花费 / 广告成交额",
     plainName: "广告花了多少钱，又带回多少订单",
     whyItMatters: "判断增长是不是靠烧钱换来的，避免越投越亏。",
-    homepageSignal: "首页展示“广告回本”，并用人话解释每花 1 美元带回多少成交。",
+    homepageSignal: "首页展示“广告回本”，并用人话解释每花 1 个金额单位带回多少成交。",
     priority: "风险",
     csvFields: ["ad_spend", "ad_revenue", "roas", "acos", "roi", "广告花费", "广告成交额", "投产比"],
     beginnerQuestion: "广告后台能导出花费和广告成交额吗？",

@@ -25,7 +25,7 @@ function formatChange(value: number) {
 }
 
 function formatMoney(value: number) {
-  return `$${value.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+  return value.toLocaleString("zh-CN", { maximumFractionDigits: 2 });
 }
 
 export default function AgentPage() {
