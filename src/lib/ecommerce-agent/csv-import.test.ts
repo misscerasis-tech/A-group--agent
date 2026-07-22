@@ -156,6 +156,31 @@ describe("ecommerce csv import", () => {
     ).toBe(true);
   });
 
+  it("merges duplicate sku rows within the same period before analysis", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,SKU,订单数,销售额,销量,库存,退款单数,退款金额,退款原因",
+        "上周,黑杯,CUP-BLACK,6,300,7,50,1,30,杯盖漏水",
+        "上周,黑杯,CUP-BLACK,4,200,5,48,0,0,",
+        "本周,黑杯,CUP-BLACK,5,250,6,45,1,30,杯盖漏水",
+        "本周,黑杯,CUP-BLACK,3,170,3,42,1,50,物流慢",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.currentWeek.products).toHaveLength(1);
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      orders: 8,
+      revenue: 420,
+      unitsSold: 9,
+      inventory: 42,
+      refundOrders: 2,
+      refundAmount: 80,
+      refundReason: "杯盖漏水 / 物流慢",
+    });
+    expect(result.report.issues.some((issue) => issue.message.includes("重复 SKU"))).toBe(true);
+  });
+
   it("asks for missing required fields instead of guessing", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: ["周期,商品名称,销售额", "本周,黑杯,450"].join("\n"),

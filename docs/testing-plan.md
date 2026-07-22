@@ -80,6 +80,7 @@ SMOKE_BASE_URL=http://localhost:3000 npx pnpm@10.13.1 run smoke:web
 - CSV、TSV、Markdown 表格，以及从 Excel/飞书表格直接复制出来的制表符数据都能识别。
 - 没有 `week` 列但有 `date/start_date/开始日期` 时，Agent 会用日期判断最近两期。
 - 如果表里有三周或更多周期，Agent 会自动选择最近两期作为上周和本周。
+- 如果同一周期同一 SKU 出现多行，Agent 会先合并后分析，并在导入提醒里说明。
 - 输出仍然是小白可读的自然语言。
 - 返回的 `workSession.nextQuestion` 能直接作为 Agent 追问用户的下一句话。
 - `smoke:api` 能通过平台中文表头、缺参数和缺必填字段三类接口检查。

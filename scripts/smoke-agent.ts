@@ -76,6 +76,20 @@ function main() {
   assert(rateFieldImport.input?.currentWeek.products[0].grossProfit === 126, "毛利率应该能反推出毛利。");
   assert(rateFieldImport.input?.currentWeek.products[0].refundOrders === 2, "退款率应该能反推出退款单数。");
 
+  const duplicateSkuImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "周期,商品名称,SKU,订单数,销售额,销量,库存,退款单数,退款金额,退款原因",
+      "上周,黑杯,CUP-BLACK,6,300,7,50,1,30,杯盖漏水",
+      "上周,黑杯,CUP-BLACK,4,200,5,48,0,0,",
+      "本周,黑杯,CUP-BLACK,5,250,6,45,1,30,杯盖漏水",
+      "本周,黑杯,CUP-BLACK,3,170,3,42,1,50,物流慢",
+    ].join("\n"),
+  });
+
+  assert(duplicateSkuImport.report.ok, "重复 SKU 经营表应该可以导入。");
+  assert(duplicateSkuImport.input?.currentWeek.products.length === 1, "同周期重复 SKU 应该先合并。");
+  assert(duplicateSkuImport.input?.currentWeek.products[0].revenue === 420, "重复 SKU 销售额应该合并。");
+
   const workPlanReply = buildFeishuAgentReply("我现在做什么");
   const pastedTableReply = buildFeishuAgentReply(
     [

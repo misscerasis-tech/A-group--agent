@@ -885,6 +885,88 @@ function buildMetricRow(
   };
 }
 
+function sumOptionalProductField(products: ProductMetric[], field: keyof ProductMetric) {
+  const values = products.map((product) => product[field]);
+
+  if (values.some((value) => value === undefined || value === null)) {
+    return null;
+  }
+
+  return values.reduce<number>((sum, value) => sum + Number(value ?? 0), 0);
+}
+
+function lastOptionalProductField(products: ProductMetric[], field: keyof ProductMetric) {
+  for (const product of [...products].reverse()) {
+    const value = product[field];
+
+    if (typeof value === "number") {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+function mergeRefundReasons(products: ProductMetric[]) {
+  const reasons = new Set<string>();
+
+  for (const product of products) {
+    for (const reason of (product.refundReason ?? "").split(/[\/|;；、,，\n]/)) {
+      const trimmed = reason.trim();
+
+      if (trimmed) {
+        reasons.add(trimmed);
+      }
+    }
+  }
+
+  return reasons.size > 0 ? [...reasons].join(" / ") : null;
+}
+
+function mergeProductsBySku(products: ProductMetric[], label: string, issues: ImportIssue[]) {
+  const groupedProducts = new Map<string, ProductMetric[]>();
+
+  for (const product of products) {
+    groupedProducts.set(product.sku, [...(groupedProducts.get(product.sku) ?? []), product]);
+  }
+
+  const mergedProducts = [...groupedProducts.values()].map((group) => {
+    if (group.length === 1) {
+      return group[0];
+    }
+
+    const [firstProduct] = group;
+
+    return {
+      productName: firstProduct.productName,
+      sku: firstProduct.sku,
+      visitors: sumOptionalProductField(group, "visitors"),
+      orders: group.reduce((sum, product) => sum + product.orders, 0),
+      revenue: group.reduce((sum, product) => sum + product.revenue, 0),
+      unitsSold: group.reduce((sum, product) => sum + product.unitsSold, 0),
+      adSpend: sumOptionalProductField(group, "adSpend"),
+      adRevenue: sumOptionalProductField(group, "adRevenue"),
+      inventory: lastOptionalProductField(group, "inventory"),
+      productCost: sumOptionalProductField(group, "productCost"),
+      grossProfit: sumOptionalProductField(group, "grossProfit"),
+      refundOrders: sumOptionalProductField(group, "refundOrders"),
+      refundAmount: sumOptionalProductField(group, "refundAmount"),
+      refundReason: mergeRefundReasons(group),
+    };
+  });
+
+  const duplicateSkuCount = [...groupedProducts.values()].filter((group) => group.length > 1).length;
+
+  if (duplicateSkuCount > 0) {
+    issues.push({
+      severity: "info",
+      message: `${label}识别到 ${duplicateSkuCount} 个重复 SKU，已按 SKU 自动合并后再分析。`,
+    });
+  }
+
+  return mergedProducts;
+}
+
 function buildWeeklyMetricSet({
   label,
   rows,
@@ -902,9 +984,13 @@ function buildWeeklyMetricSet({
     label,
     startDate: firstRow ? readField(firstRow, mapping, "startDate") : "",
     endDate: firstRow ? readField(firstRow, mapping, "endDate") : "",
-    products: rows
-      .map(({ row, rowNumber }) => buildMetricRow(row, mapping, issues, rowNumber))
-      .filter((product): product is ProductMetric => product !== null),
+    products: mergeProductsBySku(
+      rows
+        .map(({ row, rowNumber }) => buildMetricRow(row, mapping, issues, rowNumber))
+        .filter((product): product is ProductMetric => product !== null),
+      label,
+      issues,
+    ),
   };
 }
 
