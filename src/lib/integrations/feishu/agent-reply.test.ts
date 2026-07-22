@@ -287,4 +287,19 @@ describe("feishu agent reply", () => {
     expect(reply).toContain("刚粘贴的表格");
     expect(reply).toContain("飞书粘贴数据店铺");
   });
+
+  it("analyzes pasted tables with human notes before the header", () => {
+    const reply = buildFeishuAgentReply(
+      [
+        "这段是我从飞书表格复制的本周经营数据，先帮我看一下",
+        "导出时间：2026-07-23",
+        "week\tproduct_name\torders\trevenue\tunits_sold",
+        "previous\t黑杯\t10\t500\t12",
+        "current\t黑杯\t8\t420\t9",
+      ].join("\n"),
+    );
+
+    expect(reply).toContain("刚粘贴的表格");
+    expect(reply).toContain("飞书粘贴数据店铺");
+  });
 });

@@ -718,6 +718,19 @@ function normalizeAlias(alias: string) {
   return normalizeHeader(alias);
 }
 
+const knownImportHeaderAliases = new Set(
+  [
+    metricAliases,
+    competitorAliases,
+    customerVoiceAliases,
+    orderDetailAliases,
+    inventoryAliases,
+    adAliases,
+  ]
+    .flatMap((aliases) => Object.values(aliases).flat())
+    .map(normalizeAlias),
+);
+
 type SensitiveHeaderGroup = {
   label: string;
   matches: (normalizedHeader: string, rawHeader: string) => boolean;
@@ -846,15 +859,21 @@ function countDelimitedCells(line: string, delimiter: string) {
 function detectDelimiter(lines: string[]) {
   const candidates = [",", "\t", ";", "|"];
   const scoredCandidates = candidates.map((delimiter) => {
-    const counts = lines.slice(0, 5).map((line) => countDelimitedCells(line, delimiter));
+    const counts = lines.slice(0, 20).map((line) => countDelimitedCells(line, delimiter));
     const usableCounts = counts.filter((count) => count > 1);
-    const consistency = new Set(usableCounts).size <= 1 ? 1 : 0;
-    const averageCells =
-      usableCounts.reduce((sum, count) => sum + count, 0) / Math.max(usableCounts.length, 1);
+    const countFrequency = new Map<number, number>();
+
+    for (const count of usableCounts) {
+      countFrequency.set(count, (countFrequency.get(count) ?? 0) + 1);
+    }
+
+    const [dominantCellCount = 0, dominantFrequency = 0] =
+      [...countFrequency.entries()].sort((a, b) => b[1] - a[1] || b[0] - a[0])[0] ?? [];
+    const firstDominantIndex = counts.findIndex((count) => count === dominantCellCount);
 
     return {
       delimiter,
-      score: usableCounts.length * 10 + averageCells + consistency,
+      score: dominantFrequency * 20 + dominantCellCount * 2 + usableCounts.length - Math.max(firstDominantIndex, 0),
     };
   });
 
@@ -871,6 +890,50 @@ function isMarkdownTableSeparator(line: string, delimiter: string) {
   return cells.length > 0 && cells.every((cell) => /^:?-{3,}:?$/.test(cell.trim()));
 }
 
+function countKnownHeaderCells(cells: string[]) {
+  return cells.filter((cell) => knownImportHeaderAliases.has(normalizeHeader(cell))).length;
+}
+
+function findHeaderLineIndex(lines: string[], delimiter: string) {
+  const scoredLines = lines.map((line, index) => {
+    if (isMarkdownTableSeparator(line, delimiter)) {
+      return { index, score: Number.NEGATIVE_INFINITY };
+    }
+
+    const cells = splitDelimitedLine(line, delimiter);
+    const cellCount = cells.length;
+
+    if (cellCount < 2) {
+      return { index, score: Number.NEGATIVE_INFINITY };
+    }
+
+    const followingCellCounts = lines
+      .slice(index + 1, index + 6)
+      .filter((nextLine) => !isMarkdownTableSeparator(nextLine, delimiter))
+      .map((nextLine) => countDelimitedCells(nextLine, delimiter));
+    const matchingFollowingRows = followingCellCounts.filter((count) => count === cellCount).length;
+    const closeFollowingRows = followingCellCounts.filter((count) => count >= Math.max(2, cellCount - 1)).length;
+    const knownHeaderCells = countKnownHeaderCells(cells);
+
+    return {
+      index,
+      score:
+        knownHeaderCells * 30 +
+        matchingFollowingRows * 10 +
+        closeFollowingRows * 4 +
+        cellCount -
+        index * 0.5,
+    };
+  });
+  const bestLine = scoredLines.sort((a, b) => b.score - a.score)[0];
+
+  if (!bestLine || bestLine.score === Number.NEGATIVE_INFINITY) {
+    return 0;
+  }
+
+  return bestLine.index;
+}
+
 export function parseCsv(text: string): CsvTable {
   const lines = text
     .split(/\r?\n/)
@@ -884,8 +947,10 @@ export function parseCsv(text: string): CsvTable {
 
   const delimiter = detectDelimiter(lines);
   const readableLines = lines.filter((line, index) => index === 0 || !isMarkdownTableSeparator(line, delimiter));
-  const headers = splitDelimitedLine(readableLines[0], delimiter).map((header) => header.replace(/^\uFEFF/, ""));
-  const rows = readableLines.slice(1).map((line) => {
+  const headerLineIndex = findHeaderLineIndex(readableLines, delimiter);
+  const tableLines = readableLines.slice(headerLineIndex);
+  const headers = splitDelimitedLine(tableLines[0], delimiter).map((header) => header.replace(/^\uFEFF/, ""));
+  const rows = tableLines.slice(1).map((line) => {
     const cells = splitDelimitedLine(line, delimiter);
     return Object.fromEntries(headers.map((header, index) => [header, cells[index] ?? ""]));
   });

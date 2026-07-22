@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.73-pasted-header-detection] - 2026-07-23
+
+### Added
+
+- CSV/TSV/Markdown 导入会自动跳过表格前的说明行、导出时间等人话内容，优先定位真实表头后再分析。
+- 飞书粘贴路径和 Agent smoke 覆盖“先写说明，再粘贴表格”的新手使用场景。
+
 ## [v0.1.72-fenced-table-import] - 2026-07-23
 
 ### Added

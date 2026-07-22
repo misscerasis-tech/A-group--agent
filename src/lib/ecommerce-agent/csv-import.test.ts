@@ -65,6 +65,26 @@ describe("ecommerce csv import", () => {
     expect(result.input?.currentWeek.products[0].orders).toBe(8);
   });
 
+  it("skips pasted notes before the real table header", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "这是从飞书表格复制出来的经营数据，请直接帮我复盘",
+        "导出时间：2026-07-23",
+        "week\tproduct_name\torders\trevenue\tunits_sold",
+        "previous\t黑杯\t10\t500\t12",
+        "current\t黑杯\t8\t420\t9",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.report.metricsRows).toBe(2);
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      productName: "黑杯",
+      orders: 8,
+      revenue: 420,
+    });
+  });
+
   it("maps Chinese ecommerce headers into agent input", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [
