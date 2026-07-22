@@ -1,0 +1,5 @@
+name,url,source,observed_at,price,price_note,promotion,rating,reviews,key_selling_points
+Ember Travel Mug 2,https://ember.com/products/ember-travel-mug-2,Ember 官方商品页,2026-07-22,199.95,演示价，用于价格带分析；实际价格以页面为准,高端温控旅行杯,4.7,12000,精确温控 / 最多 3 小时续航 / App 控制 / 旅行场景
+Nextmug Self-Heating Mug,https://www.amazon.com/Nextmug-Temperature-Controlled-Self-Heating-Coffee-Mug-Black/dp/B0B6JTX6NB,Amazon 商品页,2026-07-22,129.95,演示价，用于价格带分析；实际价格以页面为准,三档温控，强调不用 App,4.5,2800,130/140/150°F 三档 / LED 状态灯 / 长续航 / 充电杯垫
+VSITOO S3 Pro,https://www.amazon.com/VSITOO-S3-Pro-Heating-Temperature/dp/B08CN79M3M,Amazon 商品页,2026-07-22,99.99,演示价，用于价格带分析；实际价格以页面为准,App 精细控温，强调 AI 自动加热,4.4,1500,AI 饮品检测 / 120-150°F 控温 / App 控制 / 按键控制
+Locckmy LED Temperature Water Bottle,https://www.amazon.com/Locckmy-Temperature-Insulated-Stainless-AutomotiveTravel/dp/B085XHQ17Z,Amazon 商品页,2026-07-22,18.99,演示价，用于低价替代分析；实际价格以页面为准,低价 LED 温显保温杯,4.1,900,LED 温度显示 / 50000 次触摸 / 防烫提醒 / 真空保温
