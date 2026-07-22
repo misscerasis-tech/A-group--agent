@@ -69,6 +69,25 @@ function main() {
   );
   assert(dataRequestPlan.summary.includes("核心数据暂时够用"), "完整样例数据应该提示可以先生成复盘。");
 
+  const templateImport = buildEcommerceInputFromCsv({
+    metricsCsv: readSample("data/templates/weekly-metrics-template.csv"),
+    competitorsCsv: readSample("data/templates/competitors-template.csv"),
+    adsCsv: readSample("data/templates/ads-template.csv"),
+    inventoryCsv: readSample("data/templates/inventory-cost-template.csv"),
+    customerVoicesCsv: readSample("data/templates/customer-voices-template.csv"),
+  });
+
+  assert(templateImport.report.ok, "可填写 CSV 模板应该可以直接导入。");
+  assert(templateImport.report.competitorRows === 2, "竞品模板应该可以导入。");
+  assert(templateImport.report.customerVoiceRows === 2, "用户声音模板应该可以导入。");
+
+  const templateOrderDetailImport = buildEcommerceInputFromCsv({
+    metricsCsv: readSample("data/templates/order-details-template.csv"),
+  });
+
+  assert(templateOrderDetailImport.report.ok, "订单明细模板应该可以直接导入。");
+  assert(templateOrderDetailImport.report.metricsInputKind === "order_details", "订单明细模板应该被识别为订单明细。");
+
   const tsvImport = buildEcommerceInputFromCsv({
     metricsCsv: [
       "week\tproduct_name\torders\trevenue\tunits_sold",

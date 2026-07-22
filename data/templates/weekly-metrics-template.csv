@@ -1,0 +1,3 @@
+week,product_name,sku,orders,revenue,units_sold,visitors,ad_spend,ad_revenue,inventory,gross_profit,refund_orders,refund_amount,refund_reason
+previous,黑杯,CUP-BLACK,10,500,12,120,80,240,50,180,1,30,杯盖漏水
+current,黑杯,CUP-BLACK,8,420,9,100,90,180,40,90,2,80,杯盖漏水 / 物流慢

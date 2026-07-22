@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.79-data-entry-templates] - 2026-07-23
+
+### Added
+
+- 新增 `data/templates/` 可填写模板，覆盖周度经营、订单明细、广告、库存/成本、用户声音和竞品数据。
+- `agent:smoke` 会实际导入这些模板，防止模板字段和 Agent 导入器脱节。
+
 ## [v0.1.78-user-return-checklist] - 2026-07-23
 
 ### Added

@@ -1,0 +1,3 @@
+product_name,sku,source,observed_at,sentiment,theme,text,count
+黑杯,CUP-BLACK,客服备注,2026-07-19,negative,杯盖漏水,用户反馈杯盖渗水并要求退款,4
+黑杯,CUP-BLACK,商品评价,2026-07-19,negative,物流慢,用户说到货比承诺时间晚两天,3

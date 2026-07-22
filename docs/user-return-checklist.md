@@ -80,6 +80,8 @@ npx pnpm@10.13.1 run feishu:worker
 
 ## 真实数据
 
+如果还没有整理格式，可以先复制 `data/templates/weekly-metrics-template.csv` 或 `data/templates/order-details-template.csv`，保留表头，把示例行替换成真实商品和订单。广告、库存/成本、用户声音和竞品也有对应模板。
+
 可以先不整理成完美模板。最小 CSV/TSV/Markdown 表格：
 
 ```csv
