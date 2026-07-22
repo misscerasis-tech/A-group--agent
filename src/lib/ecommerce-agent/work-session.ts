@@ -14,8 +14,18 @@ export type BeginnerWorkStep = {
 export type BeginnerWorkSession = {
   title: string;
   nextQuestion: string;
+  copyableTable?: {
+    title: string;
+    csv: string;
+  };
   steps: BeginnerWorkStep[];
 };
+
+const minimumWeeklyMetricsCsv = [
+  "week,product_name,sku,orders,revenue,units_sold",
+  "previous,示例商品,SKU-001,10,500,12",
+  "current,示例商品,SKU-001,8,420,9",
+].join("\n");
 
 function statusLabel(status: BeginnerWorkStepStatus) {
   const labels: Record<BeginnerWorkStepStatus, string> = {
@@ -33,6 +43,15 @@ export function formatBeginnerWorkSessionForFeishu(session: BeginnerWorkSession)
     session.title,
     "",
     `下一句我会问你：${session.nextQuestion}`,
+    ...(session.copyableTable
+      ? [
+          "",
+          `可直接复制的${session.copyableTable.title}：`,
+          "```csv",
+          session.copyableTable.csv,
+          "```",
+        ]
+      : []),
     "",
     ...session.steps.map(
       (step, index) =>
@@ -71,6 +90,17 @@ export function buildBeginnerWorkSession(
   return {
     title: "我会这样带你把电商运营复盘做完：",
     nextQuestion,
+    copyableTable: !hasMetrics
+      ? {
+          title: "最小经营数据表",
+          csv: minimumWeeklyMetricsCsv,
+        }
+      : missingRequired.length > 0
+        ? {
+            title: "经营数据表补字段参考",
+            csv: minimumWeeklyMetricsCsv,
+          }
+        : undefined,
     steps: [
       {
         title: "确认店铺背景",

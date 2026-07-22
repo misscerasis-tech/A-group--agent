@@ -299,6 +299,7 @@ function main() {
   );
 
   const workPlanReply = buildFeishuAgentReply("我现在做什么");
+  assert(workPlanReply.includes("week,product_name,sku"), "新手工作计划应该给出可复制的最小经营表。");
   const pastedTableReply = buildFeishuAgentReply(
     [
       "week\tproduct_name\torders\trevenue\tunits_sold",

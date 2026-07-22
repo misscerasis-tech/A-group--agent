@@ -127,6 +127,7 @@ type CopyTarget =
   | "tasks"
   | "risks"
   | "dataRequests"
+  | "workSessionTable"
   | `template-${EcommerceTableTemplateId}`;
 
 function formatMoney(value: number) {
@@ -647,6 +648,26 @@ export function DataImportPanel() {
           <div className="import-status work-session-panel">
             <h4>Agent 接手步骤</h4>
             <p className="next-question">{workSession.nextQuestion}</p>
+            {workSession.copyableTable ? (
+              <div className="work-session-template">
+                <div>
+                  <strong>{workSession.copyableTable.title}</strong>
+                  <button
+                    className="button secondary compact-button"
+                    type="button"
+                    onClick={() => void copyOutput("workSessionTable", workSession.copyableTable?.csv ?? "")}
+                  >
+                    {copiedTarget === "workSessionTable" ? (
+                      <CheckCircle2 size={16} aria-hidden="true" />
+                    ) : (
+                      <Copy size={16} aria-hidden="true" />
+                    )}
+                    {copiedTarget === "workSessionTable" ? "已复制" : "复制"}
+                  </button>
+                </div>
+                <pre>{workSession.copyableTable.csv}</pre>
+              </div>
+            ) : null}
             <div className="work-session-list">
               {workSession.steps.map((step) => (
                 <article className={`work-step ${step.status}`} key={step.title}>

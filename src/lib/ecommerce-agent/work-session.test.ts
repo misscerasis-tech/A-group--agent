@@ -12,6 +12,7 @@ describe("beginner work session", () => {
 
     expect(session.nextQuestion).toContain("经营数据表");
     expect(session.nextQuestion).toContain("Markdown");
+    expect(session.copyableTable?.csv).toContain("week,product_name,sku");
     expect(session.steps.some((step) => step.status === "needs_user")).toBe(true);
   });
 
@@ -27,6 +28,7 @@ describe("beginner work session", () => {
     const formatted = formatBeginnerWorkSessionForFeishu(session);
 
     expect(session.steps.some((step) => step.status === "agent_can_run")).toBe(true);
+    expect(session.copyableTable).toBeUndefined();
     expect(formatted).toContain("Agent 动作");
   });
 

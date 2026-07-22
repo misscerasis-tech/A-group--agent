@@ -191,6 +191,7 @@ FEISHU_CHAT_CONTEXT_FILE=".agent-state/feishu-chat-contexts.json"
 - `帮我看本周经营情况`
 - `我需要准备什么数据`
 - `我还缺什么数据`
+- `我现在做什么`
 - `先看库存风险`
 - `这周先保利润`
 - `广告怎么看`
@@ -201,6 +202,8 @@ FEISHU_CHAT_CONTEXT_FILE=".agent-state/feishu-chat-contexts.json"
 - `给我风险商品表`
 - `清空这份数据`
 - `怎么用`
+
+`我现在做什么` 应该回复 Agent 接手步骤，并在还没有经营表时给出可直接复制的最小经营表。
 
 也可以直接在飞书里粘贴一小段经营 CSV/TSV/Markdown 表格：
 

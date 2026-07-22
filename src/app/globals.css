@@ -695,6 +695,29 @@ textarea {
   line-height: 1.55;
 }
 
+.work-session-template {
+  display: grid;
+  gap: 8px;
+}
+
+.work-session-template > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.work-session-template pre {
+  margin: 0;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .data-request-panel {
   border: 1px solid #c8d7e8;
   border-radius: 8px;

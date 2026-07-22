@@ -94,6 +94,7 @@ describe("feishu agent reply", () => {
 
     expect(reply).toContain("经营数据表");
     expect(reply).toContain("Markdown");
+    expect(reply).toContain("week,product_name,sku");
     expect(reply).toContain("Agent 动作");
   });
 
