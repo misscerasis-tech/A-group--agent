@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -26,6 +26,17 @@ const starterCompetitorCsv = [
   "name,url,source,observed_at,price,promotion,rating,reviews,key_selling_points",
   "Ember Travel Mug 2,https://ember.com/products/ember-travel-mug-2,Ember 官方商品页,2026-07-22,199.95,高端温控旅行杯,4.7,12000,精确温控 / App 控制 / 旅行场景",
 ].join("\n");
+
+const importDraftStorageKey = "a-group-ecommerce-agent-import-draft-v1";
+
+type ImportDraft = {
+  storeName?: string;
+  platform?: string;
+  market?: string;
+  category?: string;
+  metricsCsv?: string;
+  competitorCsv?: string;
+};
 
 function formatMoney(value: number) {
   return `$${value.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
@@ -64,6 +75,45 @@ export function DataImportPanel() {
   const [metricsCsv, setMetricsCsv] = useState(starterMetricsCsv);
   const [competitorCsv, setCompetitorCsv] = useState(starterCompetitorCsv);
   const [hasRun, setHasRun] = useState(false);
+  const [hasLoadedDraft, setHasLoadedDraft] = useState(false);
+
+  useEffect(() => {
+    try {
+      const savedDraft = window.localStorage.getItem(importDraftStorageKey);
+
+      if (savedDraft) {
+        const draft = JSON.parse(savedDraft) as ImportDraft;
+
+        setStoreName(draft.storeName ?? "Aurora Cup 独立站");
+        setPlatform(draft.platform ?? "Shopify");
+        setMarket(draft.market ?? "美国");
+        setCategory(draft.category ?? "智能温控/温显旅行杯");
+        setMetricsCsv(draft.metricsCsv ?? starterMetricsCsv);
+        setCompetitorCsv(draft.competitorCsv ?? starterCompetitorCsv);
+      }
+    } catch {
+      window.localStorage.removeItem(importDraftStorageKey);
+    } finally {
+      setHasLoadedDraft(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedDraft) {
+      return;
+    }
+
+    const draft: ImportDraft = {
+      storeName,
+      platform,
+      market,
+      category,
+      metricsCsv,
+      competitorCsv,
+    };
+
+    window.localStorage.setItem(importDraftStorageKey, JSON.stringify(draft));
+  }, [category, competitorCsv, hasLoadedDraft, market, metricsCsv, platform, storeName]);
 
   const importResult = useMemo(
     () =>
@@ -179,6 +229,7 @@ export function DataImportPanel() {
                 setMetricsCsv("");
                 setCompetitorCsv("");
                 setHasRun(false);
+                window.localStorage.removeItem(importDraftStorageKey);
               }}
             >
               <Trash2 size={16} aria-hidden="true" />
