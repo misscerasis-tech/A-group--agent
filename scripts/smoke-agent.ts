@@ -252,6 +252,21 @@ function main() {
   assert(rateFieldImport.input?.currentWeek.products[0].grossProfit === 126, "毛利率应该能反推出毛利。");
   assert(rateFieldImport.input?.currentWeek.products[0].refundOrders === 2, "退款率应该能反推出退款单数。");
 
+  const averageOrderValueImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "周期,商品名称,订单数,客单价,销量",
+      "上周,黑杯,10,50,12",
+      "本周,黑杯,8,52.5,9",
+    ].join("\n"),
+  });
+
+  assert(averageOrderValueImport.report.ok, "只有客单价和订单数的经营表应该可以补出销售额。");
+  assert(averageOrderValueImport.input?.currentWeek.products[0].revenue === 420, "客单价应乘订单数补出销售额。");
+  assert(
+    averageOrderValueImport.report.issues.some((issue) => issue.message.includes("订单数 × 客单价")),
+    "客单价补销售额应该进入导入提醒。",
+  );
+
   const duplicateSkuImport = buildEcommerceInputFromCsv({
     metricsCsv: [
       "周期,商品名称,SKU,订单数,销售额,销量,库存,退款单数,退款金额,退款原因",

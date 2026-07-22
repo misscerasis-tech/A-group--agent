@@ -268,6 +268,27 @@ describe("ecommerce csv import", () => {
     ).toBe(true);
   });
 
+  it("derives weekly revenue from orders and average order value when sales is absent", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,订单数,客单价,销量",
+        "上周,黑杯,10,50,12",
+        "本周,黑杯,8,52.5,9",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.previousWeek.products[0].revenue).toBe(500);
+    expect(result.input?.currentWeek.products[0].revenue).toBe(420);
+    expect(
+      result.report.fieldMappings.some(
+        (mapping) => mapping.canonicalField === "revenue" && mapping.sourceHeader?.includes("客单价"),
+      ),
+    ).toBe(true);
+    expect(result.report.issues.some((issue) => issue.message.includes("订单数 × 客单价"))).toBe(true);
+    expect(result.report.questionsForUser.some((question) => question.includes("销售额"))).toBe(false);
+  });
+
   it("derives ad revenue from ACOS in weekly metric exports", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

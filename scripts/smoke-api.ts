@@ -12,6 +12,12 @@ const analyticsHeaderMetricsTable = [
   "current,黑杯,CUP-BLACK,9,450,10,470",
 ].join("\n");
 
+const averageOrderValueMetricsTable = [
+  "周期,商品名称,订单数,客单价,销量",
+  "上周,黑杯,10,50,12",
+  "本周,黑杯,8,52.5,9",
+].join("\n");
+
 const customerVoiceTable = [
   "商品名称,商家编码,反馈来源,评价日期,正负向,问题类型,评价内容,出现次数",
   "黑杯,CUP-BLACK,商品评价,2026-07-19,负向,杯盖漏水,用户说杯盖渗水,4",
@@ -160,6 +166,27 @@ async function main() {
   assert(analyticsHeadersAnalysis?.totals?.current?.revenue === 450, "net_sales 应该被识别为销售额。");
   assert(analyticsHeadersAnalysis?.totals?.current?.unitsSold === 10, "net_quantity 应该被识别为销量。");
 
+  const averageOrderValue = await postAnalyze({
+    store: {
+      storeName: "A组客单价测试店",
+      platform: "平台汇总表",
+    },
+    metricsCsv: averageOrderValueMetricsTable,
+  });
+  const averageOrderValueAnalysis = averageOrderValue.body.analysis as
+    | { totals?: { current?: { revenue?: number } } }
+    | undefined;
+  assert(
+    averageOrderValue.response.status === 200,
+    `客单价表应该返回 200，实际 ${averageOrderValue.response.status}`,
+  );
+  assert(averageOrderValueAnalysis?.totals?.current?.revenue === 420, "客单价应乘订单数补出销售额。");
+  assert(
+    String(averageOrderValue.body.importSummary ?? "").includes("客单价") ||
+      JSON.stringify(averageOrderValue.body.report ?? {}).includes("客单价"),
+    "客单价补销售额应该进入 API 导入报告。",
+  );
+
   const orderDetail = await postAnalyze({
     store: {
       storeName: "A组订单明细测试店",
@@ -272,7 +299,7 @@ async function main() {
   );
 
   console.info(
-    `[smoke:api] /api/agent/analyze 平台表头、Analytics 表头、订单明细、Shopify Orders、Shopify 折扣、Amazon 订单 TSV、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
+    `[smoke:api] /api/agent/analyze 平台表头、Analytics 表头、客单价补销售额、订单明细、Shopify Orders、Shopify 折扣、Amazon 订单 TSV、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
   );
 }
 

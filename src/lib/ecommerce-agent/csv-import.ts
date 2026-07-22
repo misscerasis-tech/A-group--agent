@@ -62,6 +62,7 @@ type MetricField =
   | "conversionRate"
   | "orders"
   | "revenue"
+  | "averageOrderValue"
   | "unitsSold"
   | "adSpend"
   | "adRevenue"
@@ -160,6 +161,7 @@ const metricFieldLabels: Record<MetricField, string> = {
   conversionRate: "转化率",
   orders: "订单数",
   revenue: "销售额",
+  averageOrderValue: "客单价",
   unitsSold: "销量",
   adSpend: "广告花费",
   adRevenue: "广告成交额",
@@ -296,6 +298,19 @@ const metricAliases: Record<MetricField, string[]> = {
     "付款金额",
     "订单金额",
     "商品支付金额",
+  ],
+  averageOrderValue: [
+    "average_order_value",
+    "averageordervalue",
+    "avg_order_value",
+    "avgordervalue",
+    "aov",
+    "客单价",
+    "平均客单价",
+    "平均订单金额",
+    "每单金额",
+    "笔单价",
+    "客单",
   ],
   unitsSold: [
     "units_sold",
@@ -1572,12 +1587,28 @@ function buildMetricRow(
     issues,
     rowNumber,
   );
-  const revenue = requireNonNegative(
-    requiredNumber(readField(row, mapping, "revenue"), metricFieldLabels.revenue, issues, rowNumber),
-    metricFieldLabels.revenue,
+  const averageOrderValue = optionalNumber(
+    readField(row, mapping, "averageOrderValue"),
+    metricFieldLabels.averageOrderValue,
     issues,
     rowNumber,
   );
+  const rawRevenue = readField(row, mapping, "revenue");
+  const revenue = rawRevenue
+    ? requireNonNegative(
+        requiredNumber(rawRevenue, metricFieldLabels.revenue, issues, rowNumber),
+        metricFieldLabels.revenue,
+        issues,
+        rowNumber,
+      )
+    : averageOrderValue !== null && orders !== null
+      ? requireNonNegative(roundMetric(orders * averageOrderValue), metricFieldLabels.revenue, issues, rowNumber)
+      : requireNonNegative(
+          requiredNumber(rawRevenue, metricFieldLabels.revenue, issues, rowNumber),
+          metricFieldLabels.revenue,
+          issues,
+          rowNumber,
+        );
   const unitsSold = requireNonNegative(
     requiredNumber(readField(row, mapping, "unitsSold"), metricFieldLabels.unitsSold, issues, rowNumber),
     metricFieldLabels.unitsSold,
@@ -1869,7 +1900,9 @@ function isRefundLikeStatus(status: string) {
 }
 
 function hasCompleteWeeklyMetricMapping(mapping: Map<MetricField, string>) {
-  return [...metricRequiredFields].every((field) => mapping.has(field));
+  return [...metricRequiredFields].every((field) =>
+    field === "revenue" ? mapping.has("revenue") || mapping.has("averageOrderValue") : mapping.has(field),
+  );
 }
 
 function canUseOrderDetails(mapping: Map<OrderDetailField, string>) {
@@ -2745,6 +2778,16 @@ export function buildEcommerceInputFromCsv({
     metricRequiredFields,
     metricFieldLabels,
   );
+  const canDeriveWeeklyRevenueFromAverageOrderValue =
+    !mapping.has("revenue") && mapping.has("averageOrderValue") && mapping.has("orders");
+  const displayWeeklyFieldMappings = weeklyFieldMappings.map((fieldMapping) =>
+    fieldMapping.canonicalField === "revenue" && canDeriveWeeklyRevenueFromAverageOrderValue
+      ? {
+          ...fieldMapping,
+          sourceHeader: `${mapping.get("orders")} × ${mapping.get("averageOrderValue")}（自动计算）`,
+        }
+      : fieldMapping,
+  );
   const { mapping: orderDetailMapping, fieldMappings: orderDetailFieldMappings } = buildHeaderMap(
     metricsTable.headers,
     orderDetailAliases,
@@ -2752,19 +2795,30 @@ export function buildEcommerceInputFromCsv({
     orderDetailFieldLabels,
   );
   const shouldUseOrderDetails = !hasCompleteWeeklyMetricMapping(mapping) && canUseOrderDetails(orderDetailMapping);
-  const fieldMappings = shouldUseOrderDetails ? orderDetailFieldMappings : weeklyFieldMappings;
+  const fieldMappings = shouldUseOrderDetails ? orderDetailFieldMappings : displayWeeklyFieldMappings;
   const metricsInputKind: EcommerceCsvImportReport["metricsInputKind"] = shouldUseOrderDetails
     ? "order_details"
     : "weekly_metrics";
 
   if (!shouldUseOrderDetails) {
     for (const field of metricRequiredFields) {
+      if (field === "revenue" && canDeriveWeeklyRevenueFromAverageOrderValue) {
+        continue;
+      }
+
       if (!mapping.has(field)) {
         issues.push({
           severity: "error",
           message: `缺少必要字段「${metricFieldLabels[field]}」。`,
         });
       }
+    }
+
+    if (canDeriveWeeklyRevenueFromAverageOrderValue) {
+      issues.push({
+        severity: "info",
+        message: "已识别客单价字段，销售额会用订单数 × 客单价自动补出；如果平台销售额口径可导出，建议后续补原始销售额复核。",
+      });
     }
   } else if (orderDetailMapping.has("discountAmount")) {
     issues.push({

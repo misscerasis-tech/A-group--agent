@@ -7,7 +7,7 @@
 ## 当前最新稳定点
 
 - 最新代码：`main`
-- 最新标签：`v0.1.122-workbench-signal-map`
+- 最新标签：`v0.1.123-average-order-value-revenue`
 - 本地测试入口：`http://localhost:3001/agent`
 - 远端仓库：`misscerasis-tech/A-group--agent.git`
 
@@ -17,6 +17,7 @@
    - 支持 CSV、TSV、Markdown、Excel 和从表格直接复制的内容。
    - 支持周汇总表和最近两周订单明细。
    - 支持 Shopify Analytics 等汇总报表里的 `net_sales`、`total_sales`、`gross_sales` 和 `net_quantity` 字段。
+   - 如果周汇总表暂时没有销售额但有订单数和 `AOV / 客单价`，会先按订单数 × 客单价补出销售额口径，并提醒后续用平台原始销售额复核。
    - Shopify Orders 和 Amazon Seller Central 订单表可直接聚合。
    - 订单明细支持折扣、商品成本、平台佣金、支付手续费、履约费和退款金额。
    - 订单明细同一订单号多行且收入列可能是整单金额时，会提醒用户复核，避免重复计算销售额。
@@ -58,7 +59,7 @@
 - `SMOKE_BASE_URL=http://localhost:3001 npx pnpm@10.13.1 run smoke:web`
 - `npx pnpm@10.13.1 run build`
 
-最新 API smoke 已额外覆盖 Shopify Orders 的 `Discount Amount` 和 Analytics 风格表头：订单行收入会按单价乘件数后扣除折扣，再汇总到销售额；`net_sales` 和 `net_quantity` 会映射到销售额与销量。
+最新 API smoke 已额外覆盖 Shopify Orders 的 `Discount Amount`、Analytics 风格表头和客单价补销售额：订单行收入会按单价乘件数后扣除折扣，再汇总到销售额；`net_sales` 和 `net_quantity` 会映射到销售额与销量；缺销售额但有订单数和客单价时会先补出销售额口径。
 
 ## 用户回来后还必须亲自做
 
