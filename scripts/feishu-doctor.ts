@@ -80,7 +80,7 @@ function main() {
 
   if (!metricsCsv) {
     console.info("[feishu:doctor] 未配置 ECOMMERCE_WEEKLY_METRICS_CSV，worker 会使用样例店铺回复。");
-    console.info("[feishu:doctor] 配置真实 CSV 后，worker 会按真实数据回复。");
+    console.info("[feishu:doctor] 配置真实经营表后，worker 会按真实数据回复。");
     process.exitCode = hasError ? 1 : 0;
     return;
   }

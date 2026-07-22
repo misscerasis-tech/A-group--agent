@@ -88,7 +88,7 @@ function main() {
     "异常数据应该追问具体行号。",
   );
 
-  console.info("[smoke] CSV 导入、经营分析、飞书问答和异常数据拦截均通过。");
+  console.info("[smoke] 经营表导入、经营分析、飞书问答和异常数据拦截均通过。");
 }
 
 main();
