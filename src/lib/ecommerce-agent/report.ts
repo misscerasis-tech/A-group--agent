@@ -12,6 +12,14 @@ function formatNullableCount(value: number | null) {
   return value === null ? "待补充" : `${value}`;
 }
 
+function averageOrderValue(totals: MetricTotals) {
+  if (totals.orders === 0) {
+    return null;
+  }
+
+  return totals.revenue / totals.orders;
+}
+
 function formatRate(value: number | null) {
   if (value === null) {
     return "待补充";
@@ -26,6 +34,7 @@ function metricTable(previous: MetricTotals, current: MetricTotals) {
     "| --- | ---: | ---: | ---: |",
     `| 销售额 | ${formatMoney(previous.revenue)} | ${formatMoney(current.revenue)} | - |`,
     `| 订单数 | ${previous.orders} | ${current.orders} | - |`,
+    `| 客单价 | ${formatNullableMoney(averageOrderValue(previous))} | ${formatNullableMoney(averageOrderValue(current))} | - |`,
     `| 销量 | ${previous.unitsSold} | ${current.unitsSold} | - |`,
     `| 广告花费 | ${formatNullableMoney(previous.adSpend)} | ${formatNullableMoney(current.adSpend)} | - |`,
     `| 广告成交额 | ${formatNullableMoney(previous.adRevenue)} | ${formatNullableMoney(current.adRevenue)} | - |`,
@@ -52,6 +61,7 @@ export function buildWeeklyMarkdownReport(
     "",
     `- 销售额变化：${formatRate(analysis.totals.revenueChangeRate)}`,
     `- 订单变化：${formatRate(analysis.totals.orderChangeRate)}`,
+    `- 客单价变化：${formatRate(analysis.totals.averageOrderValueChange)}`,
     `- 进店后下单变化：${formatRate(analysis.totals.conversionRateChange)}`,
     `- 广告回本变化：${formatRate(analysis.totals.adReturnChange)}`,
     `- 毛利变化：${formatRate(analysis.totals.grossProfitChangeRate)}`,

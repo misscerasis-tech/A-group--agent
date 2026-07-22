@@ -90,10 +90,11 @@ export type EcommerceAgentAnalysis = {
   dataHealth: string[];
   totals: {
     previous: MetricTotals;
-    current: MetricTotals;
-    revenueChangeRate: number;
-    orderChangeRate: number;
-    conversionRateChange: number | null;
+	    current: MetricTotals;
+	    revenueChangeRate: number;
+	    orderChangeRate: number;
+	    averageOrderValueChange: number | null;
+	    conversionRateChange: number | null;
     adReturnChange: number | null;
     grossProfitChangeRate: number | null;
     grossMarginChange: number | null;

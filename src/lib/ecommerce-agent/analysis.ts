@@ -72,6 +72,14 @@ function conversionRate(totals: MetricTotals) {
   return totals.orders / totals.visitors;
 }
 
+function averageOrderValue(totals: MetricTotals) {
+  if (totals.orders === 0) {
+    return null;
+  }
+
+  return totals.revenue / totals.orders;
+}
+
 function adReturn(totals: MetricTotals) {
   if (!totals.adSpend || !totals.adRevenue || totals.adSpend === 0) {
     return null;
@@ -135,6 +143,14 @@ function averageSellingPrice(product: ProductMetric) {
   }
 
   return product.revenue / product.unitsSold;
+}
+
+function productAverageOrderValue(product: ProductMetric) {
+  if (product.orders === 0) {
+    return null;
+  }
+
+  return product.revenue / product.orders;
 }
 
 function hasRefundData(product: ProductMetric) {
@@ -248,6 +264,12 @@ function buildProductFindings(input: EcommerceAgentInput): ProductFinding[] {
       currentGrossProfit !== null && currentProduct.revenue > 0
         ? currentGrossProfit / currentProduct.revenue
         : null;
+    const previousProductAverageOrderValue = productAverageOrderValue(previousProduct);
+    const currentProductAverageOrderValue = productAverageOrderValue(currentProduct);
+    const averageOrderValueChange =
+      previousProductAverageOrderValue === null || currentProductAverageOrderValue === null
+        ? null
+        : rateChange(previousProductAverageOrderValue, currentProductAverageOrderValue);
     const currentRefundOrderRate = productRefundOrderRate(currentProduct);
     const currentRefundAmountRate = productRefundAmountRate(currentProduct);
     const highestRefundRate = Math.max(
@@ -287,6 +309,17 @@ function buildProductFindings(input: EcommerceAgentInput): ProductFinding[] {
         issue: "利润空间偏低",
         plainReason: `这款商品本周毛利率约 ${(currentGrossMargin * 100).toFixed(1)}%。卖得越多，也可能只是把低利润订单放大。`,
         suggestedAction: "先检查采购成本、折扣、运费和广告成本，低毛利款不要盲目加大促销。",
+        priority: "medium",
+      });
+    }
+
+    if (averageOrderValueChange !== null && averageOrderValueChange < -0.08 && orderChange > -0.05) {
+      findings.push({
+        sku: currentProduct.sku,
+        productName: currentProduct.productName,
+        issue: "客单价下降",
+        plainReason: `这款商品订单数没有明显减少，但每单平均金额从 ${formatMoney(previousProductAverageOrderValue!)} 降到 ${formatMoney(currentProductAverageOrderValue!)}。销售额变差可能是折扣太重、套装少了，或用户只买低价规格。`,
+        suggestedAction: "检查本周优惠券、包邮门槛、套装组合和规格销量占比，先把能提高每单金额的组合放回首屏。",
         priority: "medium",
       });
     }
@@ -448,6 +481,7 @@ function buildNextActions(
   const hasInventoryRisk = findings.some((finding) => finding.issue === "卖得变快但库存偏紧");
   const hasWeakAds = findings.some((finding) => finding.issue === "广告回本偏弱");
   const hasWeakProfit = findings.some((finding) => finding.issue === "利润空间偏低");
+  const hasAverageOrderValueDrop = findings.some((finding) => finding.issue === "客单价下降");
   const hasRefundRisk = findings.some((finding) => finding.issue === "售后风险偏高");
   const hasCompetitorPromotion = competitorInsights.some((insight) => insight.includes("正在做促销"));
   const normalizedGoal = goal.toLowerCase();
@@ -513,6 +547,15 @@ function buildNextActions(
     });
   }
 
+  if (hasAverageOrderValueDrop) {
+    actions.push({
+      title: "检查折扣和套装结构",
+      owner: "电商运营",
+      reason: "订单没有明显少，但每单金额下降，问题可能在优惠、套装、包邮门槛或低价规格占比。",
+      firstStep: "对比上周和本周的优惠券、包邮门槛、套装曝光位置，以及低价/高价规格销量占比。",
+    });
+  }
+
   if (hasRefundRisk && !wantsReturns) {
     actions.push({
       title: "先查退款/退货原因",
@@ -564,6 +607,12 @@ export function analyzeEcommerceStore(input: EcommerceAgentInput): EcommerceAgen
   const current = toTotals(input.currentWeek);
   const revenueChangeRate = rateChange(previous.revenue, current.revenue);
   const orderChangeRate = rateChange(previous.orders, current.orders);
+  const previousAverageOrderValue = averageOrderValue(previous);
+  const currentAverageOrderValue = averageOrderValue(current);
+  const averageOrderValueChange =
+    previousAverageOrderValue === null || currentAverageOrderValue === null
+      ? null
+      : rateChange(previousAverageOrderValue, currentAverageOrderValue);
   const previousConversion = conversionRate(previous);
   const currentConversion = conversionRate(current);
   const conversionRateChange =
@@ -631,6 +680,9 @@ export function analyzeEcommerceStore(input: EcommerceAgentInput): EcommerceAgen
 
   const plainSummary = [
     `这周一共卖了 ${formatMoney(current.revenue)}，订单数是 ${current.orders} 单。和上周相比，销售额${revenueChangeRate >= 0 ? "多了" : "少了"} ${formatPercent(revenueChangeRate)}，订单数${orderChangeRate >= 0 ? "多了" : "少了"} ${formatPercent(orderChangeRate)}。`,
+    averageOrderValueChange === null
+      ? "本周或上周订单数为 0，所以我暂时不判断客单价。"
+      : `客单价${averageOrderValueChange >= 0 ? "提高" : "下降"}了 ${formatPercent(averageOrderValueChange)}。简单说，本周每个订单平均买 ${formatMoney(currentAverageOrderValue!)}，要看用户是买少了，还是只买低价款。`,
     conversionRateChange === null
       ? "现在缺少完整流量数据，所以我还不能判断是没人进店，还是进店后没有下单。"
       : `进店后下单比例${conversionRateChange >= 0 ? "提高" : "下降"}了 ${formatPercent(conversionRateChange)}。这能帮助我们判断问题更靠近商品页、价格和促销，而不只是流量。`,
@@ -652,6 +704,7 @@ export function analyzeEcommerceStore(input: EcommerceAgentInput): EcommerceAgen
       current,
       revenueChangeRate,
       orderChangeRate,
+      averageOrderValueChange,
       conversionRateChange,
       adReturnChange,
       grossProfitChangeRate,

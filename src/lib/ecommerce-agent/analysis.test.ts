@@ -105,6 +105,53 @@ describe("ecommerce agent analysis", () => {
     expect(analysis.plainSummary.some((line) => line.includes("退款/退货这块"))).toBe(true);
   });
 
+  it("explains average order value drops separately from order drops", () => {
+    const analysis = analyzeEcommerceStore({
+      ...sampleEcommerceAgentInput,
+      previousWeek: {
+        ...sampleEcommerceAgentInput.previousWeek,
+        products: [
+          {
+            productName: "黑杯",
+            sku: "CUP-BLACK",
+            visitors: 100,
+            orders: 10,
+            revenue: 1000,
+            unitsSold: 10,
+            adSpend: 100,
+            adRevenue: 500,
+            inventory: 100,
+            refundOrders: 0,
+            refundAmount: 0,
+          },
+        ],
+      },
+      currentWeek: {
+        ...sampleEcommerceAgentInput.currentWeek,
+        products: [
+          {
+            productName: "黑杯",
+            sku: "CUP-BLACK",
+            visitors: 100,
+            orders: 10,
+            revenue: 700,
+            unitsSold: 10,
+            adSpend: 100,
+            adRevenue: 400,
+            inventory: 100,
+            refundOrders: 0,
+            refundAmount: 0,
+          },
+        ],
+      },
+    });
+
+    expect(analysis.totals.averageOrderValueChange).toBeLessThan(0);
+    expect(analysis.productFindings.some((finding) => finding.issue === "客单价下降")).toBe(true);
+    expect(analysis.nextActions.some((action) => action.title === "检查折扣和套装结构")).toBe(true);
+    expect(analysis.plainSummary.some((line) => line.includes("客单价"))).toBe(true);
+  });
+
   it("does not treat missing competitor data as an active competitor promotion", () => {
     const analysis = analyzeEcommerceStore({
       ...sampleEcommerceAgentInput,
