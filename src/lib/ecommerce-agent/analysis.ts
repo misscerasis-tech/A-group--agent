@@ -517,15 +517,25 @@ function buildCompetitorInsights(input: EcommerceAgentInput) {
     .filter((price) => price > 0);
   const averageOwnPrice =
     currentPrices.reduce((sum, price) => sum + price, 0) / Math.max(currentPrices.length, 1);
-  const cheaperCompetitors = input.competitors.filter(
-    (competitor) => hasActionableCompetitorPrice(competitor) && competitor.price < averageOwnPrice * 0.95,
-  );
-  const promotedCompetitors = input.competitors.filter(
-    (competitor) => hasActionableCompetitorPrice(competitor) && hasActiveCompetitorPromotion(competitor),
-  );
-  const priceLimitedCompetitors = input.competitors.filter(
-    (competitor) => competitor.price > 0 && !hasActionableCompetitorPrice(competitor),
-  );
+  const referenceDate = parseEvidenceDate(input.currentWeek.endDate) ?? parseEvidenceDate(input.currentWeek.startDate);
+  const cheaperCompetitors = input.competitors.filter((competitor) => {
+    return (
+      getCompetitorPriceLimitReason(competitor, referenceDate) === null &&
+      competitor.price < averageOwnPrice * 0.95
+    );
+  });
+  const promotedCompetitors = input.competitors.filter((competitor) => {
+    return (
+      getCompetitorPriceLimitReason(competitor, referenceDate) === null &&
+      hasActiveCompetitorPromotion(competitor)
+    );
+  });
+  const priceLimitedCompetitors = input.competitors
+    .map((competitor) => ({
+      competitor,
+      reason: getCompetitorPriceLimitReason(competitor, referenceDate),
+    }))
+    .filter((item) => item.competitor.price > 0 && item.reason !== null);
 
   const insights: string[] = [];
 
@@ -538,8 +548,9 @@ function buildCompetitorInsights(input: EcommerceAgentInput) {
   }
 
   if (priceLimitedCompetitors.length > 0) {
+    const reasons = [...new Set(priceLimitedCompetitors.map((item) => item.reason))].filter(Boolean);
     insights.push(
-      `${priceLimitedCompetitors.map((competitor) => competitor.name).join("、")} 的价格备注提示可能不是当前可购买价，我只把它当观察线索，不作为主动降价依据。`,
+      `${priceLimitedCompetitors.map((item) => item.competitor.name).join("、")} 的${reasons.join("、")}，我只把它当观察线索，不作为主动降价依据。`,
     );
   }
 
@@ -572,9 +583,12 @@ function buildCompetitorInsights(input: EcommerceAgentInput) {
   return insights;
 }
 
-function hasActionableCompetitorPrice(competitor: EcommerceAgentInput["competitors"][number]) {
+function getCompetitorPriceLimitReason(
+  competitor: EcommerceAgentInput["competitors"][number],
+  referenceDate: Date | null,
+) {
   if (!Number.isFinite(competitor.price) || competitor.price <= 0) {
-    return false;
+    return "价格不是有效数字";
   }
 
   const note = `${competitor.priceNote} ${competitor.promotion}`.toLowerCase();
@@ -595,7 +609,15 @@ function hasActionableCompetitorPrice(competitor: EcommerceAgentInput["competito
     "低价替代演示价",
   ];
 
-  return !nonActionableSignals.some((signal) => note.includes(signal));
+  if (nonActionableSignals.some((signal) => note.includes(signal))) {
+    return "价格备注提示可能不是当前可购买价";
+  }
+
+  if (isStaleCompetitorObservation(competitor, referenceDate)) {
+    return "观察日期距本次复盘周期已超过 30 天";
+  }
+
+  return null;
 }
 
 function hasActiveCompetitorPromotion(competitor: EcommerceAgentInput["competitors"][number]) {
@@ -626,6 +648,48 @@ function hasActiveCompetitorPromotion(competitor: EcommerceAgentInput["competito
   ];
 
   return promotionSignals.some((signal) => promotion.includes(signal));
+}
+
+function isStaleCompetitorObservation(
+  competitor: EcommerceAgentInput["competitors"][number],
+  referenceDate: Date | null,
+) {
+  if (referenceDate === null || competitor.observedAt.trim().length === 0) {
+    return false;
+  }
+
+  const observedDate = parseEvidenceDate(competitor.observedAt);
+
+  if (observedDate === null) {
+    return false;
+  }
+
+  const daysSinceObservation = (referenceDate.getTime() - observedDate.getTime()) / (24 * 60 * 60 * 1000);
+
+  return daysSinceObservation > 30;
+}
+
+function parseEvidenceDate(value: string) {
+  const match = value.match(/(\d{4})[-/.年](\d{1,2})[-/.月](\d{1,2})/);
+
+  if (!match) {
+    return null;
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+
+  if (
+    parsed.getUTCFullYear() !== year ||
+    parsed.getUTCMonth() !== month - 1 ||
+    parsed.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  return parsed;
 }
 
 function buildCompetitorEvidenceInsight(input: EcommerceAgentInput) {

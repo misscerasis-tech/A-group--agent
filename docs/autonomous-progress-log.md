@@ -7,7 +7,7 @@
 ## 当前最新稳定点
 
 - 最新代码：`main`
-- 最新标签：`v0.1.129-competitor-evidence-guardrails`
+- 最新标签：`v0.1.130-stale-competitor-observations`
 - 本地测试入口：`http://localhost:3001/agent`
 - 远端仓库：`misscerasis-tech/A-group--agent.git`
 
@@ -52,6 +52,7 @@
    - 演示竞品优先使用 Ember、Nextmug 和 VSITOO 官方商品页，Amazon 低价替代品明确标注价格边界。
    - 竞品价格会标成观察快照，不当成实时价格承诺。
    - 如果竞品价格备注提示无 featured offer、无库存、历史价或只用于价格带，Agent 会把它当观察线索，不作为主动降价依据。
+   - 如果竞品观察日期距离本次复盘周期超过 30 天，价格和促销也只作为观察线索。
    - 竞品促销只识别真实折扣、券、满减、赠品或 sale price，不把商品定位文案误判成促销。
    - 订单、经营表和用户声音表里的姓名、电话、邮箱、地址、身份证或税号会触发隐私提醒。
 

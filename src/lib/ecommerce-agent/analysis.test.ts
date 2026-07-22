@@ -351,6 +351,52 @@ describe("ecommerce agent analysis", () => {
     );
   });
 
+  it("does not use stale competitor observations for current-week pricing decisions", () => {
+    const baseProduct = {
+      productName: "黑杯",
+      sku: "CUP-BLACK",
+      visitors: null,
+      orders: 10,
+      revenue: 1000,
+      unitsSold: 10,
+      adSpend: null,
+      adRevenue: null,
+      inventory: null,
+    };
+
+    const analysis = analyzeEcommerceStore({
+      ...sampleEcommerceAgentInput,
+      competitors: [
+        {
+          ...sampleEcommerceAgentInput.competitors[0],
+          name: "过期促销竞品",
+          observedAt: "2026-05-01",
+          price: 80,
+          priceNote: "页面价快照",
+          promotion: "summer sale price",
+        },
+      ],
+      previousWeek: {
+        ...sampleEcommerceAgentInput.previousWeek,
+        products: [baseProduct],
+      },
+      currentWeek: {
+        ...sampleEcommerceAgentInput.currentWeek,
+        endDate: "2026-07-19",
+        products: [baseProduct],
+      },
+    });
+
+    expect(analysis.competitorInsights[0]).toContain("竞品价格没有明显压过我们");
+    expect(analysis.competitorInsights.some((item) => item.includes("过期促销竞品 的价格比我们低"))).toBe(
+      false,
+    );
+    expect(analysis.competitorInsights.some((item) => item.includes("已超过 30 天"))).toBe(true);
+    expect(analysis.competitorInsights.some((item) => item.includes("过期促销竞品 正在做促销"))).toBe(
+      false,
+    );
+  });
+
   it("changes next actions when the user goal is profit", () => {
     const analysis = analyzeEcommerceStore({
       ...sampleEcommerceAgentInput,
