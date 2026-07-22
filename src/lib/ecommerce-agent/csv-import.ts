@@ -1962,6 +1962,10 @@ function normalizeAdWeek(
     return week;
   }
 
+  if (!inferredPeriods) {
+    return "current" as const;
+  }
+
   if (week === inferredPeriods?.previous) {
     return "previous" as const;
   }
