@@ -712,6 +712,23 @@ textarea {
   overflow: auto;
 }
 
+.report-details {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px;
+}
+
+.report-details summary {
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.report-details pre {
+  margin: 10px 0 0;
+  white-space: pre-wrap;
+}
+
 .metric-tile {
   display: grid;
   gap: 6px;

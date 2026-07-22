@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## [v0.1.3-weekly-report-output] - 2026-07-22
+
+### Added
+
+- 增加飞书文档可沉淀的周报 Markdown 生成器。
+- `/api/agent/analyze` 增加 `markdownReport` 返回值。
+- 真实数据导入工作台增加“飞书文档 Markdown”输出。
+
 ## [v0.1.2-data-import-workbench] - 2026-07-22
 
 ### Added

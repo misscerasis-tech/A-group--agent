@@ -35,6 +35,7 @@
 - 查看字段识别结果。
 - 查看缺失字段追问。
 - 生成基于导入数据的复盘和飞书回写文本。
+- 展开“飞书文档 Markdown”，检查是否能直接沉淀成周报。
 
 也可以直接调本地 API：
 
@@ -43,6 +44,8 @@ curl -X POST http://localhost:3001/api/agent/analyze \
   -H "Content-Type: application/json" \
   -d '{"metricsCsv":"week,product_name,orders,revenue,units_sold\nprevious,黑杯,10,500,12\ncurrent,黑杯,8,420,9","store":{"storeName":"测试店铺"}}'
 ```
+
+API 会返回 `analysis`、`feishuReply` 和 `markdownReport`。
 
 通过标准：
 

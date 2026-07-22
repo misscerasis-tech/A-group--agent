@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { analyzeEcommerceStore } from "@/lib/ecommerce-agent/analysis";
 import { buildEcommerceInputFromCsv } from "@/lib/ecommerce-agent/csv-import";
+import { buildWeeklyMarkdownReport } from "@/lib/ecommerce-agent/report";
 import type { StoreProfile } from "@/lib/ecommerce-agent/types";
 import { formatEcommerceAnalysisForFeishu } from "@/lib/integrations/feishu/agent-reply";
 
@@ -56,5 +57,6 @@ export async function POST(request: Request) {
     report: importResult.report,
     analysis,
     feishuReply: formatEcommerceAnalysisForFeishu(analysis, "当前导入数据"),
+    markdownReport: buildWeeklyMarkdownReport(importResult.input, analysis),
   });
 }

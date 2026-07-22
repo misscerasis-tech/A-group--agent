@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { analyzeEcommerceStore } from "../../lib/ecommerce-agent/analysis";
 import { buildEcommerceInputFromCsv } from "../../lib/ecommerce-agent/csv-import";
+import { buildWeeklyMarkdownReport } from "../../lib/ecommerce-agent/report";
 import { formatEcommerceAnalysisForFeishu } from "../../lib/integrations/feishu/agent-reply";
 
 const starterMetricsCsv = [
@@ -67,6 +68,8 @@ export function DataImportPanel() {
     [category, competitorCsv, market, metricsCsv, platform, storeName],
   );
   const analysis = importResult.input ? analyzeEcommerceStore(importResult.input) : null;
+  const markdownReport =
+    importResult.input && analysis ? buildWeeklyMarkdownReport(importResult.input, analysis) : "";
   const requiredMappings = importResult.report.fieldMappings.filter((field) => field.required);
 
   return (
@@ -227,6 +230,10 @@ export function DataImportPanel() {
                   <p key={line}>{line}</p>
                 ))}
               </div>
+              <details className="report-details">
+                <summary>飞书文档 Markdown</summary>
+                <pre>{markdownReport}</pre>
+              </details>
               <pre>{formatEcommerceAnalysisForFeishu(analysis, "当前导入数据")}</pre>
             </div>
           ) : (
