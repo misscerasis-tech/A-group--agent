@@ -50,6 +50,7 @@ npx pnpm@10.13.1 run agent:smoke
 - 查看“下一份要补的数据”，确认它说明了负责人、数据来源、字段列、为什么重要和首页影响。
 - 生成基于导入数据的复盘和飞书回写文本。
 - 检查“下周行动”是否包含负责人、优先级、截止时间和验收标准，并可复制为待办表格。
+- 检查“风险商品表”是否包含 SKU、问题、人话原因和建议动作，并可复制到飞书表格。
 - 检查补数清单是否能复制为 TSV，直接粘贴到飞书表格或多维表格。
 - 展开“飞书文档 Markdown”，检查是否能直接沉淀成周报。
 - 检查周报里是否出现“用户声音”章节。
@@ -62,7 +63,7 @@ curl -X POST http://localhost:3001/api/agent/analyze \
   -d '{"metricsCsv":"week,product_name,orders,revenue,units_sold,refund_orders,refund_amount\nprevious,黑杯,10,500,12,1,30\ncurrent,黑杯,8,420,9,2,80","store":{"storeName":"测试店铺"}}'
 ```
 
-API 会返回 `analysis`、`feishuReply`、`taskTable`、`dataRequestPlan`、`dataRequestTable` 和 `markdownReport`。其中 `analysis.operationalTasks` 是结构化运营待办，`taskTable` 是可直接粘贴到飞书表格/多维表格的待办 TSV，`dataRequestTable` 是可直接粘贴给团队补数的 TSV。
+API 会返回 `analysis`、`feishuReply`、`taskTable`、`riskTable`、`dataRequestPlan`、`dataRequestTable` 和 `markdownReport`。其中 `analysis.operationalTasks` 是结构化运营待办，`taskTable` 是可直接粘贴到飞书表格/多维表格的待办 TSV，`riskTable` 是可直接粘贴给团队排查 SKU 的风险商品 TSV，`dataRequestTable` 是可直接粘贴给团队补数的 TSV。
 其中 `workSession` 会告诉前端或飞书：当前还缺什么、下一句应该问用户什么、Agent 接下来能不能继续跑。
 
 页面健康检查也可以自动跑一遍，专门确认导航页面不会再把原始 Prisma/DATABASE_URL 错误露给用户：
@@ -182,6 +183,7 @@ FEISHU_EVENT_SUBSCRIPTION_MODE="long_connection"
 - `这周先降低退款/退货`
 - `竞品怎么看`
 - `给我待办清单`
+- `给我风险商品表`
 - `怎么用`
 
 也可以直接在飞书里粘贴一小段经营 CSV/TSV/Markdown 表格：

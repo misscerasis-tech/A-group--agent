@@ -17,7 +17,11 @@ import {
   buildDataRequestPlan,
   buildDataRequestPlanTsv,
 } from "../../lib/ecommerce-agent/data-request";
-import { buildOperationalTasksTsv, buildWeeklyMarkdownReport } from "../../lib/ecommerce-agent/report";
+import {
+  buildOperationalTasksTsv,
+  buildProductFindingsTsv,
+  buildWeeklyMarkdownReport,
+} from "../../lib/ecommerce-agent/report";
 import { buildBeginnerWorkSession } from "../../lib/ecommerce-agent/work-session";
 import { formatEcommerceAnalysisForFeishu } from "../../lib/integrations/feishu/agent-reply";
 
@@ -135,7 +139,8 @@ export function DataImportPanel() {
   const [customerVoicesCsv, setCustomerVoicesCsv] = useState(starterCustomerVoiceCsv);
   const [hasRun, setHasRun] = useState(false);
   const [hasLoadedDraft, setHasLoadedDraft] = useState(false);
-  const [copiedTarget, setCopiedTarget] = useState<"feishu" | "markdown" | "tasks" | "dataRequests" | null>(null);
+  const [copiedTarget, setCopiedTarget] =
+    useState<"feishu" | "markdown" | "tasks" | "risks" | "dataRequests" | null>(null);
 
   function loadStarterSample() {
     setStoreName("Aurora Cup 独立站");
@@ -189,7 +194,10 @@ export function DataImportPanel() {
     window.localStorage.removeItem(importDraftStorageKey);
   }
 
-  async function copyOutput(target: "feishu" | "markdown" | "tasks" | "dataRequests", text: string) {
+  async function copyOutput(
+    target: "feishu" | "markdown" | "tasks" | "risks" | "dataRequests",
+    text: string,
+  ) {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedTarget(target);
@@ -280,6 +288,7 @@ export function DataImportPanel() {
     importResult.input && analysis ? buildWeeklyMarkdownReport(importResult.input, analysis) : "";
   const feishuReplyText = analysis ? formatEcommerceAnalysisForFeishu(analysis, "当前导入数据") : "";
   const taskTableText = analysis ? buildOperationalTasksTsv(analysis) : "";
+  const riskTableText = analysis ? buildProductFindingsTsv(analysis) : "";
   const dataRequestPlan = buildDataRequestPlan(importResult.report, analysis?.questionsForUser ?? []);
   const dataRequestTableText = buildDataRequestPlanTsv(dataRequestPlan);
   const requiredMappings = importResult.report.fieldMappings.filter((field) => field.required);
@@ -635,6 +644,18 @@ export function DataImportPanel() {
                     <Copy size={16} aria-hidden="true" />
                   )}
                   {copiedTarget === "tasks" ? "已复制待办表格" : "复制待办表格"}
+                </button>
+                <button
+                  className="button secondary"
+                  type="button"
+                  onClick={() => void copyOutput("risks", riskTableText)}
+                >
+                  {copiedTarget === "risks" ? (
+                    <CheckCircle2 size={16} aria-hidden="true" />
+                  ) : (
+                    <Copy size={16} aria-hidden="true" />
+                  )}
+                  {copiedTarget === "risks" ? "已复制风险商品表" : "复制风险商品表"}
                 </button>
                 <button
                   className="button secondary"

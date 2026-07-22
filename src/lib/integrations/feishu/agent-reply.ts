@@ -8,7 +8,7 @@ import {
   formatDataRequestPlanForFeishu,
 } from "../../ecommerce-agent/data-request";
 import { buildKpiGuideReply } from "../../ecommerce-agent/kpi-guide";
-import { buildOperationalTasksTsv } from "../../ecommerce-agent/report";
+import { buildOperationalTasksTsv, buildProductFindingsTsv } from "../../ecommerce-agent/report";
 import { sampleEcommerceAgentInput } from "../../ecommerce-agent/sample-data";
 import { buildTestingChecklistReply } from "../../ecommerce-agent/testing-checklist";
 import type {
@@ -27,6 +27,7 @@ export type FeishuReplyIntent =
   | "data_request"
   | "work_plan"
   | "tasks"
+  | "risks"
   | "testing"
   | "usage"
   | "inventory"
@@ -73,6 +74,14 @@ export function detectFeishuReplyIntent(text: string): FeishuReplyIntent {
 
   if (["待办", "任务清单", "行动清单", "分工", "负责人", "验收标准"].some((keyword) => normalized.includes(keyword))) {
     return "tasks";
+  }
+
+  if (
+    ["风险商品", "问题商品", "异常商品", "风险sku", "问题sku", "异常sku", "商品风险"].some((keyword) =>
+      normalized.includes(keyword),
+    )
+  ) {
+    return "risks";
   }
 
   if (
@@ -193,6 +202,7 @@ export function buildFeishuUsageReply() {
     "- “这周先降低退款/退货”",
     "- “这周目标是保销量/保利润”",
     "- “给我待办清单”",
+    "- “给我风险商品表”",
     "- “我现在做什么？”",
     "",
     "也可以直接粘贴一小段 CSV/TSV/Markdown 表格，或从 Excel/飞书表格复制几行。我会先检查字段，缺什么就问你，不会把缺失项说成确定结论。",
@@ -212,6 +222,18 @@ export function buildTasksReply(analysis: EcommerceAgentAnalysis) {
     "这是我整理好的待办表，可以直接复制到飞书表格或多维表格：",
     "",
     buildOperationalTasksTsv(analysis),
+  ].join("\n");
+}
+
+export function buildRisksReply(analysis: EcommerceAgentAnalysis) {
+  if (analysis.productFindings.length === 0) {
+    return "当前数据里暂时没有明显风险商品。你可以继续补访客、广告、库存、毛利、退款/退货和用户声音，我会重新判断。";
+  }
+
+  return [
+    "这是我整理好的风险商品表，可以直接复制到飞书表格或多维表格：",
+    "",
+    buildProductFindingsTsv(analysis),
   ].join("\n");
 }
 
@@ -512,6 +534,10 @@ export function buildFeishuAgentReply(
 
   if (intent === "tasks") {
     return buildTasksReply(analysis);
+  }
+
+  if (intent === "risks") {
+    return buildRisksReply(analysis);
   }
 
   if (intent === "testing") {

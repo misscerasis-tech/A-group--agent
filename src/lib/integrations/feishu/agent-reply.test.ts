@@ -90,6 +90,16 @@ describe("feishu agent reply", () => {
     expect(reply).toContain("验收标准");
   });
 
+  it("returns a copyable product risk table for risk requests", () => {
+    expect(detectFeishuReplyIntent("给我风险商品表")).toBe("risks");
+
+    const reply = buildFeishuAgentReply("给我风险商品表");
+
+    expect(reply).toContain("优先级\t商品\tSKU\t问题");
+    expect(reply).toContain("CUP-BLACK-500");
+    expect(reply).toContain("建议动作");
+  });
+
   it("answers real testing and Feishu connection questions", () => {
     expect(detectFeishuReplyIntent("怎么真正测试，接入飞书吗")).toBe("testing");
 

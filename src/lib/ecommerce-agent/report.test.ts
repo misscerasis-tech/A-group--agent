@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { analyzeEcommerceStore } from "./analysis";
-import { buildOperationalTasksTsv, buildWeeklyMarkdownReport } from "./report";
+import {
+  buildOperationalTasksTsv,
+  buildProductFindingsTsv,
+  buildWeeklyMarkdownReport,
+} from "./report";
 import { sampleEcommerceAgentInput } from "./sample-data";
 
 describe("weekly markdown report", () => {
@@ -29,5 +33,15 @@ describe("weekly markdown report", () => {
     expect(taskTable.split("\n")[0]).toBe("优先级\t截止\t负责人\t任务\t第一步\t验收标准\t原因");
     expect(taskTable).toContain("验收");
     expect(taskTable).toContain("店铺负责人");
+  });
+
+  it("builds a product risk table that can be pasted into Feishu sheets", () => {
+    const analysis = analyzeEcommerceStore(sampleEcommerceAgentInput);
+    const riskTable = buildProductFindingsTsv(analysis);
+
+    expect(riskTable.split("\n")[0]).toBe("优先级\t商品\tSKU\t问题\t人话原因\t建议动作");
+    expect(riskTable).toContain("CUP-BLACK-500");
+    expect(riskTable).toContain("销售明显下滑");
+    expect(riskTable).toContain("商品页");
   });
 });

@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { analyzeEcommerceStore } from "@/lib/ecommerce-agent/analysis";
 import { buildEcommerceInputFromCsv } from "@/lib/ecommerce-agent/csv-import";
 import { buildDataRequestPlan, buildDataRequestPlanTsv } from "@/lib/ecommerce-agent/data-request";
-import { buildOperationalTasksTsv, buildWeeklyMarkdownReport } from "@/lib/ecommerce-agent/report";
+import {
+  buildOperationalTasksTsv,
+  buildProductFindingsTsv,
+  buildWeeklyMarkdownReport,
+} from "@/lib/ecommerce-agent/report";
 import { buildBeginnerWorkSession } from "@/lib/ecommerce-agent/work-session";
 import type { StoreProfile } from "@/lib/ecommerce-agent/types";
 import { formatEcommerceAnalysisForFeishu } from "@/lib/integrations/feishu/agent-reply";
@@ -80,6 +84,7 @@ export async function POST(request: Request) {
     analysis,
     feishuReply: formatEcommerceAnalysisForFeishu(analysis, "当前导入数据"),
     taskTable: buildOperationalTasksTsv(analysis),
+    riskTable: buildProductFindingsTsv(analysis),
     markdownReport: buildWeeklyMarkdownReport(importResult.input, analysis),
   });
 }

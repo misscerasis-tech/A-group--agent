@@ -242,6 +242,7 @@ Agent 可以从原始字段计算：
 - `analysis`：经营结论、风险商品、追问和结构化运营待办。
 - `feishuReply`：适合直接发到飞书的自然语言回复。
 - `taskTable`：可粘贴到飞书表格/多维表格的待办 TSV。
+- `riskTable`：可粘贴到飞书表格/多维表格的风险商品 TSV。
 - `dataRequestPlan`：结构化补数清单，告诉小白下一份数据要补什么。
 - `dataRequestTable`：可粘贴到飞书表格/多维表格的补数 TSV。
 - `markdownReport`：适合沉淀为飞书文档的周报 Markdown。

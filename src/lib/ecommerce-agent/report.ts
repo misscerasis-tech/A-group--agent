@@ -107,6 +107,24 @@ export function buildOperationalTasksTsv(analysis: EcommerceAgentAnalysis) {
   ].join("\n");
 }
 
+export function buildProductFindingsTsv(analysis: EcommerceAgentAnalysis) {
+  return [
+    ["优先级", "商品", "SKU", "问题", "人话原因", "建议动作"].join("\t"),
+    ...analysis.productFindings.map((finding) =>
+      [
+        priorityLabel(finding.priority),
+        finding.productName,
+        finding.sku,
+        finding.issue,
+        finding.plainReason,
+        finding.suggestedAction,
+      ]
+        .map(tableCell)
+        .join("\t"),
+    ),
+  ].join("\n");
+}
+
 export function buildWeeklyMarkdownReport(
   input: EcommerceAgentInput,
   analysis: EcommerceAgentAnalysis,
