@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.110-feishu-secret-doc-clarity] - 2026-07-23
+
+### Changed
+
+- 飞书测试文档的 `FEISHU_APP_SECRET` 示例改为真实后台值提示，不再使用会被 doctor 判定为占位的说明文案。
+- 飞书应用状态快照更新时间，并明确 App Secret 不应填写“只放本机”“不要提交”等说明性文字。
+
 ## [v0.1.109-copyable-testing-csv-progress] - 2026-07-23
 
 ### Changed

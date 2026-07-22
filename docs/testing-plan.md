@@ -175,7 +175,7 @@ pnpm run feishu:worker
 
 ```bash
 FEISHU_APP_ID="cli_xxx"
-FEISHU_APP_SECRET="只放本机，不提交"
+FEISHU_APP_SECRET="从飞书开放平台复制的真实 App Secret"
 FEISHU_EVENT_SUBSCRIPTION_MODE="long_connection"
 FEISHU_CHAT_CONTEXT_FILE=".agent-state/feishu-chat-contexts.json"
 ```
