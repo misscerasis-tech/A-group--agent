@@ -150,4 +150,34 @@ describe("feishu event handlers", () => {
       }),
     );
   });
+
+  it("keeps non-text message retries possible until the guidance reply is sent", async () => {
+    const sendTextMessage = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("temporary Feishu send error"))
+      .mockResolvedValueOnce(undefined);
+    const handlers = createFeishuEventHandlers(sendTextMessage);
+    const imageEvent = {
+      sender: {
+        sender_type: "user",
+      },
+      message: {
+        message_id: "om_image",
+        chat_id: "oc_123",
+        message_type: "image",
+        content: JSON.stringify({ image_key: "img_v2_123" }),
+      },
+    };
+
+    await expect(handlers["im.message.receive_v1"](imageEvent)).rejects.toThrow("temporary Feishu send error");
+    await handlers["im.message.receive_v1"](imageEvent);
+    await handlers["im.message.receive_v1"](imageEvent);
+
+    expect(sendTextMessage).toHaveBeenCalledTimes(2);
+    expect(sendTextMessage).toHaveBeenLastCalledWith({
+      chatId: "oc_123",
+      replyToMessageId: "om_image",
+      text: expect.stringContaining("图片消息"),
+    });
+  });
 });

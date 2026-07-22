@@ -5,6 +5,7 @@ import {
   buildFeishuClearContextReply,
   buildFeishuImportContextFromText,
   buildFeishuImportContextFromTables,
+  buildUnsupportedFeishuMessageReply,
   detectFeishuPastedTableKind,
   detectFeishuReplyIntent,
   isFeishuClearContextRequest,
@@ -46,6 +47,25 @@ describe("feishu agent reply", () => {
     expect(reply).toContain("附件消息我暂时不会下载");
     expect(reply).toContain("/agent");
     expect(reply).toContain("不会假装看懂");
+  });
+
+  it("explains unsupported Feishu message types without pretending to read attachments", () => {
+    const fileReply = buildUnsupportedFeishuMessageReply("file");
+    const imageReply = buildUnsupportedFeishuMessageReply("image");
+    const postReply = buildUnsupportedFeishuMessageReply("post");
+    const cardReply = buildUnsupportedFeishuMessageReply("interactive");
+
+    for (const reply of [fileReply, imageReply, postReply, cardReply]) {
+      expect(reply).toContain("当前本地长连接先不下载附件");
+      expect(reply).toContain("不会假装已经读懂文件内容");
+      expect(reply).toContain("复制表头和几行数据");
+      expect(reply).toContain("/agent");
+    }
+
+    expect(fileReply).toContain("文件消息");
+    expect(imageReply).toContain("图片消息");
+    expect(postReply).toContain("富文本消息");
+    expect(cardReply).toContain("卡片消息");
   });
 
   it("answers contextual data gap requests", () => {

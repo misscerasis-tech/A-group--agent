@@ -18,6 +18,10 @@ import {
   buildDataRequestPlanTsv,
 } from "../../lib/ecommerce-agent/data-request";
 import {
+  ecommerceKpiGuide,
+  type EcommerceKpiGuideItem,
+} from "../../lib/ecommerce-agent/kpi-guide";
+import {
   buildOperationalTasksTsv,
   buildProductFindingsTsv,
   buildWeeklyMarkdownReport,
@@ -153,6 +157,132 @@ function formatPriority(priority: string) {
   };
 
   return labels[priority] ?? priority;
+}
+
+function buildWorkbenchSignal(
+  metric: EcommerceKpiGuideItem,
+  importResult: ReturnType<typeof buildEcommerceInputFromCsv>,
+  analysis: ReturnType<typeof analyzeEcommerceStore> | null,
+) {
+  const input = importResult.input;
+  const report = importResult.report;
+  const currentProducts = input?.currentWeek.products ?? [];
+  const currentTotals = analysis?.totals.current ?? null;
+  const anyCurrentProductHas = (predicate: (product: (typeof currentProducts)[number]) => boolean) =>
+    currentProducts.some(predicate);
+
+  if (!input || !report.ok) {
+    if (metric.id === "revenue" || metric.id === "orders") {
+      return {
+        status: "waiting",
+        label: "等经营表",
+        detail: "先补周期、商品、订单数、销售额和销量。",
+      };
+    }
+
+    return {
+      status: "later",
+      label: "随后补充",
+      detail: "核心经营表可分析后，再决定是否需要这类数据。",
+    };
+  }
+
+  if (metric.id === "revenue" || metric.id === "orders") {
+    return {
+      status: "ready",
+      label: "已点亮",
+      detail: "用于判断本周大盘是变好还是变差。",
+    };
+  }
+
+  if (metric.id === "traffic" || metric.id === "conversion") {
+    return currentTotals?.visitors !== null
+      ? {
+          status: "ready",
+          label: "已点亮",
+          detail: "可以判断问题是没人来，还是来了以后没下单。",
+        }
+      : {
+          status: "waiting",
+          label: "待补访客",
+          detail: "补访客数、曝光量、sessions 或转化率。",
+        };
+  }
+
+  if (metric.id === "average-order-value") {
+    return {
+      status: "ready",
+      label: "已自动计算",
+      detail: "由销售额和订单数算出，用来判断折扣、套装和客单结构。",
+    };
+  }
+
+  if (metric.id === "ads") {
+    return currentTotals?.adSpend !== null || currentTotals?.adRevenue !== null
+      ? {
+          status: "ready",
+          label: "已点亮",
+          detail: "可以判断广告是否越投越贵、回本是否变差。",
+        }
+      : {
+          status: "waiting",
+          label: "待补广告",
+          detail: "补广告花费、广告成交额、ROAS 或 ACOS。",
+        };
+  }
+
+  if (metric.id === "inventory") {
+    return anyCurrentProductHas((product) => product.inventory !== null)
+      ? {
+          status: "ready",
+          label: "已点亮",
+          detail: "可以识别热卖断货和滞销压货。",
+        }
+      : {
+          status: "waiting",
+          label: "待补库存",
+          detail: "补当前库存、可售库存或库存快照。",
+        };
+  }
+
+  if (metric.id === "returns") {
+    return anyCurrentProductHas(
+      (product) =>
+        product.refundOrders !== undefined ||
+        product.refundAmount !== undefined ||
+        Boolean(product.refundReason),
+    )
+      ? {
+          status: "ready",
+          label: "已点亮",
+          detail: "可以判断售后有没有吃掉成交，并定位原因。",
+        }
+      : {
+          status: "waiting",
+          label: "待补售后",
+          detail: "补退款单数、退款金额、退货原因或客服备注。",
+        };
+  }
+
+  if (metric.id === "competitors") {
+    return report.competitorRows > 0
+      ? {
+          status: "ready",
+          label: "已点亮",
+          detail: "可以把价格、促销和卖点压力翻译成运营动作。",
+        }
+      : {
+          status: "waiting",
+          label: "待补竞品",
+          detail: "补 1 到 3 个竞品链接、价格快照、促销和卖点。",
+        };
+  }
+
+  return {
+    status: "later",
+    label: "辅助判断",
+    detail: metric.homepageSignal,
+  };
 }
 
 async function readFileIntoState(
@@ -378,6 +508,10 @@ export function DataImportPanel() {
   const dataRequestTableText = buildDataRequestPlanTsv(dataRequestPlan);
   const requiredMappings = importResult.report.fieldMappings.filter((field) => field.required);
   const workSession = buildBeginnerWorkSession(importResult.report, analysis?.questionsForUser ?? []);
+  const workbenchSignals = ecommerceKpiGuide.map((metric) => ({
+    metric,
+    signal: buildWorkbenchSignal(metric, importResult, analysis),
+  }));
   const issueGroups = [
     {
       severity: "error",
@@ -717,6 +851,28 @@ export function DataImportPanel() {
                   </div>
                   <small>去哪找：{item.whereToFind}</small>
                   <small>首页会变准：{item.homepageImpact}</small>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="import-status workbench-signal-panel">
+            <h4>经营判断地图</h4>
+            <p className="workbench-signal-intro">
+              首页按“结果、原因、风险、外部压力”排序。下面这张表告诉你：当前数据已经能支撑哪些判断，还缺什么。
+            </p>
+            <div className="workbench-signal-grid">
+              {workbenchSignals.map(({ metric, signal }) => (
+                <article className={`workbench-signal-card ${signal.status}`} key={metric.id}>
+                  <header>
+                    <div>
+                      <span>{metric.priority}</span>
+                      <strong>{metric.name}</strong>
+                    </div>
+                    <small>{signal.label}</small>
+                  </header>
+                  <p>{metric.plainName}</p>
+                  <small>{signal.detail}</small>
                 </article>
               ))}
             </div>
