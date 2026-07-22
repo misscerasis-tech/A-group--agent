@@ -1,5 +1,5 @@
-order_id,paid_at,product_name,sku,quantity,paid_amount,refund_amount,status
-O-1001,2026-07-08 10:11:00,黑杯,CUP-BLACK,2,79.8,0,paid
-O-1002,2026-07-09 12:30:00,黑杯,CUP-BLACK,1,39.9,0,paid
-O-1003,2026-07-15 09:20:00,黑杯,CUP-BLACK,1,39.9,39.9,refunded
-O-1004,2026-07-16 19:45:00,白杯,CUP-WHITE,3,89.7,0,paid
+order_id,paid_at,product_name,sku,quantity,paid_amount,refund_amount,unit_cost,status
+O-1001,2026-07-08 10:11:00,黑杯,CUP-BLACK,2,79.8,0,20,paid
+O-1002,2026-07-09 12:30:00,黑杯,CUP-BLACK,1,39.9,0,20,paid
+O-1003,2026-07-15 09:20:00,黑杯,CUP-BLACK,1,39.9,39.9,20,refunded
+O-1004,2026-07-16 19:45:00,白杯,CUP-WHITE,3,89.7,0,18,paid

@@ -109,6 +109,7 @@ type OrderDetailField =
   | "refundAmount"
   | "status"
   | "productCost"
+  | "unitCost"
   | "grossProfit";
 
 type InventoryField = "productName" | "sku" | "inventory" | "unitCost" | "grossMarginRate" | "observedAt";
@@ -497,6 +498,7 @@ const orderDetailFieldLabels: Record<OrderDetailField, string> = {
   refundAmount: "退款金额",
   status: "订单/售后状态",
   productCost: "商品成本",
+  unitCost: "单位成本",
   grossProfit: "毛利",
 };
 
@@ -645,6 +647,23 @@ const orderDetailAliases: Record<OrderDetailField, string[]> = {
     "退货状态",
   ],
   productCost: metricAliases.productCost,
+  unitCost: [
+    "unit_cost",
+    "unitcost",
+    "cost_per_unit",
+    "costperunit",
+    "unit_cogs",
+    "unitcogs",
+    "lineitem_unit_cost",
+    "lineitemunitcost",
+    "line_item_unit_cost",
+    "line item unit cost",
+    "采购单价",
+    "成本单价",
+    "单位成本",
+    "单件成本",
+    "件成本",
+  ],
   grossProfit: metricAliases.grossProfit,
 };
 
@@ -1699,12 +1718,13 @@ function parseOrderDetailRows(
         mapping.has("refundAmount") && !refundAmountValue
           ? 0
           : optionalNumber(refundAmountValue, orderDetailFieldLabels.refundAmount, issues, rowNumber);
-      const productCost = optionalNumber(
+      let productCost = optionalNumber(
         readField(row, mapping, "productCost"),
         orderDetailFieldLabels.productCost,
         issues,
         rowNumber,
       );
+      const unitCost = optionalNumber(readField(row, mapping, "unitCost"), orderDetailFieldLabels.unitCost, issues, rowNumber);
       const grossProfit = optionalNumber(readField(row, mapping, "grossProfit"), undefined, undefined, undefined, {
         allowNegative: true,
       });
@@ -1716,6 +1736,10 @@ function parseOrderDetailRows(
       const revenue = isOrderDetailUnitPriceHeader(mapping.get("revenue"))
         ? roundMetric(rawRevenue * (quantity ?? 1))
         : rawRevenue;
+
+      if (productCost === null && unitCost !== null) {
+        productCost = roundMetric(unitCost * (quantity ?? 1));
+      }
 
       return {
         rowNumber,

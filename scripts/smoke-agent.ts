@@ -87,6 +87,11 @@ function main() {
 
   assert(templateOrderDetailImport.report.ok, "订单明细模板应该可以直接导入。");
   assert(templateOrderDetailImport.report.metricsInputKind === "order_details", "订单明细模板应该被识别为订单明细。");
+  assert(
+    templateOrderDetailImport.input?.previousWeek.products.find((product) => product.sku === "CUP-BLACK")
+      ?.productCost === 60,
+    "订单明细模板的单位成本应该按件数汇总。",
+  );
 
   const tsvImport = buildEcommerceInputFromCsv({
     metricsCsv: [

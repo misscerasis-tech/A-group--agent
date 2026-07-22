@@ -7,6 +7,6 @@
 3. 把示例商品、SKU、金额和日期换成真实数据。
 4. 回到 `/agent` 工作台粘贴或上传文件。
 
-最小可用路径是 `weekly-metrics-template.csv`。如果只有订单明细，用 `order-details-template.csv`，并确保覆盖最近两个自然周。
+最小可用路径是 `weekly-metrics-template.csv`。如果只有订单明细，用 `order-details-template.csv`，并确保覆盖最近两个自然周；有单位成本时保留 `unit_cost` 列，Agent 会按购买件数汇总成本。
 
 广告、库存/成本、用户声音和竞品模板不是必填，但补上后 Agent 的动作会更具体。广告模板可以填 ACOS；如果你的后台导出 ROAS，也可以把 `acos` 列换成 `roas`。

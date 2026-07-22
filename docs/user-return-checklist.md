@@ -96,7 +96,7 @@ current,黑杯,CUP-BLACK,8,420,9,90,2,80,杯盖漏水 / 物流慢
 
 如果粘贴内容前面带“这是导出的经营数据”“导出时间”这类说明行，或者用 `csv` / `text` 代码块包着，Agent 会跳过这些内容自己找表头。若数据异常，它会提示原始粘贴内容里的真实行号。
 
-如果手里只有订单明细，也可以直接粘贴订单号、支付时间、商品名称/SKU、购买数量、实付金额和退款金额。订单明细需要覆盖最近两个自然周，Agent 会先自动聚合成 SKU 周报再复盘。Shopify Orders 的 `Paid at / Lineitem price` 和 Amazon 订单 TSV 的 `amazon-order-id / purchase-date / item-price` 也可以直接粘贴。
+如果手里只有订单明细，也可以直接粘贴订单号、支付时间、商品名称/SKU、购买数量、实付金额和退款金额；如果有单位成本，也一起给。订单明细需要覆盖最近两个自然周，Agent 会先自动聚合成 SKU 周报再复盘。Shopify Orders 的 `Paid at / Lineitem price` 和 Amazon 订单 TSV 的 `amazon-order-id / purchase-date / item-price` 也可以直接粘贴。
 
 如果广告数据是单独导出的，就粘贴到“广告数据表”。最少需要 SKU 或商品名称，再给广告花费、广告成交额、ROAS 或 ACOS。Agent 会按上周/本周匹配广告口径，判断投放是否回本。
 

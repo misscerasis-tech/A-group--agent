@@ -609,6 +609,25 @@ describe("ecommerce csv import", () => {
     expect(result.report.issues.some((issue) => issue.message.includes("订单明细"))).toBe(true);
   });
 
+  it("multiplies unit cost in order detail exports by quantity", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "订单号,支付时间,商品名称,商家编码,购买数量,实付金额,单位成本,售后状态",
+        "O-1001,2026-07-08 10:11:00,黑杯,CUP-BLACK,2,100,20,已完成",
+        "O-1002,2026-07-15 09:20:00,黑杯,CUP-BLACK,3,150,20,已完成",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.report.metricsInputKind).toBe("order_details");
+    expect(result.input?.previousWeek.products[0]).toMatchObject({
+      productCost: 40,
+    });
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      productCost: 60,
+    });
+  });
+
   it("imports Shopify order exports with line item headers", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [
