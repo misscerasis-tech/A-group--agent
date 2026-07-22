@@ -140,6 +140,23 @@ function main() {
     "Shopify 多件商品应该按件数计算销售额。",
   );
 
+  const amazonOrderImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "amazon-order-id\tpurchase-date\tproduct-name\tsku\tquantity-purchased\titem-price\titem-status",
+      "112-0001\t2026-07-08T10:11:00Z\t黑杯\tCUP-BLACK\t2\t79.8\tShipped",
+      "112-0002\t2026-07-09T12:30:00Z\t黑杯\tCUP-BLACK\t1\t39.9\tShipped",
+      "112-0003\t2026-07-15T09:20:00Z\t黑杯\tCUP-BLACK\t1\t39.9\tRefunded",
+      "112-0004\t2026-07-16T19:45:00Z\t白杯\tCUP-WHITE\t3\t89.7\tShipped",
+    ].join("\n"),
+  });
+
+  assert(amazonOrderImport.report.ok, "Amazon 订单 TSV 导出表应该可以自动聚合并导入。");
+  assert(amazonOrderImport.report.metricsInputKind === "order_details", "Amazon 订单 TSV 应该被识别为订单明细。");
+  assert(
+    amazonOrderImport.input?.currentWeek.products.find((product) => product.sku === "CUP-BLACK")?.refundOrders === 1,
+    "Amazon item-status 退款状态应该能转成退款/退货单数。",
+  );
+
   const rateFieldImport = buildEcommerceInputFromCsv({
     metricsCsv: [
       "周期,商品名称,订单数,销售额,销量,转化率,广告消耗,ROAS,毛利率,退款率,退款金额占比",

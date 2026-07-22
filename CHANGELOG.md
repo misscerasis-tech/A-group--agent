@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.65-amazon-order-export] - 2026-07-23
+
+### Added
+
+- 订单明细导入器支持 Amazon Seller Central 订单报告常见表头：`amazon-order-id`、`purchase-date`、`product-name`、`sku`、`quantity-purchased`、`item-price` 和 `item-status`。
+- `/agent` 工作台新增“Amazon 订单样例”，API/Web/Agent smoke 和单测覆盖 Amazon TSV 明细导入路径。
+
 ## [v0.1.64-feishu-non-text-guidance] - 2026-07-23
 
 ### Added

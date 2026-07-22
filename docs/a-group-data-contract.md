@@ -53,6 +53,8 @@
 
 Shopify Orders 导出的 `Name / Paid at / Lineitem name / Lineitem sku / Lineitem quantity / Lineitem price / Refunded Amount / Financial Status` 可以直接作为订单明细导入。其中 `Lineitem price` 会按单价处理，Agent 会乘以 `Lineitem quantity` 后再汇总为销售额。
 
+Amazon Seller Central 订单报告常见的 TSV 表头也可以直接导入，例如 `amazon-order-id / purchase-date / product-name / sku / quantity-purchased / item-price / item-status`。其中 `item-price` 按订单行金额汇总。
+
 订单明细最小字段：
 
 | 字段 | 含义 | 是否必需 | 示例 |

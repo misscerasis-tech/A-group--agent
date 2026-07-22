@@ -506,6 +506,33 @@ describe("ecommerce csv import", () => {
     expect(result.input?.currentWeek.products.find((product) => product.sku === "CUP-WHITE")?.revenue).toBe(89.7);
   });
 
+  it("imports Amazon order report TSV exports", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "amazon-order-id\tpurchase-date\tproduct-name\tsku\tquantity-purchased\titem-price\titem-status",
+        "112-0001\t2026-07-08T10:11:00Z\t黑杯\tCUP-BLACK\t2\t79.8\tShipped",
+        "112-0002\t2026-07-09T12:30:00Z\t黑杯\tCUP-BLACK\t1\t39.9\tShipped",
+        "112-0003\t2026-07-15T09:20:00Z\t黑杯\tCUP-BLACK\t1\t39.9\tRefunded",
+        "112-0004\t2026-07-16T19:45:00Z\t白杯\tCUP-WHITE\t3\t89.7\tShipped",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.report.metricsInputKind).toBe("order_details");
+    expect(result.input?.previousWeek.products.find((product) => product.sku === "CUP-BLACK")).toMatchObject({
+      orders: 2,
+      revenue: 119.7,
+      unitsSold: 3,
+    });
+    expect(result.input?.currentWeek.products.find((product) => product.sku === "CUP-BLACK")).toMatchObject({
+      orders: 1,
+      revenue: 39.9,
+      unitsSold: 1,
+      refundOrders: 1,
+    });
+    expect(result.input?.currentWeek.products.find((product) => product.sku === "CUP-WHITE")?.revenue).toBe(89.7);
+  });
+
   it("uses the latest two natural weeks when order details cover more than two weeks", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

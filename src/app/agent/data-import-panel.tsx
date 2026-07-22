@@ -53,6 +53,14 @@ const shopifyOrdersMetricsTable = [
   "#1004,2026-07-16 19:45:00,Aurora Cup 白色 500ml,CUP-WHITE-500,3,29.9,,paid",
 ].join("\n");
 
+const amazonOrdersMetricsTable = [
+  "amazon-order-id\tpurchase-date\tproduct-name\tsku\tquantity-purchased\titem-price\titem-status",
+  "112-0001\t2026-07-08T10:11:00Z\tAurora Cup 黑色 500ml\tCUP-BLACK-500\t2\t79.8\tShipped",
+  "112-0002\t2026-07-09T12:30:00Z\tAurora Cup 黑色 500ml\tCUP-BLACK-500\t1\t39.9\tShipped",
+  "112-0003\t2026-07-15T09:20:00Z\tAurora Cup 黑色 500ml\tCUP-BLACK-500\t1\t39.9\tRefunded",
+  "112-0004\t2026-07-16T19:45:00Z\tAurora Cup 白色 500ml\tCUP-WHITE-500\t3\t89.7\tShipped",
+].join("\n");
+
 const starterCompetitorCsv = [
   "name,url,source,observed_at,price,promotion,rating,reviews,key_selling_points",
   "Ember Travel Mug 2,https://ember.com/products/ember-travel-mug-2,Ember 官方商品页,2026-07-22,199.95,高端温控旅行杯,4.7,12000,精确温控 / App 控制 / 旅行场景",
@@ -231,6 +239,20 @@ export function DataImportPanel() {
     setCategory("智能温控/温显旅行杯");
     setGoal(defaultStoreGoal);
     setMetricsCsv(shopifyOrdersMetricsTable);
+    setCompetitorCsv(starterCompetitorCsv);
+    setInventoryCsv(starterInventoryCsv);
+    setAdsCsv(starterAdsCsv);
+    setCustomerVoicesCsv(starterCustomerVoiceCsv);
+    setHasRun(false);
+  }
+
+  function loadAmazonOrdersSample() {
+    setStoreName("Amazon 订单报告测试店");
+    setPlatform("Amazon Seller Central");
+    setMarket("美国");
+    setCategory("智能温控/温显旅行杯");
+    setGoal(defaultStoreGoal);
+    setMetricsCsv(amazonOrdersMetricsTable);
     setCompetitorCsv(starterCompetitorCsv);
     setInventoryCsv(starterInventoryCsv);
     setAdsCsv(starterAdsCsv);
@@ -535,6 +557,10 @@ export function DataImportPanel() {
             <button className="button secondary" type="button" onClick={loadShopifyOrdersSample}>
               <ClipboardList size={16} aria-hidden="true" />
               Shopify 订单样例
+            </button>
+            <button className="button secondary" type="button" onClick={loadAmazonOrdersSample}>
+              <ClipboardList size={16} aria-hidden="true" />
+              Amazon 订单样例
             </button>
             <button
               className="button secondary"

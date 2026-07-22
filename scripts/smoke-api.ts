@@ -37,6 +37,14 @@ const shopifyOrdersMetricsTable = [
   "#1004,2026-07-16 19:45:00,白杯,CUP-WHITE,3,29.9,,paid",
 ].join("\n");
 
+const amazonOrdersMetricsTable = [
+  "amazon-order-id\tpurchase-date\tproduct-name\tsku\tquantity-purchased\titem-price\titem-status",
+  "112-0001\t2026-07-08T10:11:00Z\t黑杯\tCUP-BLACK\t2\t79.8\tShipped",
+  "112-0002\t2026-07-09T12:30:00Z\t黑杯\tCUP-BLACK\t1\t39.9\tShipped",
+  "112-0003\t2026-07-15T09:20:00Z\t黑杯\tCUP-BLACK\t1\t39.9\tRefunded",
+  "112-0004\t2026-07-16T19:45:00Z\t白杯\tCUP-WHITE\t3\t89.7\tShipped",
+].join("\n");
+
 async function postAnalyze(body: unknown) {
   const response = await fetch(new URL("/api/agent/analyze", baseUrl), {
     method: "POST",
@@ -137,6 +145,24 @@ async function main() {
   );
   assert(shopifyOrdersAnalysis?.totals?.current?.revenue === 129.6, "Shopify Lineitem price 应该按单价乘件数汇总。");
 
+  const amazonOrders = await postAnalyze({
+    store: {
+      storeName: "A组 Amazon 订单测试店",
+      platform: "Amazon Seller Central",
+    },
+    metricsCsv: amazonOrdersMetricsTable,
+  });
+  const amazonOrdersAnalysis = amazonOrders.body.analysis as
+    | { totals?: { current?: { revenue?: number; orders?: number } } }
+    | undefined;
+  assert(amazonOrders.response.status === 200, `Amazon 订单 TSV 应该返回 200，实际 ${amazonOrders.response.status}`);
+  assert(
+    (amazonOrders.body.report as { metricsInputKind?: string } | undefined)?.metricsInputKind === "order_details",
+    "Amazon 订单 TSV 应该被接口识别为订单明细。",
+  );
+  assert(amazonOrdersAnalysis?.totals?.current?.revenue === 129.6, "Amazon item-price 应该按订单行金额汇总。");
+  assert(amazonOrdersAnalysis?.totals?.current?.orders === 2, "Amazon 本周订单数应该按订单 ID 去重。");
+
   const missingBody = await postAnalyze({});
   assert(missingBody.response.status === 400, `缺 metricsCsv 应该返回 400，实际 ${missingBody.response.status}`);
   assert(
@@ -157,7 +183,7 @@ async function main() {
   );
 
   console.info(
-    `[smoke:api] /api/agent/analyze 平台表头、订单明细、Shopify Orders、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
+    `[smoke:api] /api/agent/analyze 平台表头、订单明细、Shopify Orders、Amazon 订单 TSV、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
   );
 }
 
