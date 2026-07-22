@@ -2,10 +2,10 @@
 
 当前仓库应使用独立 GitHub remote，不复用其他 agent 的仓库。
 
-建议仓库名：
+当前 GitHub remote：
 
 ```bash
-a-group-ecommerce-ops-agent
+https://github.com/misscerasis-tech/A-group--agent.git
 ```
 
 主开发分支：
@@ -96,7 +96,7 @@ git checkout -b hotfix/from-a-group-demo v0.1.0-a-group-ecommerce-agent
 - bitable ID
 - 平台 OAuth token
 
-`.env.example` 只能放变量名和空占位。
+`.env.example` 可以放非敏感默认值，例如公开 App ID 和样例数据路径；不能放 App Secret、token、chat ID、doc ID、bitable ID 或任何真实平台授权信息。
 
 ## CI 说明
 
