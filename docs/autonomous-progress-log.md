@@ -7,7 +7,7 @@
 ## 当前最新稳定点
 
 - 最新代码：`main`
-- 最新标签：`v0.1.124-negative-refund-amounts`
+- 最新标签：`v0.1.125-european-number-formats`
 - 本地测试入口：`http://localhost:3001/agent`
 - 远端仓库：`misscerasis-tech/A-group--agent.git`
 
@@ -19,6 +19,7 @@
    - 支持 Shopify Analytics 等汇总报表里的 `net_sales`、`total_sales`、`gross_sales` 和 `net_quantity` 字段。
    - 如果周汇总表暂时没有销售额但有订单数和 `AOV / 客单价`，会先按订单数 × 客单价补出销售额口径，并提醒后续用平台原始销售额复核。
    - 退款金额导出成负数或会计负数时，会按绝对值当作退款金额导入并提醒口径；负数订单、销售额、销量、库存仍会被拦截。
+   - 跨境表格里的欧式金额也能识别，例如 `€1.234,56`、`1 280,40 €` 和 `EUR 90,75`。
    - Shopify Orders 和 Amazon Seller Central 订单表可直接聚合。
    - 订单明细支持折扣、商品成本、平台佣金、支付手续费、履约费和退款金额。
    - 订单明细同一订单号多行且收入列可能是整单金额时，会提醒用户复核，避免重复计算销售额。

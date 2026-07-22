@@ -243,6 +243,28 @@ describe("ecommerce csv import", () => {
     });
   });
 
+  it("parses european currency and decimal comma formats", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,订单数,销售额,销量,广告花费,毛利",
+        '上周,黑杯,10,"€1.234,56",12,"€80,25","€320,50"',
+        '本周,黑杯,8,"1 280,40 €",9,"EUR 90,75","(€30,50)"',
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.previousWeek.products[0]).toMatchObject({
+      revenue: 1234.56,
+      adSpend: 80.25,
+      grossProfit: 320.5,
+    });
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      revenue: 1280.4,
+      adSpend: 90.75,
+      grossProfit: -30.5,
+    });
+  });
+
   it("derives analyzable metrics from platform rate fields", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

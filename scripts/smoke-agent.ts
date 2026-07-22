@@ -238,6 +238,18 @@ function main() {
   assert(currencyFormatImport.input?.previousWeek.products[0].revenue === 1200.5, "US$ 金额应该能解析。");
   assert(currencyFormatImport.input?.currentWeek.products[0].grossProfit === -30.5, "会计负数毛利应该能解析。");
 
+  const europeanCurrencyFormatImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "周期,商品名称,订单数,销售额,销量,广告花费,毛利",
+      '上周,黑杯,10,"€1.234,56",12,"€80,25","€320,50"',
+      '本周,黑杯,8,"1 280,40 €",9,"EUR 90,75","(€30,50)"',
+    ].join("\n"),
+  });
+
+  assert(europeanCurrencyFormatImport.report.ok, "欧式金额和小数逗号应该可以导入。");
+  assert(europeanCurrencyFormatImport.input?.previousWeek.products[0].revenue === 1234.56, "欧式千分位金额应该能解析。");
+  assert(europeanCurrencyFormatImport.input?.currentWeek.products[0].adSpend === 90.75, "欧式小数逗号应该能解析。");
+
   const rateFieldImport = buildEcommerceInputFromCsv({
     metricsCsv: [
       "周期,商品名称,订单数,销售额,销量,转化率,广告消耗,ROAS,毛利率,退款率,退款金额占比",

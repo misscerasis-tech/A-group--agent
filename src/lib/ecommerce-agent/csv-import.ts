@@ -1225,14 +1225,45 @@ function readField<TField extends string>(
   return sourceHeader ? row[sourceHeader]?.trim() ?? "" : "";
 }
 
+function normalizeNumericSeparators(value: string) {
+  const match = value.match(/^([-+]?[0-9.,]+)(.*)$/);
+
+  if (!match) {
+    return value;
+  }
+
+  const [, numericPart, suffix] = match;
+  const lastCommaIndex = numericPart.lastIndexOf(",");
+  const lastDotIndex = numericPart.lastIndexOf(".");
+  let normalizedNumericPart = numericPart;
+
+  if (lastCommaIndex >= 0 && lastDotIndex >= 0) {
+    normalizedNumericPart =
+      lastCommaIndex > lastDotIndex
+        ? numericPart.replace(/\./g, "").replace(",", ".")
+        : numericPart.replace(/,/g, "");
+  } else if (lastCommaIndex >= 0) {
+    const commaParts = numericPart.split(",");
+    const decimalPart = commaParts.at(-1) ?? "";
+
+    normalizedNumericPart =
+      commaParts.length === 2 && decimalPart.length > 0 && decimalPart.length <= 2
+        ? `${commaParts[0]}.${decimalPart}`
+        : numericPart.replace(/,/g, "");
+  }
+
+  return `${normalizedNumericPart}${suffix}`;
+}
+
 function parseNumber(value: string) {
   const trimmed = value.trim();
   const isAccountingNegative = /^\(.*\)$/.test(trimmed);
   const unsignedValue = isAccountingNegative ? trimmed.slice(1, -1) : trimmed;
-  const cleaned = unsignedValue
-    .replace(/,/g, "")
-    .replace(/人民币|美元|美金|usd|us\$|cny|rmb|eur|gbp/gi, "")
-    .replace(/[$￥¥€£,%\s]/g, "");
+  const cleaned = normalizeNumericSeparators(
+    unsignedValue
+      .replace(/人民币|美元|美金|欧元|英镑|usd|us\$|cny|rmb|eur|gbp/gi, "")
+      .replace(/[$￥¥€£%\s]/g, ""),
+  );
 
   if (!cleaned || ["-", "--", "—", "暂无", "无"].includes(cleaned)) {
     return null;
