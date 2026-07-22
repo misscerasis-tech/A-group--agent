@@ -336,7 +336,7 @@ function buildNextActions(findings: ProductFinding[], competitorInsights: string
   const hasInventoryRisk = findings.some((finding) => finding.issue === "卖得变快但库存偏紧");
   const hasWeakAds = findings.some((finding) => finding.issue === "广告回本偏弱");
   const hasWeakProfit = findings.some((finding) => finding.issue === "利润空间偏低");
-  const hasCompetitorPromotion = competitorInsights.some((insight) => insight.includes("促销"));
+  const hasCompetitorPromotion = competitorInsights.some((insight) => insight.includes("正在做促销"));
 
   if (hasRevenueDrop || hasCompetitorPromotion) {
     actions.push({

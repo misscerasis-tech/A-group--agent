@@ -55,4 +55,48 @@ describe("ecommerce agent analysis", () => {
     expect(analysis.productFindings.some((finding) => finding.issue === "利润空间偏低")).toBe(true);
     expect(analysis.plainSummary.some((line) => line.includes("毛利"))).toBe(true);
   });
+
+  it("does not treat missing competitor data as an active competitor promotion", () => {
+    const analysis = analyzeEcommerceStore({
+      ...sampleEcommerceAgentInput,
+      competitors: [],
+      previousWeek: {
+        ...sampleEcommerceAgentInput.previousWeek,
+        products: [
+          {
+            productName: "黑杯",
+            sku: "CUP-BLACK",
+            visitors: null,
+            orders: 10,
+            revenue: 1000,
+            unitsSold: 10,
+            adSpend: null,
+            adRevenue: null,
+            inventory: null,
+          },
+        ],
+      },
+      currentWeek: {
+        ...sampleEcommerceAgentInput.currentWeek,
+        products: [
+          {
+            productName: "黑杯",
+            sku: "CUP-BLACK",
+            visitors: null,
+            orders: 9,
+            revenue: 900,
+            unitsSold: 9,
+            adSpend: null,
+            adRevenue: null,
+            inventory: null,
+          },
+        ],
+      },
+    });
+
+    expect(analysis.competitorInsights[0]).toContain("还没有竞品数据");
+    expect(analysis.nextActions.some((action) => action.title === "先处理主推款购买理由")).toBe(
+      false,
+    );
+  });
 });
