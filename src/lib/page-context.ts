@@ -1,4 +1,5 @@
-import { getWorkspaceContext } from "@/lib/workspace-context";
+import { getWorkspaceContext } from "./workspace-context";
+import { normalizeWorkspaceContextError } from "./page-context-error";
 
 export async function loadWorkspaceContextSafe() {
   try {
@@ -9,8 +10,7 @@ export async function loadWorkspaceContextSafe() {
   } catch (error) {
     return {
       context: null,
-      error: error instanceof Error ? error.message : "无法加载当前 Workspace。",
+      error: normalizeWorkspaceContextError(error),
     };
   }
 }
-
