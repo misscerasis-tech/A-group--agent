@@ -660,8 +660,11 @@ export function buildEcommerceInputFromCsv({
     ...fieldMappings
       .filter((field) => field.required && !field.sourceHeader)
       .map((field) => `请补一列「${field.label}」。`),
-    ...(previousWeek.products.length === 0 ? ["请确认哪些行属于上周。"] : []),
-    ...(currentWeek.products.length === 0 ? ["请确认哪些行属于本周。"] : []),
+    ...errorIssues
+      .slice(0, 3)
+      .map((issue) => `${issue.rowNumber ? `请修正第 ${issue.rowNumber} 行：` : "请修正："}${issue.message}`),
+    ...(explicitPreviousRows.length === 0 ? ["请确认哪些行属于上周。"] : []),
+    ...(explicitCurrentRows.length === 0 ? ["请确认哪些行属于本周。"] : []),
     ...(competitorResult.competitors.length === 0 ? ["可以补 1 到 3 个最在意的竞品链接和价格。"] : []),
   ];
 

@@ -97,5 +97,6 @@ describe("ecommerce csv import", () => {
     expect(result.report.issues.some((issue) => issue.rowNumber === 3 && issue.message.includes("库存"))).toBe(
       true,
     );
+    expect(result.report.questionsForUser[0]).toContain("请修正第 2 行");
   });
 });
