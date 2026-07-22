@@ -330,13 +330,42 @@ function buildQuestions(input: EcommerceAgentInput): AgentQuestion[] {
   return questions;
 }
 
-function buildNextActions(findings: ProductFinding[], competitorInsights: string[]): NextAction[] {
+function buildNextActions(
+  findings: ProductFinding[],
+  competitorInsights: string[],
+  goal: string,
+): NextAction[] {
   const actions: NextAction[] = [];
   const hasRevenueDrop = findings.some((finding) => finding.issue === "销售明显下滑");
   const hasInventoryRisk = findings.some((finding) => finding.issue === "卖得变快但库存偏紧");
   const hasWeakAds = findings.some((finding) => finding.issue === "广告回本偏弱");
   const hasWeakProfit = findings.some((finding) => finding.issue === "利润空间偏低");
   const hasCompetitorPromotion = competitorInsights.some((insight) => insight.includes("正在做促销"));
+  const normalizedGoal = goal.toLowerCase();
+  const wantsProfit = ["利润", "毛利", "赚钱", "保利润"].some((keyword) =>
+    normalizedGoal.includes(keyword),
+  );
+  const wantsSales = ["销量", "销售额", "增长", "保销量", "冲量"].some((keyword) =>
+    normalizedGoal.includes(keyword),
+  );
+
+  if (wantsProfit) {
+    actions.push({
+      title: "先核对利润口径",
+      owner: "店铺负责人",
+      reason: "本周目标是保利润，不能只看销售额，需要先确认每个 SKU 到底留下多少钱。",
+      firstStep: "补商品成本、运费、折扣、广告花费和毛利字段，让 Agent 把低利润订单单独标出来。",
+    });
+  }
+
+  if (wantsSales && !hasRevenueDrop && !hasInventoryRisk) {
+    actions.push({
+      title: "先确认主推款还能不能承接销量",
+      owner: "电商运营",
+      reason: "本周目标是保销量，先确认主推款有流量、有库存、有清楚购买理由。",
+      firstStep: "把主推 SKU 的访客数、库存、价格和优惠整理到同一张表。",
+    });
+  }
 
   if (hasRevenueDrop || hasCompetitorPromotion) {
     actions.push({
@@ -413,7 +442,7 @@ export function analyzeEcommerceStore(input: EcommerceAgentInput): EcommerceAgen
       : rateChange(previousGrossMargin, currentGrossMargin);
   const productFindings = buildProductFindings(input);
   const competitorInsights = buildCompetitorInsights(input);
-  const nextActions = buildNextActions(productFindings, competitorInsights);
+  const nextActions = buildNextActions(productFindings, competitorInsights, input.store.goal);
   const direction = revenueChangeRate >= 0 ? "变好了" : "变差了";
   const headline = `${input.store.storeName} 本周整体${direction}：销售额${revenueChangeRate >= 0 ? "增长" : "下降"} ${formatPercent(revenueChangeRate)}`;
 

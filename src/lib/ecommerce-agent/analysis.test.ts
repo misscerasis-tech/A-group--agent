@@ -99,4 +99,32 @@ describe("ecommerce agent analysis", () => {
       false,
     );
   });
+
+  it("changes next actions when the user goal is profit", () => {
+    const analysis = analyzeEcommerceStore({
+      ...sampleEcommerceAgentInput,
+      store: {
+        ...sampleEcommerceAgentInput.store,
+        goal: "这周先保利润",
+      },
+      previousWeek: {
+        ...sampleEcommerceAgentInput.previousWeek,
+        products: sampleEcommerceAgentInput.previousWeek.products.map((product) => ({
+          ...product,
+          grossProfit: undefined,
+          productCost: undefined,
+        })),
+      },
+      currentWeek: {
+        ...sampleEcommerceAgentInput.currentWeek,
+        products: sampleEcommerceAgentInput.currentWeek.products.map((product) => ({
+          ...product,
+          grossProfit: undefined,
+          productCost: undefined,
+        })),
+      },
+    });
+
+    expect(analysis.nextActions[0].title).toBe("先核对利润口径");
+  });
 });
