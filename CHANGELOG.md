@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.100-feishu-unknown-next-step] - 2026-07-23
+
+### Changed
+
+- 飞书兜底回复增加“我现在做什么？”入口，引导不确定怎么开始的新手进入 Agent 接手步骤。
+
 ## [v0.1.99-readme-output-contract-refresh] - 2026-07-23
 
 ### Changed

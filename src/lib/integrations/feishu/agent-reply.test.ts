@@ -168,6 +168,13 @@ describe("feishu agent reply", () => {
     expect(reply).toContain("真实订单");
   });
 
+  it("routes unclear messages back to beginner next steps", () => {
+    const reply = buildFeishuAgentReply("嗯？");
+
+    expect(reply).toContain("我现在做什么");
+    expect(reply).toContain("我需要准备什么数据");
+  });
+
   it("detects requests to clear the current chat import context", () => {
     expect(isFeishuClearContextRequest("清空这份数据，重新开始")).toBe(true);
     expect(isFeishuClearContextRequest("please clear data")).toBe(true);
