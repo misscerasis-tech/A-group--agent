@@ -2,6 +2,14 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.134-skip-summary-metric-rows] - 2026-07-23
+
+### Added
+
+- 周汇总经营表会跳过 `总计`、`合计`、`汇总`、`小计`、`Total`、`Grand Total` 等汇总行，避免平台汇总额被当成一个商品重复参与 SKU 分析。
+- CSV 导入单测和 `agent:smoke` 覆盖汇总行跳过场景。
+- 数据契约和测试计划同步汇总行处理规则。
+
 ## [v0.1.133-approximate-chinese-number-formats] - 2026-07-23
 
 ### Added

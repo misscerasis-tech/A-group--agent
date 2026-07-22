@@ -1239,6 +1239,24 @@ function readField<TField extends string>(
   return sourceHeader ? row[sourceHeader]?.trim() ?? "" : "";
 }
 
+function isSummaryRowLabel(value: string) {
+  const normalized = normalizeHeader(value);
+
+  return [
+    "总计",
+    "合计",
+    "汇总",
+    "小计",
+    "总和",
+    "全部",
+    "total",
+    "grandtotal",
+    "subtotal",
+    "summary",
+    "all",
+  ].includes(normalized);
+}
+
 function normalizeNumericSeparators(value: string) {
   const match = value.match(/^([-+]?[0-9.,]+)(.*)$/);
 
@@ -1639,6 +1657,15 @@ function buildMetricRow(
 ): ProductMetric | null {
   const productName = readField(row, mapping, "productName");
   const sku = readField(row, mapping, "sku");
+
+  if (isSummaryRowLabel(productName) || isSummaryRowLabel(sku)) {
+    issues.push({
+      severity: "info",
+      rowNumber,
+      message: "识别到总计/合计/汇总行，已跳过，避免把平台汇总重复计入商品分析。",
+    });
+    return null;
+  }
 
   if (!productName && !sku) {
     issues.push({

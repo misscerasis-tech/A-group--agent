@@ -198,6 +198,27 @@ describe("ecommerce csv import", () => {
     });
   });
 
+  it("skips total rows in weekly metric exports", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,SKU,订单数,销售额,销量",
+        "上周,黑杯,CUP-BLACK,10,500,12",
+        "上周,总计,,10,500,12",
+        "本周,黑杯,CUP-BLACK,9,450,10",
+        "本周,Grand Total,,9,450,10",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.previousWeek.products).toHaveLength(1);
+    expect(result.input?.currentWeek.products).toHaveLength(1);
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      sku: "CUP-BLACK",
+      revenue: 450,
+    });
+    expect(result.report.issues.some((issue) => issue.message.includes("汇总行"))).toBe(true);
+  });
+
   it("recognizes previous and current period aliases used by platform exports", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

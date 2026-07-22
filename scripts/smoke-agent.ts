@@ -81,6 +81,20 @@ function main() {
   assert(templateImport.report.competitorRows === 2, "竞品模板应该可以导入。");
   assert(templateImport.report.customerVoiceRows === 2, "用户声音模板应该可以导入。");
 
+  const totalRowsImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "周期,商品名称,SKU,订单数,销售额,销量",
+      "上周,黑杯,CUP-BLACK,10,500,12",
+      "上周,合计,,10,500,12",
+      "本周,黑杯,CUP-BLACK,9,450,10",
+      "本周,Total,,9,450,10",
+    ].join("\n"),
+  });
+
+  assert(totalRowsImport.report.ok, "带总计/合计行的经营表应该可以导入。");
+  assert(totalRowsImport.input?.currentWeek.products.length === 1, "总计/合计行不应该变成商品。");
+  assert(totalRowsImport.input?.currentWeek.products[0].revenue === 450, "总计/合计行不应该重复计入销售额。");
+
   const templateOrderDetailImport = buildEcommerceInputFromCsv({
     metricsCsv: readSample("data/templates/order-details-template.csv"),
   });

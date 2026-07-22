@@ -7,7 +7,7 @@
 ## 当前最新稳定点
 
 - 最新代码：`main`
-- 最新标签：`v0.1.133-approximate-chinese-number-formats`
+- 最新标签：`v0.1.134-skip-summary-metric-rows`
 - 本地测试入口：`http://localhost:3001/agent`
 - 远端仓库：`misscerasis-tech/A-group--agent.git`
 
@@ -19,6 +19,7 @@
    - 支持周汇总表和最近两周订单明细。
    - 支持 Shopify Analytics 等汇总报表里的 `net_sales`、`total_sales`、`gross_sales` 和 `net_quantity` 字段。
    - 如果周汇总表暂时没有销售额但有订单数和 `AOV / 客单价`，会先按订单数 × 客单价补出销售额口径，并提醒后续用平台原始销售额复核。
+   - 周汇总表里的总计、合计、汇总、小计、Total 或 Grand Total 行会自动跳过，避免重复计入 SKU 分析。
    - 退款金额导出成负数或会计负数时，会按绝对值当作退款金额导入并提醒口径；负数订单、销售额、销量、库存仍会被拦截。
    - 中文后台常见约数和单位也能识别，例如 `约90单`、`1.2万元+`、`2.6千元左右` 和 `3百件`。
    - 跨境表格里的欧式金额也能识别，例如 `€1.234,56`、`1 280,40 €` 和 `EUR 90,75`。
