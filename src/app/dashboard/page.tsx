@@ -1,113 +1,119 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
-import { ErrorState } from "@/components/ui/error-state";
-import { EmptyState } from "@/components/ui/empty-state";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { getDashboardSummary } from "@/lib/data/dashboard";
-import { loadWorkspaceContextSafe } from "@/lib/page-context";
-import { productStatusLabels, projectStatusLabels } from "@/lib/status";
+import {
+  demoProducts,
+  demoProject,
+  demoWorkspaceContext,
+  ecommerceMetricGuide,
+} from "@/lib/demo-context";
+import { analyzeEcommerceStore } from "@/lib/ecommerce-agent/analysis";
+import { sampleEcommerceAgentInput } from "@/lib/ecommerce-agent/sample-data";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
-  const { context, error } = await loadWorkspaceContextSafe();
+function formatMoney(value: number) {
+  return `$${value.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+}
 
-  if (!context) {
-    return (
-      <AppShell activePath="/dashboard" context={null} contextError={error} returnTo="/dashboard">
-        <ErrorState message={error ?? "无法加载演示 Workspace。"} />
-      </AppShell>
-    );
-  }
+function formatPercent(value: number) {
+  return `${value >= 0 ? "+" : "-"}${Math.abs(value * 100).toFixed(1)}%`;
+}
 
-  try {
-    const summary = await getDashboardSummary(context.currentWorkspace.id);
+export default function DashboardPage() {
+  const analysis = analyzeEcommerceStore(sampleEcommerceAgentInput);
+  const criticalFindings = analysis.productFindings.filter(
+    (finding) => finding.priority === "high",
+  );
 
-    return (
-      <AppShell activePath="/dashboard" context={context} returnTo="/dashboard">
-        <section className="page-header">
+  return (
+    <AppShell activePath="/dashboard" context={demoWorkspaceContext} returnTo="/dashboard">
+      <section className="page-header">
+        <div>
+          <h2>经营概览</h2>
+          <p className="muted">
+            这里展示 Agent 已经判断出的经营结果、关键风险和下一步动作，不需要连接数据库也能演示。
+          </p>
+        </div>
+        <Link className="button" href="/agent">
+          回到运营 Agent
+        </Link>
+      </section>
+
+      <section className="grid four">
+        <div className="panel stat">
+          <span className="muted">本周销售额</span>
+          <strong>{formatMoney(analysis.totals.current.revenue)}</strong>
+          <small className="down">{formatPercent(analysis.totals.revenueChangeRate)}</small>
+        </div>
+        <div className="panel stat">
+          <span className="muted">本周订单</span>
+          <strong>{analysis.totals.current.orders} 单</strong>
+          <small className="down">{formatPercent(analysis.totals.orderChangeRate)}</small>
+        </div>
+        <div className="panel stat">
+          <span className="muted">高优先级问题</span>
+          <strong>{criticalFindings.length}</strong>
+          <small>需要本周处理</small>
+        </div>
+        <div className="panel stat">
+          <span className="muted">已观察竞品</span>
+          <strong>{sampleEcommerceAgentInput.competitors.length}</strong>
+          <small>公开商品页信号</small>
+        </div>
+      </section>
+
+      <section className="grid two" style={{ marginTop: 16 }}>
+        <div className="panel">
+          <h3>当前复盘项目</h3>
+          <article className="item-card">
+            <header>
+              <h4>{demoProject.name}</h4>
+              <StatusBadge label="进行中" tone="success" />
+            </header>
+            <p>{demoProject.description}</p>
+            <p>已关联 {demoProject.linkedProducts} 个商品。</p>
+          </article>
+        </div>
+
+        <div className="panel">
+          <h3>重点商品</h3>
+          <div className="card-list">
+            {demoProducts.map((product) => (
+              <article className="item-card" key={product.id}>
+                <header>
+                  <h4>{product.name}</h4>
+                  <StatusBadge label="启用" tone="success" />
+                </header>
+                <p>{product.description}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="panel metric-guide" style={{ marginTop: 16 }}>
+        <div className="section-heading">
           <div>
-            <h2>今日工作台</h2>
+            <h3>首页怎么体现指标重要性</h3>
             <p className="muted">
-              当前 Workspace：{context.currentWorkspace.name}。这里先展示项目、产品和下一步事项。
+              不按表格字段排序，而按经营判断顺序排序：先看结果，再找原因，再看风险和竞品。
             </p>
           </div>
-          <Link className="button" href="/projects">
-            进入项目中心
-          </Link>
-        </section>
-
-        <section className="grid three">
-          <div className="panel stat">
-            <span className="muted">项目总数</span>
-            <strong>{summary.projectCount}</strong>
-          </div>
-          <div className="panel stat">
-            <span className="muted">进行中项目</span>
-            <strong>{summary.activeProjectCount}</strong>
-          </div>
-          <div className="panel stat">
-            <span className="muted">产品数量</span>
-            <strong>{summary.productCount}</strong>
-          </div>
-        </section>
-
-        <section className="grid two" style={{ marginTop: 16 }}>
-          <div className="panel">
-            <h3>最近项目</h3>
-            {summary.recentProjects.length > 0 ? (
-              <div className="card-list">
-                {summary.recentProjects.map((project) => (
-                  <Link className="item-card" href={`/projects/${project.id}`} key={project.id}>
-                    <header>
-                      <h4>{project.name}</h4>
-                      <StatusBadge
-                        label={projectStatusLabels[project.status]}
-                        tone={project.status === "ACTIVE" ? "success" : "neutral"}
-                      />
-                    </header>
-                    <p>{project.description ?? "暂无项目说明"}</p>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <EmptyState title="还没有项目" description="先创建第一个店铺运营复盘项目。" />
-            )}
-          </div>
-
-          <div className="panel">
-            <h3>最近产品</h3>
-            {summary.recentProducts.length > 0 ? (
-              <div className="card-list">
-                {summary.recentProducts.map((product) => (
-                  <Link className="item-card" href={`/brain/products/${product.id}`} key={product.id}>
-                    <header>
-                      <h4>{product.name}</h4>
-                      <StatusBadge
-                        label={productStatusLabels[product.status]}
-                        tone={product.status === "ACTIVE" ? "success" : "neutral"}
-                      />
-                    </header>
-                    <p>{product.description ?? "暂无产品说明"}</p>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <EmptyState title="还没有产品" description="先录入商品基础信息，后续 Agent 会基于它分析经营问题。" />
-            )}
-          </div>
-        </section>
-      </AppShell>
-    );
-  } catch (dashboardError) {
-    return (
-      <AppShell activePath="/dashboard" context={context} returnTo="/dashboard">
-        <ErrorState
-          message={
-            dashboardError instanceof Error ? dashboardError.message : "无法加载今日工作台。"
-          }
-        />
-      </AppShell>
-    );
-  }
+          <strong>红色变化和“优先处理”代表 Agent 认为需要先动手。</strong>
+        </div>
+        <div className="metric-guide-grid compact">
+          {ecommerceMetricGuide.slice(0, 6).map((metric) => (
+            <article className="metric-guide-card" key={metric.name}>
+              <header>
+                <span>{metric.priority}</span>
+                <h4>{metric.name}</h4>
+              </header>
+              <p>{metric.homepageSignal}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    </AppShell>
+  );
 }

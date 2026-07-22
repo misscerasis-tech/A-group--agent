@@ -9,33 +9,11 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { demoWorkspaceContext, ecommerceMetricGuide } from "@/lib/demo-context";
 import { analyzeEcommerceStore } from "@/lib/ecommerce-agent/analysis";
 import { sampleEcommerceAgentInput } from "@/lib/ecommerce-agent/sample-data";
-import type { WorkspaceContext } from "@/lib/workspace-context";
 
 export const dynamic = "force-dynamic";
-
-const demoContext = {
-  user: {
-    id: "demo-user",
-    name: "新手店主",
-    email: "demo@example.com",
-  },
-  workspaces: [
-    {
-      id: "demo-workspace",
-      name: "A 组电商运营 Demo",
-      slug: "a-group-ecommerce-demo",
-      role: "OWNER",
-    },
-  ],
-  currentWorkspace: {
-    id: "demo-workspace",
-    name: "A 组电商运营 Demo",
-    slug: "a-group-ecommerce-demo",
-  },
-  currentRole: "OWNER",
-} as WorkspaceContext;
 
 function formatChange(value: number) {
   const direction = value >= 0 ? "up" : "down";
@@ -61,7 +39,7 @@ export default function AgentPage() {
     analysis.totals.adReturnChange === null ? null : formatChange(analysis.totals.adReturnChange);
 
   return (
-    <AppShell activePath="/agent" context={demoContext} returnTo="/agent">
+    <AppShell activePath="/agent" context={demoWorkspaceContext} returnTo="/agent">
       <section className="agent-hero">
         <div>
           <p className="eyebrow">A 组 · 飞书驱动 · 电商运营场景</p>
@@ -184,6 +162,33 @@ export default function AgentPage() {
         <div className="plain-summary">
           {analysis.plainSummary.map((line) => (
             <p key={line}>{line}</p>
+          ))}
+        </div>
+      </section>
+
+      <section className="panel metric-guide">
+        <div className="section-heading">
+          <div>
+            <h3>电商一定关注哪些数据</h3>
+            <p className="muted">
+              首页按“结果、原因、风险、外部压力”的顺序排，不让小白先陷进一堆指标。
+            </p>
+          </div>
+          <strong>先看结果，再找原因，最后安排动作。</strong>
+        </div>
+        <div className="metric-guide-grid">
+          {ecommerceMetricGuide.map((metric) => (
+            <article className="metric-guide-card" key={metric.name}>
+              <header>
+                <span>{metric.priority}</span>
+                <h4>{metric.name}</h4>
+              </header>
+              <p>
+                <strong>{metric.plainName}</strong>
+              </p>
+              <p>{metric.whyItMatters}</p>
+              <small>{metric.homepageSignal}</small>
+            </article>
           ))}
         </div>
       </section>

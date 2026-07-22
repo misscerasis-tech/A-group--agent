@@ -1,101 +1,69 @@
 import Link from "next/link";
-import { createProjectAction } from "@/app/actions/project-actions";
 import { AppShell } from "@/components/app-shell";
-import { EmptyState } from "@/components/ui/empty-state";
-import { ErrorState } from "@/components/ui/error-state";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { listProjects } from "@/lib/data/projects";
-import { loadWorkspaceContextSafe } from "@/lib/page-context";
-import { projectStatusLabels } from "@/lib/status";
+import { demoProducts, demoProject, demoWorkspaceContext } from "@/lib/demo-context";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProjectsPage() {
-  const { context, error } = await loadWorkspaceContextSafe();
+export default function ProjectsPage() {
+  return (
+    <AppShell activePath="/projects" context={demoWorkspaceContext} returnTo="/projects">
+      <section className="page-header">
+        <div>
+          <h2>店铺项目</h2>
+          <p className="muted">
+            Demo 阶段先固定一个店铺复盘项目。真实接入后，这里会保存每周复盘、风险提醒和行动清单。
+          </p>
+        </div>
+        <Link className="button" href="/agent">
+          开始本周复盘
+        </Link>
+      </section>
 
-  if (!context) {
-    return (
-      <AppShell activePath="/projects" context={null} contextError={error} returnTo="/projects">
-        <ErrorState message={error ?? "无法加载演示 Workspace。"} />
-      </AppShell>
-    );
-  }
+      <section className="grid two">
+        <div className="panel">
+          <h3>当前项目</h3>
+          <article className="item-card">
+            <header>
+              <h4>{demoProject.name}</h4>
+              <StatusBadge label="进行中" tone="success" />
+            </header>
+            <p>{demoProject.description}</p>
+            <p>本项目覆盖销量、利润、广告回本、库存风险和竞品压力。</p>
+          </article>
+        </div>
 
-  try {
-    const projects = await listProjects(context.currentWorkspace.id);
-
-    return (
-      <AppShell activePath="/projects" context={context} returnTo="/projects">
-        <section className="page-header">
-          <div>
-            <h2>项目中心</h2>
-            <p className="muted">
-              店铺运营项目属于当前 Workspace，后续复盘、风险提醒和行动清单都会挂在项目下。
-            </p>
-          </div>
-        </section>
-
-        <section className="grid two">
-          <div className="panel">
-            <h3>新建项目</h3>
-            <form action={createProjectAction} className="form">
-              <label className="form-row">
-                <span className="field-label">项目名称</span>
-                <input name="name" placeholder="例如：Aurora Cup 本周经营复盘" required />
-              </label>
-              <label className="form-row">
-                <span className="field-label">项目说明</span>
-                <textarea name="description" placeholder="说明目标市场、阶段目标或核心渠道。" />
-              </label>
-              <label className="form-row">
-                <span className="field-label">项目状态</span>
-                <select defaultValue="DRAFT" name="status">
-                  <option value="DRAFT">草稿</option>
-                  <option value="ACTIVE">进行中</option>
-                  <option value="PAUSED">暂停</option>
-                  <option value="ARCHIVED">已归档</option>
-                </select>
-              </label>
-              <button className="button" type="submit">
-                创建项目
-              </button>
-            </form>
-          </div>
-
-          <div className="panel">
-            <h3>项目列表</h3>
-            {projects.length > 0 ? (
-              <div className="card-list">
-                {projects.map((project) => (
-                  <Link className="item-card" href={`/projects/${project.id}`} key={project.id}>
-                    <header>
-                      <h4>{project.name}</h4>
-                      <StatusBadge
-                        label={projectStatusLabels[project.status]}
-                        tone={project.status === "ACTIVE" ? "success" : "neutral"}
-                      />
-                    </header>
-                    <p>{project.description ?? "暂无项目说明"}</p>
-                    <p>
-                      已关联 {project.projectProducts.length} 个产品
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <EmptyState title="还没有项目" description="创建项目后，就可以进入顾问式启动流程。" />
+        <div className="panel">
+          <h3>项目需要的数据</h3>
+          <div className="card-list">
+            {["销售/订单数据", "流量或访客数据", "广告花费和广告成交额", "SKU 当前库存", "1-3 个竞品链接"].map(
+              (item) => (
+                <article className="item-card" key={item}>
+                  <header>
+                    <h4>{item}</h4>
+                    <StatusBadge label="样例已准备" tone="success" />
+                  </header>
+                </article>
+              ),
             )}
           </div>
-        </section>
-      </AppShell>
-    );
-  } catch (projectsError) {
-    return (
-      <AppShell activePath="/projects" context={context} returnTo="/projects">
-        <ErrorState
-          message={projectsError instanceof Error ? projectsError.message : "无法加载项目中心。"}
-        />
-      </AppShell>
-    );
-  }
+        </div>
+      </section>
+
+      <section className="panel" style={{ marginTop: 16 }}>
+        <h3>关联商品</h3>
+        <div className="card-list">
+          {demoProducts.map((product) => (
+            <article className="item-card" key={product.id}>
+              <header>
+                <h4>{product.name}</h4>
+                <StatusBadge label="启用" tone="success" />
+              </header>
+              <p>{product.description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    </AppShell>
+  );
 }

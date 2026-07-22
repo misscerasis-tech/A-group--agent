@@ -1,6 +1,5 @@
 import { AppShell } from "@/components/app-shell";
-import { ErrorState } from "@/components/ui/error-state";
-import { loadWorkspaceContextSafe } from "@/lib/page-context";
+import { demoWorkspaceContext } from "@/lib/demo-context";
 
 type PlaceholderPageProps = {
   activePath: string;
@@ -15,18 +14,8 @@ export async function PlaceholderPage({
   description,
   nextSteps,
 }: PlaceholderPageProps) {
-  const { context, error } = await loadWorkspaceContextSafe();
-
-  if (!context) {
-    return (
-      <AppShell activePath={activePath} context={null} contextError={error} returnTo={activePath}>
-        <ErrorState message={error ?? "无法加载演示 Workspace。"} />
-      </AppShell>
-    );
-  }
-
   return (
-    <AppShell activePath={activePath} context={context} returnTo={activePath}>
+    <AppShell activePath={activePath} context={demoWorkspaceContext} returnTo={activePath}>
       <section className="page-header">
         <div>
           <h2>{title}</h2>
@@ -45,4 +34,3 @@ export async function PlaceholderPage({
     </AppShell>
   );
 }
-

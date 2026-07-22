@@ -38,6 +38,7 @@ http://localhost:3000/agent
 - `docs/a-group-demo-script.md`：现场演示脚本。
 - `docs/feishu-connector-migration.md`：飞书机器人迁移能力设计。
 - `docs/github-versioning.md`：GitHub、Tag 和回滚流程。
+- `docs/testing-plan.md`：真实测试路径。
 
 ## 样例数据
 

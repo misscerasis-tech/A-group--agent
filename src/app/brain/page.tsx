@@ -1,100 +1,75 @@
 import Link from "next/link";
-import { createProductAction } from "@/app/actions/product-actions";
 import { AppShell } from "@/components/app-shell";
-import { EmptyState } from "@/components/ui/empty-state";
-import { ErrorState } from "@/components/ui/error-state";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { listProducts } from "@/lib/data/products";
-import { loadWorkspaceContextSafe } from "@/lib/page-context";
-import { productStatusLabels } from "@/lib/status";
+import { demoProducts, demoWorkspaceContext } from "@/lib/demo-context";
+import { sampleEcommerceAgentInput } from "@/lib/ecommerce-agent/sample-data";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProductBrainPage() {
-  const { context, error } = await loadWorkspaceContextSafe();
+export default function ProductBrainPage() {
+  return (
+    <AppShell activePath="/brain" context={demoWorkspaceContext} returnTo="/brain">
+      <section className="page-header">
+        <div>
+          <h2>商品档案</h2>
+          <p className="muted">
+            Agent 需要知道商品事实，才能把销售、广告、库存和竞品变化解释成人能执行的动作。
+          </p>
+        </div>
+        <Link className="button" href="/agent">
+          用这些商品生成复盘
+        </Link>
+      </section>
 
-  if (!context) {
-    return (
-      <AppShell activePath="/brain" context={null} contextError={error} returnTo="/brain">
-        <ErrorState message={error ?? "无法加载演示 Workspace。"} />
-      </AppShell>
-    );
-  }
+      <section className="grid two">
+        <div className="panel">
+          <h3>演示店铺</h3>
+          <dl className="store-facts">
+            <div>
+              <dt>店铺</dt>
+              <dd>{sampleEcommerceAgentInput.store.storeName}</dd>
+            </div>
+            <div>
+              <dt>平台</dt>
+              <dd>{sampleEcommerceAgentInput.store.platform}</dd>
+            </div>
+            <div>
+              <dt>市场</dt>
+              <dd>{sampleEcommerceAgentInput.store.market}</dd>
+            </div>
+            <div>
+              <dt>类目</dt>
+              <dd>{sampleEcommerceAgentInput.store.category}</dd>
+            </div>
+          </dl>
+        </div>
 
-  try {
-    const products = await listProducts(context.currentWorkspace.id);
+        <div className="panel">
+          <h3>Agent 会用商品档案做什么</h3>
+          <ol className="placeholder-steps">
+            <li>判断哪个 SKU 是主推款、稳定款、增长款。</li>
+            <li>把库存和销售速度结合，提前发现断货风险。</li>
+            <li>把商品卖点和竞品卖点对比，判断购买理由是否够清楚。</li>
+            <li>把建议变成飞书待办，而不是只给一段报告。</li>
+          </ol>
+        </div>
+      </section>
 
-    return (
-      <AppShell activePath="/brain" context={context} returnTo="/brain">
-        <section className="page-header">
-          <div>
-            <h2>商品档案</h2>
-            <p className="muted">
-              本阶段先保存商品事实。后续 Agent 会结合销售、库存、广告和竞品数据做经营诊断。
-            </p>
-          </div>
-        </section>
-
-        <section className="grid two">
-          <div className="panel">
-            <h3>新建产品</h3>
-            <form action={createProductAction} className="form">
-              <label className="form-row">
-                <span className="field-label">产品名称</span>
-                <input name="name" placeholder="例如：Aurora Cup 智能保温杯" required />
-              </label>
-              <label className="form-row">
-                <span className="field-label">产品说明</span>
-                <textarea name="description" placeholder="描述商品用途、卖点、价格带、目标人群和限制。" />
-              </label>
-              <label className="form-row">
-                <span className="field-label">产品状态</span>
-                <select defaultValue="DRAFT" name="status">
-                  <option value="DRAFT">草稿</option>
-                  <option value="ACTIVE">启用</option>
-                  <option value="ARCHIVED">已归档</option>
-                </select>
-              </label>
-              <button className="button" type="submit">
-                创建产品
-              </button>
-            </form>
-          </div>
-
-          <div className="panel">
-            <h3>产品列表</h3>
-            {products.length > 0 ? (
-              <div className="card-list">
-                {products.map((product) => (
-                  <Link className="item-card" href={`/brain/products/${product.id}`} key={product.id}>
-                    <header>
-                      <h4>{product.name}</h4>
-                      <StatusBadge
-                        label={productStatusLabels[product.status]}
-                        tone={product.status === "ACTIVE" ? "success" : "neutral"}
-                      />
-                    </header>
-                    <p>{product.description ?? "暂无产品说明"}</p>
-                    <p>
-                      已用于 {product.projectProducts.length} 个项目
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <EmptyState title="还没有产品" description="创建商品后，后续复盘会复用商品事实。" />
-            )}
-          </div>
-        </section>
-      </AppShell>
-    );
-  } catch (productsError) {
-    return (
-      <AppShell activePath="/brain" context={context} returnTo="/brain">
-        <ErrorState
-          message={productsError instanceof Error ? productsError.message : "无法加载商品档案。"}
-        />
-      </AppShell>
-    );
-  }
+      <section className="panel" style={{ marginTop: 16 }}>
+        <h3>商品列表</h3>
+        <div className="card-list">
+          {demoProducts.map((product) => (
+            <article className="item-card" key={product.id}>
+              <header>
+                <h4>{product.name}</h4>
+                <StatusBadge label="启用" tone="success" />
+              </header>
+              <p>{product.description}</p>
+              <p>已用于 {product.linkedProjects} 个复盘项目。</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    </AppShell>
+  );
 }
