@@ -29,14 +29,14 @@
 
 ## 真实演示竞品
 
-以下竞品用于现场演示“Agent 自动观察外部平台”的业务逻辑。价格会随平台变化，代码里的价格只作为演示价，不作为实时价格承诺。
+以下竞品用于现场演示“Agent 自动观察外部平台”的业务逻辑。价格会随平台变化，代码里的价格只作为观察快照和价格带演示，不作为实时价格承诺。调价、跟促销或写正式周报前，必须重新打开原链接复核。
 
-| 竞品 | 来源 | 演示用途 |
-| --- | --- | --- |
-| Ember Travel Mug 2 | https://ember.com/products/ember-travel-mug-2 | 高端温控旅行杯，展示高价位竞品的精确温控、续航、App 和旅行场景卖点。 |
-| Nextmug Self-Heating Mug | https://nextmug.com/ | 中高价位易用型温控杯，展示三档控温、不用 App、LED 状态灯和充电杯垫卖点。 |
-| VSITOO S3 Pro | https://www.vsitoo.com/ | App/AI 型温控杯，展示 AI 饮品检测、120-150°F 控温、App 和按键控制卖点。 |
-| Locckmy LED Temperature Water Bottle | https://www.amazon.com/Locckmy-Temperature-Insulated-Stainless-AutomotiveTravel/dp/B085XHQ17Z | 低价 LED 温显保温杯，展示低价替代品和价格压力；当前 Amazon 价格可能没有 featured offer，演示价只用于价格带逻辑。 |
+| 竞品 | 来源 | 观察日期 | 演示价格口径 | 演示用途 |
+| --- | --- | --- | --- | --- |
+| Ember Travel Mug 2 | https://ember.com/products/ember-travel-mug-2 | 2026-07-23 | 页面价快照，实际价格以页面为准 | 高端温控旅行杯，展示高价位竞品的精确温控、续航、App 和旅行场景卖点。 |
+| Nextmug Self-Heating Mug | https://nextmug.com/products/nextmug-temperature-controlled-self-heating-coffee-mug-14-oz | 2026-07-23 | 官网 14 oz Nextmug sale price，实际价格以页面为准 | 中高价位易用型温控杯，展示三档控温、不用 App、LED 状态灯和充电杯垫卖点。 |
+| VSITOO S3 Pro | https://www.vsitoo.com/collections/smart-mug/products/s3-pro | 2026-07-23 | 官网 S3 Pro from sale price，实际价格以页面为准 | App/AI 型温控杯，展示 AI 饮品检测、120-150°F 控温、App 和按键控制卖点。 |
+| Locckmy LED Temperature Water Bottle | https://www.amazon.com/Locckmy-Temperature-Insulated-Stainless-AutomotiveTravel/dp/B085XHQ17Z | 2026-07-23 | 低价替代演示价；Amazon 页面当前可能没有 featured offer | 低价 LED 温显保温杯，展示低价替代品和价格压力；只用于价格带逻辑。 |
 
 ## 演示时怎么解释
 

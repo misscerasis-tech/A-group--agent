@@ -253,10 +253,10 @@ export function buildDataRequestPlan(
       owner: "电商运营",
       priority: "should",
       status: (report?.competitorRows ?? 0) > 0 ? "partial" : "missing",
-      ask: "请给 1 到 3 个最在意的竞品链接，最好补价格、促销、评分、评论数和核心卖点。",
+      ask: "请给 1 到 3 个最在意的竞品链接，最好补价格、价格备注、观察日期、促销、评分、评论数和核心卖点。",
       whyItMatters: "很多转化下降不是自己店坏了，而是竞品降价、促销或卖点更清楚。",
       whereToFind: "平台搜索结果、竞品商品页、收藏的对标链接或人工整理表。",
-      fields: ["竞品名称", "链接", "价格", "促销", "评分", "评论数", "卖点"],
+      fields: ["竞品名称", "链接", "来源", "观察日期", "价格", "价格备注", "促销", "评分", "评论数", "卖点"],
       homepageImpact: guideHomepageImpact("competitors", "首页会用竞品动态解释外部价格和卖点压力。"),
     });
   }

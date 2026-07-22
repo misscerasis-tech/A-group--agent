@@ -19,6 +19,7 @@ describe("ecommerce agent analysis", () => {
     expect(analysis.feishuReply).toContain("飞书");
     expect(analysis.dataHealth.some((item) => item.includes("已有成本或毛利数据"))).toBe(true);
     expect(analysis.dataHealth.some((item) => item.includes("已有退款/退货原因"))).toBe(true);
+    expect(analysis.competitorInsights.some((item) => item.includes("观察快照"))).toBe(true);
   });
 
   it("asks for missing data instead of guessing", () => {

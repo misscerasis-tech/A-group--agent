@@ -2,6 +2,18 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.91-competitor-evidence-notes] - 2026-07-23
+
+### Added
+
+- 竞品分析增加来源、观察日期和价格备注口径，提醒用户竞品价是观察快照，不是实时价格。
+- 竞品模板、数据契约、用户准备清单和飞书追问增加 `price_note` / 价格备注字段，帮助记录券后价、无库存、无 featured offer 或历史价等边界。
+
+### Changed
+
+- 首页竞品卡不再残留固定美元符号，并展示来源日期与价格备注。
+- Aurora Cup 演示竞品优先使用 Ember、Nextmug 和 VSITOO 官方商品页，Amazon 低价替代品明确标注价格可信边界。
+
 ## [v0.1.90-readme-latest-capabilities] - 2026-07-23
 
 ### Changed

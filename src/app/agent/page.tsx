@@ -223,11 +223,12 @@ export default function AgentPage() {
               <div className="competitor-row" key={competitor.name}>
                 <div>
                   <strong>{competitor.name}</strong>
-                  <p>{competitor.source} · {competitor.keySellingPoints.join(" / ")}</p>
+                  <p>{competitor.source} · {competitor.observedAt} · {competitor.keySellingPoints.join(" / ")}</p>
                 </div>
                 <div className="competitor-price">
-                  <strong>${competitor.price}</strong>
+                  <strong>{formatMoney(competitor.price)}</strong>
                   <span>{competitor.promotion}</span>
+                  <small>{competitor.priceNote}</small>
                 </div>
               </div>
             ))}

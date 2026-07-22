@@ -429,7 +429,7 @@ export function buildCompetitorsReply(analysis: EcommerceAgentAnalysis) {
   return [
     "竞品我会先看三件事：价格、促销、卖点。",
     ...analysis.competitorInsights.map((insight, index) => `${index + 1}. ${insight}`),
-    "第一步：给我 1 到 3 个你最在意的竞品链接；如果已经有竞品数据表，就补价格、促销、评分、评论数和核心卖点。",
+    "第一步：给我 1 到 3 个你最在意的竞品链接；如果已经有竞品数据表，就补价格、价格备注、观察日期、促销、评分、评论数和核心卖点。",
   ].join("\n");
 }
 

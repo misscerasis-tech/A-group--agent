@@ -558,7 +558,31 @@ function buildCompetitorInsights(input: EcommerceAgentInput) {
     );
   }
 
+  insights.push(buildCompetitorEvidenceInsight(input));
+
   return insights;
+}
+
+function buildCompetitorEvidenceInsight(input: EcommerceAgentInput) {
+  const observedDates = [...new Set(input.competitors.map((competitor) => competitor.observedAt).filter(Boolean))];
+  const sources = [...new Set(input.competitors.map((competitor) => competitor.source).filter(Boolean))];
+  const competitorsWithPriceNotes = input.competitors.filter(
+    (competitor) => competitor.priceNote.trim().length > 0,
+  ).length;
+
+  const dateText =
+    observedDates.length === 0
+      ? "未标注观察日期"
+      : observedDates.length === 1
+        ? `观察日期 ${observedDates[0]}`
+        : `观察日期覆盖 ${observedDates.join("、")}`;
+  const sourceText =
+    sources.length === 0
+      ? "来源未标注"
+      : `来源包括 ${sources.slice(0, 3).join("、")}${sources.length > 3 ? `等 ${sources.length} 类` : ""}`;
+  const noteText = competitorsWithPriceNotes > 0 ? `，其中 ${competitorsWithPriceNotes} 个价格带有备注` : "";
+
+  return `竞品价格是人工整理的观察快照，不是实时价格；${dateText}，${sourceText}${noteText}。真正改价或跟促销前，先打开原链接复核。`;
 }
 
 function buildQuestions(input: EcommerceAgentInput): AgentQuestion[] {

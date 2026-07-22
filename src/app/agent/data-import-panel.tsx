@@ -66,8 +66,8 @@ const amazonOrdersMetricsTable = [
 ].join("\n");
 
 const starterCompetitorCsv = [
-  "name,url,source,observed_at,price,promotion,rating,reviews,key_selling_points",
-  "Ember Travel Mug 2,https://ember.com/products/ember-travel-mug-2,Ember 官方商品页,2026-07-22,199.95,高端温控旅行杯,4.7,12000,精确温控 / App 控制 / 旅行场景",
+  "name,url,source,observed_at,price,price_note,promotion,rating,reviews,key_selling_points",
+  "Ember Travel Mug 2,https://ember.com/products/ember-travel-mug-2,Ember 官方商品页,2026-07-23,199.95,页面价快照，实际价格以页面为准,高端温控旅行杯,4.7,12000,精确温控 / App 控制 / 旅行场景",
 ].join("\n");
 
 const starterInventoryCsv = [

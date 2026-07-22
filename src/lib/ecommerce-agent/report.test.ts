@@ -21,6 +21,7 @@ describe("weekly markdown report", () => {
     expect(report).toContain("退款/退货单占比变化");
     expect(report).toContain("## 5. 用户声音");
     expect(report).toContain("杯盖漏水");
+    expect(report).toContain("观察快照");
     expect(report).toContain("## 7. 下周行动");
     expect(report).toContain("| 优先级 | 截止 | 负责人 | 任务 | 验收标准 |");
     expect(report).toContain("验收");

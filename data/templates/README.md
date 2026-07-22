@@ -11,4 +11,4 @@
 
 如果只有订单明细，用 `order-details-template.csv`，并确保覆盖最近两个自然周；有单位成本时保留 `unit_cost` 列，Agent 会按购买件数汇总成本。订单明细里也可以保留 `platform_fee`、`payment_fee`、`fulfillment_cost`，用于更接近真实利润的复盘。
 
-广告、库存/成本、用户声音和竞品模板不是必填，但补上后 Agent 的动作会更具体。广告模板可以填 ACOS；如果你的后台导出 ROAS，也可以把 `acos` 列换成 `roas`。
+广告、库存/成本、用户声音和竞品模板不是必填，但补上后 Agent 的动作会更具体。广告模板可以填 ACOS；如果你的后台导出 ROAS，也可以把 `acos` 列换成 `roas`。竞品模板里的 `price_note` 用来标注“页面价快照、券后价、无库存、当前无 featured offer、历史价”等边界，Agent 会在复盘里提醒调价前复核原链接。

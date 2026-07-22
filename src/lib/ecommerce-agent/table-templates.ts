@@ -28,9 +28,9 @@ export const ecommerceTableTemplates: EcommerceTableTemplate[] = [
     title: "竞品数据表",
     description: "补充竞品价格、促销、评分、评论数和卖点，用于解释外部价格与卖点压力。",
     csv: [
-      "name,url,source,observed_at,price,promotion,rating,reviews,key_selling_points",
-      "竞品 A,https://example.com/competitor-a,手动记录,2026-07-19,39.9,满减,4.6,1200,低价 / 大容量",
-      "竞品 B,https://example.com/competitor-b,手动记录,2026-07-19,59.9,赠品,4.8,860,质感好 / 送礼",
+      "name,url,source,observed_at,price,price_note,promotion,rating,reviews,key_selling_points",
+      "竞品 A,https://example.com/competitor-a,手动记录,2026-07-19,39.9,页面价快照，调价前需复核,满减,4.6,1200,低价 / 大容量",
+      "竞品 B,https://example.com/competitor-b,手动记录,2026-07-19,59.9,页面价快照，调价前需复核,赠品,4.8,860,质感好 / 送礼",
     ].join("\n"),
   },
   {
