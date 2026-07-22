@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.104-shopify-discount-sample] - 2026-07-23
+
+### Changed
+
+- `/agent` 工作台的 Shopify 订单样例增加 `Discount Amount` 列，用页面样例直接展示订单折扣扣减能力。
+
 ## [v0.1.103-competitor-link-intake] - 2026-07-23
 
 ### Added

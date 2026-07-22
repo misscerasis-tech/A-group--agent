@@ -50,11 +50,11 @@ const orderDetailMetricsTable = [
 ].join("\n");
 
 const shopifyOrdersMetricsTable = [
-  "Name,Paid at,Lineitem name,Lineitem sku,Lineitem quantity,Lineitem price,Refunded Amount,Financial Status",
-  "#1001,2026-07-08 10:11:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,2,39.9,,paid",
-  "#1002,2026-07-09 12:30:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,1,39.9,0,paid",
-  "#1003,2026-07-15 09:20:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,1,39.9,39.9,refunded",
-  "#1004,2026-07-16 19:45:00,Aurora Cup 白色 500ml,CUP-WHITE-500,3,29.9,,paid",
+  "Name,Paid at,Lineitem name,Lineitem sku,Lineitem quantity,Lineitem price,Discount Amount,Refunded Amount,Financial Status",
+  "#1001,2026-07-08 10:11:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,2,39.9,0,,paid",
+  "#1002,2026-07-09 12:30:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,1,39.9,5,0,paid",
+  "#1003,2026-07-15 09:20:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,1,39.9,0,39.9,refunded",
+  "#1004,2026-07-16 19:45:00,Aurora Cup 白色 500ml,CUP-WHITE-500,3,29.9,6,,paid",
 ].join("\n");
 
 const amazonOrdersMetricsTable = [
