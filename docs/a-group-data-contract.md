@@ -89,6 +89,22 @@
 | refundAmountRate | refund_amount_rate、refund_revenue_rate、退款金额占比、售后金额占比 |
 | refundReason | refund_reason、return_reason、售后原因、退款原因、退货原因、差评原因 |
 
+## 广告数据
+
+这张表可选，用来补充独立广告后台导出的投放数据。它会按周期和 SKU/商品名称匹配经营数据，更新广告花费和广告成交额，用于判断广告回本是否拖累利润。
+
+| 字段 | 含义 | 是否必需 | 示例 |
+| --- | --- | --- | --- |
+| week | 数据周期 | 推荐，缺失时默认当作本周 | previous / current / 上周 / 本周 |
+| productName | 商品名称 | 商品名称和 SKU 至少有一个 | Aurora Cup 黑色 500ml |
+| sku | SKU | 商品名称和 SKU 至少有一个 | CUP-BLACK-500 |
+| campaignName | 广告计划或广告组 | 可选 | 品牌词 |
+| adSpend | 广告花费 | 广告花费、广告成交额、ROAS 至少能组成一组 | 1510 |
+| adRevenue | 广告成交额 | 广告花费、广告成交额、ROAS 至少能组成一组 | 2920 |
+| adReturn | ROAS / 投产比 | 可选，可用于反推广告花费或成交额 | 2.5 / 250% |
+
+如果广告表有三周或更多周期，Agent 会自动选择最近两期。广告表里同一个 SKU 有多条广告组时，会先按 SKU 汇总广告花费和广告成交额。
+
 ## 竞品数据
 
 | 字段 | 含义 | 是否必需 | 示例 |

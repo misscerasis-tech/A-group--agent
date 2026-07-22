@@ -2,6 +2,14 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.51-ads-table-import] - 2026-07-23
+
+### Added
+
+- 新增可选“广告数据表”，支持周期、SKU/商品名、广告计划、广告花费、广告成交额和 ROAS。
+- 导入器会按周期和 SKU/商品名把广告表匹配到上周/本周商品，并支持用 ROAS 反推广告花费或广告成交额。
+- 网页工作台、`/api/agent/analyze`、飞书 worker、doctor、样例数据、smoke 和文档同步支持广告表。
+
 ## [v0.1.50-product-snapshot-costs] - 2026-07-23
 
 ### Changed

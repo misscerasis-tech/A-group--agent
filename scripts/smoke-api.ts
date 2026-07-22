@@ -11,7 +11,15 @@ const customerVoiceTable = [
   "黑杯,CUP-BLACK,商品评价,2026-07-19,负向,杯盖漏水,用户说杯盖渗水,4",
 ].join("\n");
 
-const inventoryTable = ["商品名称,商家编码,当前库存,单位成本,库存日期", "黑杯,CUP-BLACK,18,18,2026-07-19"].join("\n");
+const inventoryTable = [
+  "商品名称,商家编码,当前库存,单位成本,库存日期",
+  "黑杯,CUP-BLACK,18,18,2026-07-19",
+].join("\n");
+const adsTable = [
+  "周期,商品名称,商家编码,广告花费,ROAS",
+  "上周,黑杯,CUP-BLACK,80,300%",
+  "本周,黑杯,CUP-BLACK,90,2",
+].join("\n");
 
 const orderDetailMetricsTable = [
   "订单号,支付时间,商品名称,商家编码,购买数量,实付金额,退款金额,售后状态",
@@ -49,6 +57,7 @@ async function main() {
       platform: "平台导出表",
     },
     metricsCsv: platformHeaderMetricsTable,
+    adsCsv: adsTable,
     inventoryCsv: inventoryTable,
     customerVoicesCsv: customerVoiceTable,
   });
@@ -60,12 +69,14 @@ async function main() {
         fieldMappings?: Array<{ sourceHeader?: string }>;
         customerVoiceRows?: number;
         inventoryRows?: number;
+        adRows?: number;
         metricsInputKind?: string;
       }
     | undefined;
   assert(report?.ok === true, "平台表头数据应该可分析。");
   assert(report.metricsInputKind === "weekly_metrics", "平台表头数据应该被识别为周汇总表。");
   assert(report.fieldMappings?.every((mapping) => mapping.sourceHeader), "字段映射不应该出现空 sourceHeader。");
+  assert(report.adRows === 2, "接口应该识别广告数据表行数。");
   assert(report.inventoryRows === 1, "接口应该识别库存/成本快照表行数。");
   assert(report.customerVoiceRows === 1, "接口应该识别用户声音表行数。");
   assert(typeof success.body.feishuReply === "string", "接口应该返回飞书回复文本。");
@@ -103,7 +114,9 @@ async function main() {
   assert(missingFields.response.status === 422, `缺必填字段应该返回 422，实际 ${missingFields.response.status}`);
   assert(missingFields.body.workSession, "缺字段时应该返回 Agent 接手步骤。");
 
-  console.info(`[smoke:api] /api/agent/analyze 平台表头、订单明细、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`);
+  console.info(
+    `[smoke:api] /api/agent/analyze 平台表头、订单明细、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
+  );
 }
 
 main().catch((error) => {

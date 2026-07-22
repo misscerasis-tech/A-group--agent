@@ -18,6 +18,7 @@ function main() {
   const sampleImport = buildEcommerceInputFromCsv({
     metricsCsv: readSample("data/samples/aurora-cup-weekly-metrics.csv"),
     competitorsCsv: readSample("data/samples/aurora-cup-competitors.csv"),
+    adsCsv: readSample("data/samples/aurora-cup-ads.csv"),
     inventoryCsv: readSample("data/samples/aurora-cup-inventory.csv"),
     customerVoicesCsv: readSample("data/samples/aurora-cup-customer-voices.csv"),
     store: {
@@ -31,6 +32,7 @@ function main() {
 
   assert(sampleImport.report.ok, "样例 CSV 应该可以导入。");
   assert(sampleImport.input, "样例 CSV 应该生成 Agent 输入。");
+  assert(sampleImport.report.adRows === 6, "样例广告表应该可以导入。");
   assert(sampleImport.report.inventoryRows === 3, "样例库存/成本快照表应该可以导入。");
   assert(sampleImport.report.customerVoiceRows === 3, "样例用户声音表应该可以导入。");
 
@@ -78,6 +80,22 @@ function main() {
   assert(inventoryImport.report.inventoryRows === 1, "库存/成本快照表应该可以导入。");
   assert(inventoryImport.input?.currentWeek.products[0].inventory === 18, "库存/成本快照应该更新本周 SKU 库存。");
   assert(inventoryImport.input?.currentWeek.products[0].grossProfit === 270, "库存/成本快照应该补齐毛利。");
+
+  const adsImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "周期,商品名称,SKU,订单数,销售额,销量",
+      "上周,黑杯,CUP-BLACK,10,500,12",
+      "本周,黑杯,CUP-BLACK,9,450,10",
+    ].join("\n"),
+    adsCsv: [
+      "周期,商品名称,商家编码,广告花费,ROAS",
+      "上周,黑杯,CUP-BLACK,80,300%",
+      "本周,黑杯,CUP-BLACK,90,2",
+    ].join("\n"),
+  });
+
+  assert(adsImport.report.adRows === 2, "广告数据表应该可以导入。");
+  assert(adsImport.input?.currentWeek.products[0].adRevenue === 180, "广告 ROAS 应该能反推广告成交额。");
 
   const orderDetailImport = buildEcommerceInputFromCsv({
     metricsCsv: readSample("data/samples/aurora-cup-order-details.csv"),

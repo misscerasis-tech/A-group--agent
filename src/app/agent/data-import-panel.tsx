@@ -49,6 +49,14 @@ const starterInventoryCsv = [
   "Aurora Cup 礼盒套装,CUP-GIFT-SET,42,34.2,2026-07-19",
 ].join("\n");
 
+const starterAdsCsv = [
+  "week,product_name,sku,campaign_name,ad_spend,ad_revenue",
+  "previous,Aurora Cup 黑色 500ml,CUP-BLACK-500,品牌词,1320,3960",
+  "current,Aurora Cup 黑色 500ml,CUP-BLACK-500,品牌词,1510,2920",
+  "previous,Aurora Cup 礼盒套装,CUP-GIFT-SET,礼盒词,620,1980",
+  "current,Aurora Cup 礼盒套装,CUP-GIFT-SET,礼盒词,680,2410",
+].join("\n");
+
 const starterCustomerVoiceCsv = [
   "product_name,sku,source,observed_at,sentiment,theme,text,count",
   "Aurora Cup 黑色 500ml,CUP-BLACK-500,客服售后备注,2026-07-19,negative,杯盖漏水,用户反馈通勤路上杯盖会渗水，要求退货,4",
@@ -67,6 +75,7 @@ type ImportDraft = {
   metricsCsv?: string;
   competitorCsv?: string;
   inventoryCsv?: string;
+  adsCsv?: string;
   customerVoicesCsv?: string;
 };
 
@@ -108,6 +117,7 @@ export function DataImportPanel() {
   const [metricsCsv, setMetricsCsv] = useState(starterMetricsCsv);
   const [competitorCsv, setCompetitorCsv] = useState(starterCompetitorCsv);
   const [inventoryCsv, setInventoryCsv] = useState(starterInventoryCsv);
+  const [adsCsv, setAdsCsv] = useState(starterAdsCsv);
   const [customerVoicesCsv, setCustomerVoicesCsv] = useState(starterCustomerVoiceCsv);
   const [hasRun, setHasRun] = useState(false);
   const [hasLoadedDraft, setHasLoadedDraft] = useState(false);
@@ -122,6 +132,7 @@ export function DataImportPanel() {
     setMetricsCsv(starterMetricsCsv);
     setCompetitorCsv(starterCompetitorCsv);
     setInventoryCsv(starterInventoryCsv);
+    setAdsCsv(starterAdsCsv);
     setCustomerVoicesCsv(starterCustomerVoiceCsv);
     setHasRun(false);
   }
@@ -135,6 +146,7 @@ export function DataImportPanel() {
     setMetricsCsv(platformHeaderMetricsTable);
     setCompetitorCsv(starterCompetitorCsv);
     setInventoryCsv(starterInventoryCsv);
+    setAdsCsv(starterAdsCsv);
     setCustomerVoicesCsv(starterCustomerVoiceCsv);
     setHasRun(false);
   }
@@ -148,6 +160,7 @@ export function DataImportPanel() {
     setMetricsCsv(orderDetailMetricsTable);
     setCompetitorCsv(starterCompetitorCsv);
     setInventoryCsv(starterInventoryCsv);
+    setAdsCsv(starterAdsCsv);
     setCustomerVoicesCsv(starterCustomerVoiceCsv);
     setHasRun(false);
   }
@@ -156,6 +169,7 @@ export function DataImportPanel() {
     setMetricsCsv("");
     setCompetitorCsv("");
     setInventoryCsv("");
+    setAdsCsv("");
     setCustomerVoicesCsv("");
     setHasRun(false);
     window.localStorage.removeItem(importDraftStorageKey);
@@ -186,6 +200,7 @@ export function DataImportPanel() {
         setMetricsCsv(draft.metricsCsv ?? starterMetricsCsv);
         setCompetitorCsv(draft.competitorCsv ?? starterCompetitorCsv);
         setInventoryCsv(draft.inventoryCsv ?? starterInventoryCsv);
+        setAdsCsv(draft.adsCsv ?? starterAdsCsv);
         setCustomerVoicesCsv(draft.customerVoicesCsv ?? starterCustomerVoiceCsv);
       }
     } catch {
@@ -209,11 +224,13 @@ export function DataImportPanel() {
       metricsCsv,
       competitorCsv,
       inventoryCsv,
+      adsCsv,
       customerVoicesCsv,
     };
 
     window.localStorage.setItem(importDraftStorageKey, JSON.stringify(draft));
   }, [
+    adsCsv,
     category,
     competitorCsv,
     customerVoicesCsv,
@@ -232,6 +249,7 @@ export function DataImportPanel() {
         metricsCsv,
         competitorsCsv: competitorCsv,
         inventoryCsv,
+        adsCsv,
         customerVoicesCsv,
         store: {
           storeName,
@@ -241,7 +259,7 @@ export function DataImportPanel() {
           goal,
         },
       }),
-    [category, competitorCsv, customerVoicesCsv, goal, inventoryCsv, market, metricsCsv, platform, storeName],
+    [adsCsv, category, competitorCsv, customerVoicesCsv, goal, inventoryCsv, market, metricsCsv, platform, storeName],
   );
   const analysis = importResult.input ? analyzeEcommerceStore(importResult.input) : null;
   const markdownReport =
@@ -342,6 +360,30 @@ export function DataImportPanel() {
               spellCheck={false}
               value={competitorCsv}
               onChange={(event) => setCompetitorCsv(event.target.value)}
+            />
+          </div>
+
+          <div className="csv-box">
+            <div className="csv-box-header">
+              <span>
+                <ClipboardList size={16} aria-hidden="true" />
+                广告数据表
+              </span>
+              <label className="button secondary file-button">
+                <FileUp size={16} aria-hidden="true" />
+                上传
+                <input
+                  accept=".csv,.tsv,.md,.markdown,text/csv,text/tab-separated-values,text/markdown,text/plain"
+                  type="file"
+                  onChange={(event) => void readFileIntoState(event, setAdsCsv)}
+                />
+              </label>
+            </div>
+            <textarea
+              aria-label="广告数据 CSV、TSV、Markdown 或复制表格"
+              spellCheck={false}
+              value={adsCsv}
+              onChange={(event) => setAdsCsv(event.target.value)}
             />
           </div>
 

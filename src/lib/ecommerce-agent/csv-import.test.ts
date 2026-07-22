@@ -361,6 +361,33 @@ describe("ecommerce csv import", () => {
     });
   });
 
+  it("matches standalone ad exports into weekly products", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,SKU,订单数,销售额,销量",
+        "上周,黑杯,CUP-BLACK,10,500,12",
+        "本周,黑杯,CUP-BLACK,9,450,10",
+      ].join("\n"),
+      adsCsv: [
+        "周期,商品名称,商家编码,广告组,广告花费,ROAS",
+        "上周,黑杯,CUP-BLACK,品牌词,80,300%",
+        "本周,黑杯,CUP-BLACK,品牌词,90,2",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.report.adRows).toBe(2);
+    expect(result.input?.previousWeek.products[0]).toMatchObject({
+      adSpend: 80,
+      adRevenue: 240,
+    });
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      adSpend: 90,
+      adRevenue: 180,
+    });
+    expect(result.report.issues.some((issue) => issue.message.includes("广告数据"))).toBe(true);
+  });
+
   it("uses the latest two periods when a platform export contains more than two weeks", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

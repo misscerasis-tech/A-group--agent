@@ -29,6 +29,7 @@ export type EcommerceCsvImportReport = {
   competitorRows: number;
   customerVoiceRows: number;
   inventoryRows: number;
+  adRows: number;
   fieldMappings: FieldMapping[];
   issues: ImportIssue[];
   questionsForUser: string[];
@@ -109,6 +110,8 @@ type OrderDetailField =
   | "grossProfit";
 
 type InventoryField = "productName" | "sku" | "inventory" | "unitCost" | "grossMarginRate" | "observedAt";
+
+type AdField = "week" | "productName" | "sku" | "campaignName" | "adSpend" | "adRevenue" | "adReturn";
 
 const defaultStore: StoreProfile = {
   storeName: "待导入店铺",
@@ -620,6 +623,40 @@ const inventoryAliases: Record<InventoryField, string[]> = {
   ],
   grossMarginRate: metricAliases.grossMarginRate,
   observedAt: ["observed_at", "date", "snapshot_date", "stock_date", "日期", "库存日期", "盘点日期", "统计日期"],
+};
+
+const adFieldLabels: Record<AdField, string> = {
+  week: "数据周期",
+  productName: "商品名称",
+  sku: "SKU",
+  campaignName: "广告计划/广告组",
+  adSpend: "广告花费",
+  adRevenue: "广告成交额",
+  adReturn: "广告回本/ROAS",
+};
+
+const adAliases: Record<AdField, string[]> = {
+  week: metricAliases.week,
+  productName: metricAliases.productName,
+  sku: metricAliases.sku,
+  campaignName: [
+    "campaign",
+    "campaign_name",
+    "campaignname",
+    "ad_group",
+    "adgroup",
+    "ad_group_name",
+    "adgroupname",
+    "广告计划",
+    "广告计划名称",
+    "广告组",
+    "广告组名称",
+    "推广计划",
+    "推广计划名称",
+  ],
+  adSpend: metricAliases.adSpend,
+  adRevenue: metricAliases.adRevenue,
+  adReturn: metricAliases.adReturn,
 };
 
 function normalizeHeader(header: string) {
@@ -1870,17 +1907,212 @@ function applyInventorySnapshotsToMetricSet(
   };
 }
 
+type AdSnapshot = {
+  productName: string;
+  sku?: string;
+  week: "previous" | "current";
+  adSpend: number | null;
+  adRevenue: number | null;
+};
+
+function inferTwoAdPeriods(
+  rows: Array<Record<string, string>>,
+  mapping: Map<AdField, string>,
+  issues: ImportIssue[],
+) {
+  const weekHeader = mapping.get("week");
+
+  if (!weekHeader) {
+    return null;
+  }
+
+  const uniqueWeeks = [...new Set(rows.map((row) => readField(row, mapping, "week")).filter(Boolean))];
+
+  if (uniqueWeeks.length < 2) {
+    return null;
+  }
+
+  const sortedWeeks = uniqueWeeks.sort(comparePeriods);
+  const [previous, current] = sortedWeeks.slice(-2);
+
+  if (uniqueWeeks.length > 2) {
+    issues.push({
+      severity: "info",
+      message: `广告数据识别到 ${uniqueWeeks.length} 个周期，已自动选择最近两期：${previous} 作为上周，${current} 作为本周。`,
+    });
+  }
+
+  return { previous, current };
+}
+
+function normalizeAdWeek(
+  row: Record<string, string>,
+  mapping: Map<AdField, string>,
+  inferredPeriods: { previous: string; current: string } | null,
+) {
+  const rawWeek = readField(row, mapping, "week");
+
+  if (!rawWeek) {
+    return "current" as const;
+  }
+
+  const week = normalizeWeek(rawWeek);
+
+  if (week === "previous" || week === "current") {
+    return week;
+  }
+
+  if (week === inferredPeriods?.previous) {
+    return "previous" as const;
+  }
+
+  if (week === inferredPeriods?.current) {
+    return "current" as const;
+  }
+
+  return null;
+}
+
+function buildAdSnapshots(
+  text: string | undefined,
+  issues: ImportIssue[],
+): { adSnapshots: AdSnapshot[]; rows: number } {
+  if (!text?.trim()) {
+    return { adSnapshots: [], rows: 0 };
+  }
+
+  const table = parseCsv(text);
+  const { mapping } = buildHeaderMap(table.headers, adAliases, new Set<AdField>(), adFieldLabels);
+  const inferredPeriods = inferTwoAdPeriods(table.rows, mapping, issues);
+
+  const adSnapshots = table.rows.flatMap((row, index) => {
+    const rowNumber = index + 2;
+    const productName = readField(row, mapping, "productName");
+    const sku = readField(row, mapping, "sku");
+    const week = normalizeAdWeek(row, mapping, inferredPeriods);
+
+    if (!productName && !sku) {
+      issues.push({
+        severity: "warning",
+        rowNumber,
+        message: "有一行广告数据缺少商品名称或 SKU，已跳过。",
+      });
+      return [];
+    }
+
+    if (!week) {
+      return [];
+    }
+
+    let adSpend = optionalNumber(readField(row, mapping, "adSpend"), adFieldLabels.adSpend, issues, rowNumber);
+    let adRevenue = optionalNumber(readField(row, mapping, "adRevenue"), adFieldLabels.adRevenue, issues, rowNumber);
+    const adReturn = optionalMultiplier(readField(row, mapping, "adReturn"));
+
+    if (adReturn !== null && adReturn > 0) {
+      if (adRevenue === null && adSpend !== null) {
+        adRevenue = roundMetric(adSpend * adReturn);
+      } else if (adSpend === null && adRevenue !== null) {
+        adSpend = roundMetric(adRevenue / adReturn);
+      }
+    }
+
+    if (adSpend === null && adRevenue === null) {
+      issues.push({
+        severity: "warning",
+        rowNumber,
+        message: "有一行广告数据缺少广告花费、广告成交额或可反推的 ROAS，已跳过。",
+      });
+      return [];
+    }
+
+    return [
+      {
+        productName: productName || sku,
+        sku: sku || undefined,
+        week,
+        adSpend,
+        adRevenue,
+      },
+    ];
+  });
+
+  return { adSnapshots, rows: table.rows.length };
+}
+
+function adSnapshotKey(snapshot: AdSnapshot) {
+  return snapshot.sku?.trim().toLowerCase() || snapshot.productName.trim().toLowerCase();
+}
+
+function applyAdSnapshotsToMetricSet(
+  metricSet: WeeklyMetricSet,
+  adSnapshots: AdSnapshot[],
+  week: "previous" | "current",
+) {
+  if (adSnapshots.length === 0) {
+    return {
+      metricSet,
+      matchedKeys: new Set<string>(),
+      updatedCount: 0,
+    };
+  }
+
+  const relevantSnapshots = adSnapshots.filter((snapshot) => snapshot.week === week);
+  const matchedKeys = new Set<string>();
+  let updatedCount = 0;
+
+  const products = metricSet.products.map((product) => {
+    const skuKey = product.sku.trim().toLowerCase();
+    const productNameKey = product.productName.trim().toLowerCase();
+    const matches = relevantSnapshots.filter((snapshot) => {
+      const snapshotSku = snapshot.sku?.trim().toLowerCase();
+      const snapshotName = snapshot.productName.trim().toLowerCase();
+      return snapshotSku === skuKey || snapshotName === productNameKey;
+    });
+
+    if (matches.length === 0) {
+      return product;
+    }
+
+    for (const match of matches) {
+      matchedKeys.add(adSnapshotKey(match));
+    }
+
+    const adSpendValues = matches.map((match) => match.adSpend).filter((value): value is number => value !== null);
+    const adRevenueValues = matches.map((match) => match.adRevenue).filter((value): value is number => value !== null);
+
+    updatedCount += 1;
+
+    return {
+      ...product,
+      adSpend: adSpendValues.length > 0 ? roundMetric(adSpendValues.reduce((sum, value) => sum + value, 0)) : product.adSpend,
+      adRevenue:
+        adRevenueValues.length > 0 ? roundMetric(adRevenueValues.reduce((sum, value) => sum + value, 0)) : product.adRevenue,
+    };
+  });
+
+  return {
+    metricSet: {
+      ...metricSet,
+      products,
+    },
+    matchedKeys,
+    updatedCount,
+  };
+}
+
 export function buildEcommerceInputFromCsv({
   metricsCsv,
   competitorsCsv,
   customerVoicesCsv,
   inventoryCsv,
+  adsCsv,
   store,
 }: {
   metricsCsv: string;
   competitorsCsv?: string;
   customerVoicesCsv?: string;
   inventoryCsv?: string;
+  adsCsv?: string;
   store?: Partial<StoreProfile>;
 }): EcommerceCsvImportResult {
   const issues: ImportIssue[] = [];
@@ -1983,6 +2215,7 @@ export function buildEcommerceInputFromCsv({
   const competitorResult = buildCompetitors(competitorsCsv, issues);
   const customerVoiceResult = buildCustomerVoices(customerVoicesCsv, issues);
   const inventoryResult = buildInventorySnapshots(inventoryCsv, issues);
+  const adResult = buildAdSnapshots(adsCsv, issues);
   const previousSnapshotResult = applyInventorySnapshotsToMetricSet(
     previousWeek,
     inventoryResult.inventorySnapshots,
@@ -2017,6 +2250,28 @@ export function buildEcommerceInputFromCsv({
       });
     }
   }
+  const previousAdResult = applyAdSnapshotsToMetricSet(previousWeek, adResult.adSnapshots, "previous");
+  const currentAdResult = applyAdSnapshotsToMetricSet(currentWeek, adResult.adSnapshots, "current");
+
+  previousWeek = previousAdResult.metricSet;
+  currentWeek = currentAdResult.metricSet;
+
+  if (adResult.adSnapshots.length > 0) {
+    const matchedKeys = new Set([...previousAdResult.matchedKeys, ...currentAdResult.matchedKeys]);
+    const unmatchedCount = adResult.adSnapshots.filter((snapshot) => !matchedKeys.has(adSnapshotKey(snapshot))).length;
+
+    issues.push({
+      severity: "info",
+      message: `已读取广告数据 ${adResult.adSnapshots.length} 行，并更新 ${previousAdResult.updatedCount + currentAdResult.updatedCount} 个商品的广告花费或广告成交额。`,
+    });
+
+    if (unmatchedCount > 0) {
+      issues.push({
+        severity: "warning",
+        message: `广告数据里有 ${unmatchedCount} 行没有匹配到经营数据，已暂不参与广告回本判断。`,
+      });
+    }
+  }
   const errorIssues = issues.filter((issue) => issue.severity === "error");
   const questionsForUser = [
     ...fieldMappings
@@ -2037,6 +2292,7 @@ export function buildEcommerceInputFromCsv({
     competitorRows: competitorResult.rows,
     customerVoiceRows: customerVoiceResult.rows,
     inventoryRows: inventoryResult.rows,
+    adRows: adResult.rows,
     fieldMappings,
     issues,
     questionsForUser,

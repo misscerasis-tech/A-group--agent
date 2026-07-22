@@ -35,6 +35,7 @@ cp .env.example .env
 ```bash
 FEISHU_APP_ID="cli_aaea1dbb6ee1dd10"
 FEISHU_APP_SECRET="不要提交，只放本机"
+ECOMMERCE_ADS_CSV="data/samples/aurora-cup-ads.csv"
 ECOMMERCE_INVENTORY_CSV="data/samples/aurora-cup-inventory.csv"
 ECOMMERCE_CUSTOMER_VOICES_CSV="data/samples/aurora-cup-customer-voices.csv"
 ```
@@ -76,6 +77,8 @@ current,黑杯,CUP-BLACK,8,420,9,90,2,80,杯盖漏水 / 物流慢
 如果手里是平台导出的多周期表，不需要手工裁成两周。Agent 会自动选择最近两期，并在导入报告里说明。没有 `week` 列也没关系，有 `date/start_date/开始日期` 就能判断周期。也可以直接从 Excel、飞书表格或 Google Sheets 复制表格粘贴进工作台。
 
 如果手里只有订单明细，也可以直接粘贴订单号、支付时间、商品名称/SKU、购买数量、实付金额和退款金额。订单明细需要覆盖最近两个自然周，Agent 会先自动聚合成 SKU 周报再复盘。
+
+如果广告数据是单独导出的，就粘贴到“广告数据表”。最少需要 SKU 或商品名称，再给广告花费、广告成交额或 ROAS。Agent 会按上周/本周匹配广告口径，判断投放是否回本。
 
 如果库存或成本是单独导出的，就粘贴到“库存/成本快照表”。最少需要 SKU 或商品名称，再给当前库存、单位成本或毛利率。Agent 会把它匹配到经营数据，判断哪些 SKU 可能卖断，并补齐利润口径。
 

@@ -38,6 +38,7 @@ npx pnpm@10.13.1 run agent:smoke
 
 - 上传或粘贴经营数据 CSV/TSV/Markdown 表格。
 - 上传或粘贴竞品数据 CSV/TSV/Markdown 表格。
+- 上传或粘贴广告数据表，例如周期、SKU、广告花费、广告成交额或 ROAS。
 - 上传或粘贴库存/成本快照表，例如 SKU、当前库存、单位成本、盘点日期。
 - 上传或粘贴用户声音/售后评价表，例如客服备注、差评关键词、退款备注。
 - 点击“演示样例”可恢复 Shopify 演示数据。
@@ -87,6 +88,7 @@ SMOKE_BASE_URL=http://localhost:3000 npx pnpm@10.13.1 run smoke:web
 - 如果表里有三周或更多周期，Agent 会自动选择最近两期作为上周和本周。
 - 如果同一周期同一 SKU 出现多行，Agent 会先合并后分析，并在导入提醒里说明。
 - 如果另传库存/成本快照，Agent 会按 SKU/商品名更新本周库存，补齐单位成本或毛利率，并提醒未匹配行。
+- 如果另传广告数据表，Agent 会按周期和 SKU/商品名更新广告花费、广告成交额或 ROAS 反推结果。
 - 输出仍然是小白可读的自然语言。
 - 返回的 `workSession.nextQuestion` 能直接作为 Agent 追问用户的下一句话。
 - `smoke:api` 能通过平台中文表头、缺参数和缺必填字段三类接口检查。
@@ -101,6 +103,7 @@ ECOMMERCE_MARKET="美国"
 ECOMMERCE_CATEGORY="旅行杯"
 ECOMMERCE_WEEKLY_METRICS_CSV="data/samples/aurora-cup-weekly-metrics.csv"
 ECOMMERCE_COMPETITORS_CSV="data/samples/aurora-cup-competitors.csv"
+ECOMMERCE_ADS_CSV="data/samples/aurora-cup-ads.csv"
 ECOMMERCE_INVENTORY_CSV="data/samples/aurora-cup-inventory.csv"
 ECOMMERCE_CUSTOMER_VOICES_CSV="data/samples/aurora-cup-customer-voices.csv"
 ```
