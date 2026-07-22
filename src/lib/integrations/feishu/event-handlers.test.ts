@@ -109,4 +109,32 @@ describe("feishu event handlers", () => {
       consoleError.mockRestore();
     }
   });
+
+  it("guides users to paste tables when they send non-text attachments", async () => {
+    const sendTextMessage = vi.fn().mockResolvedValue(undefined);
+    const handlers = createFeishuEventHandlers(sendTextMessage);
+
+    await handlers["im.message.receive_v1"]({
+      sender: {
+        sender_type: "user",
+      },
+      message: {
+        message_id: "om_file",
+        chat_id: "oc_123",
+        message_type: "file",
+        content: JSON.stringify({ file_key: "file_v2_123" }),
+      },
+    });
+
+    expect(sendTextMessage).toHaveBeenCalledWith({
+      chatId: "oc_123",
+      replyToMessageId: "om_file",
+      text: expect.stringContaining("复制表头和几行数据"),
+    });
+    expect(sendTextMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        text: expect.stringContaining("/agent"),
+      }),
+    );
+  });
 });

@@ -1,4 +1,8 @@
-import { buildFeishuAgentReply, parseFeishuTextContent } from "./agent-reply";
+import {
+  buildFeishuAgentReply,
+  buildUnsupportedFeishuMessageReply,
+  parseFeishuTextContent,
+} from "./agent-reply";
 
 export type FeishuReceiveMessageEvent = {
   sender?: {
@@ -66,7 +70,7 @@ export function createFeishuEventHandlers(
         await sendTextMessage({
           chatId: event.message.chat_id,
           replyToMessageId: event.message.message_id,
-          text: "我先支持文字消息。你可以发：帮我看本周经营情况。",
+          text: buildUnsupportedFeishuMessageReply(event.message.message_type),
         });
         return;
       }

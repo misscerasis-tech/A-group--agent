@@ -44,17 +44,45 @@ export type FeishuEcommerceImportContext = {
   sourceLabel: string;
 };
 
+function stripFeishuMentions(text: string) {
+  return text
+    .replace(/<at\b[^>]*>[\s\S]*?<\/at>/g, "")
+    .replace(/^(@\S+\s*)+/, "")
+    .trim();
+}
+
 export function parseFeishuTextContent(content: string) {
   try {
     const parsed = JSON.parse(content) as { text?: unknown };
     if (typeof parsed.text === "string") {
-      return parsed.text.replace(/@\w+/g, "").trim();
+      return stripFeishuMentions(parsed.text);
     }
   } catch {
-    return content.trim();
+    return stripFeishuMentions(content);
   }
 
-  return content.trim();
+  return stripFeishuMentions(content);
+}
+
+export function buildUnsupportedFeishuMessageReply(messageType: string) {
+  const messageTypeLabels: Record<string, string> = {
+    file: "文件",
+    image: "图片",
+    post: "富文本",
+    interactive: "卡片",
+    audio: "语音",
+    media: "视频",
+  };
+  const label = messageTypeLabels[messageType] ?? messageType;
+
+  return [
+    `我看到你发的是${label}消息。当前本地长连接先不下载附件，所以我不会假装已经读懂文件内容。`,
+    "",
+    "你可以这样把数据给我：",
+    "1. 打开 Excel、CSV 或飞书表格，复制表头和几行数据，直接粘贴到聊天里。",
+    "2. 或到 `/agent` 工作台上传 CSV/Excel，生成复盘后把飞书回复或 Markdown 发回群里。",
+    "3. 如果不知道复制哪些列，直接发“我需要准备什么数据”，我会按电商小白能懂的方式列给你。",
+  ].join("\n");
 }
 
 export function detectFeishuReplyIntent(text: string): FeishuReplyIntent {

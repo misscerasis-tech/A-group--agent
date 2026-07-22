@@ -15,6 +15,17 @@ describe("feishu agent reply", () => {
     );
   });
 
+  it("removes Feishu mention markup before intent detection", () => {
+    expect(
+      parseFeishuTextContent(
+        JSON.stringify({
+          text: '<at user_id="ou_agent">A 组电商运营 Agent</at> 帮我看本周经营情况',
+        }),
+      ),
+    ).toBe("帮我看本周经营情况");
+    expect(parseFeishuTextContent("@A组电商运营Agent 我需要准备什么数据")).toBe("我需要准备什么数据");
+  });
+
   it("detects beginner data checklist intent", () => {
     expect(detectFeishuReplyIntent("我需要准备什么数据")).toBe("data_checklist");
     expect(detectFeishuReplyIntent("首页怎么体现这些指标的重要性")).toBe("data_checklist");
