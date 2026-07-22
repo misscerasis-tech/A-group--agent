@@ -29,11 +29,13 @@ FEISHU_APP_ID="cli_aaea1dbb6ee1dd10"
 FEISHU_APP_SECRET="不要提交，只放本机"
 ```
 
-6. 先做飞书配置体检：
+6. 先做飞书配置和本地数据体检：
 
 ```bash
 npx pnpm@10.13.1 run feishu:doctor
 ```
+
+即使 App Secret 还没填，doctor 也会先检查本地 CSV/TSV 路径和字段是否可分析。
 
 7. 确认 App Secret 和本地 CSV/TSV 配置没问题后，再启动 worker：
 

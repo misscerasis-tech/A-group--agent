@@ -47,23 +47,41 @@ function main() {
   loadLocalEnvFile(".env.local");
 
   const envStatus = getFeishuEnvStatus();
+  let hasError = false;
 
   if (!envStatus.config) {
     console.error(`[feishu:doctor] 缺少环境变量：${envStatus.missing.join("、")}`);
     console.error("[feishu:doctor] 请把 App ID 和 App Secret 放在本机 .env，不要提交 Git。");
+    hasError = true;
+  } else {
+    console.info(`[feishu:doctor] 已读取 App ID：${envStatus.config.appId}`);
+    console.info("[feishu:doctor] App Secret 已配置，但不会打印。");
+  }
+
+  const subscriptionMode = process.env.FEISHU_EVENT_SUBSCRIPTION_MODE?.trim() || "long_connection";
+
+  if (subscriptionMode === "long_connection") {
+    console.info("[feishu:doctor] 事件订阅模式：long_connection，适合本地测试。");
+  } else {
+    console.info(`[feishu:doctor] 事件订阅模式：${subscriptionMode}，请确认本地测试是否有公网 HTTPS 回调。`);
+  }
+
+  let metricsCsv: ReturnType<typeof readConfiguredCsv>;
+  let competitorsCsv: ReturnType<typeof readConfiguredCsv>;
+
+  try {
+    metricsCsv = readConfiguredCsv(process.env.ECOMMERCE_WEEKLY_METRICS_CSV);
+    competitorsCsv = readConfiguredCsv(process.env.ECOMMERCE_COMPETITORS_CSV);
+  } catch (error) {
+    console.error(`[feishu:doctor] ${(error as Error).message}`);
     process.exitCode = 1;
     return;
   }
 
-  console.info(`[feishu:doctor] 已读取 App ID：${envStatus.config.appId}`);
-  console.info("[feishu:doctor] App Secret 已配置，但不会打印。");
-
-  const metricsCsv = readConfiguredCsv(process.env.ECOMMERCE_WEEKLY_METRICS_CSV);
-  const competitorsCsv = readConfiguredCsv(process.env.ECOMMERCE_COMPETITORS_CSV);
-
   if (!metricsCsv) {
     console.info("[feishu:doctor] 未配置 ECOMMERCE_WEEKLY_METRICS_CSV，worker 会使用样例店铺回复。");
     console.info("[feishu:doctor] 配置真实 CSV 后，worker 会按真实数据回复。");
+    process.exitCode = hasError ? 1 : 0;
     return;
   }
 
@@ -92,9 +110,20 @@ function main() {
     return;
   }
 
+  for (const issue of importResult.report.issues.filter((issue) => issue.severity === "warning").slice(0, 5)) {
+    console.warn(`[feishu:doctor] 提醒：${issue.rowNumber ? `第 ${issue.rowNumber} 行：` : ""}${issue.message}`);
+  }
+
   console.info(
     `[feishu:doctor] 本地经营数据可用：${importResult.input.store.storeName}，经营行 ${importResult.report.metricsRows} 行，竞品行 ${importResult.report.competitorRows} 行。`,
   );
+
+  if (hasError) {
+    console.error("[feishu:doctor] 本地数据可用；补齐飞书环境变量后再运行 worker。");
+    process.exitCode = 1;
+    return;
+  }
+
   console.info("[feishu:doctor] 下一步可以运行：npx pnpm@10.13.1 run feishu:worker");
 }
 

@@ -85,6 +85,14 @@ const defaultStore: StoreProfile = {
   userLevel: "beginner",
 };
 
+function cleanStoreOverride(store?: Partial<StoreProfile>) {
+  return Object.fromEntries(
+    Object.entries(store ?? {}).filter(([, value]) =>
+      typeof value === "string" ? value.trim().length > 0 : value !== undefined,
+    ),
+  ) as Partial<StoreProfile>;
+}
+
 const metricFieldLabels: Record<MetricField, string> = {
   week: "数据周期",
   startDate: "开始日期",
@@ -792,7 +800,7 @@ export function buildEcommerceInputFromCsv({
     input: {
       store: {
         ...defaultStore,
-        ...store,
+        ...cleanStoreOverride(store),
       },
       previousWeek,
       currentWeek,

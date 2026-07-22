@@ -80,6 +80,24 @@ describe("ecommerce csv import", () => {
     expect(result.report.issues.some((issue) => issue.message.includes("临时用商品名称"))).toBe(true);
   });
 
+  it("does not let empty store overrides erase defaults", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "week,product_name,orders,revenue,units_sold",
+        "previous,黑杯,10,500,12",
+        "current,黑杯,9,450,10",
+      ].join("\n"),
+      store: {
+        storeName: "",
+        platform: undefined,
+      },
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.store.storeName).toBe("待导入店铺");
+    expect(result.input?.store.platform).toBe("待确认平台");
+  });
+
   it("imports cost and gross profit fields when available", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [
