@@ -88,7 +88,7 @@ SMOKE_BASE_URL=http://localhost:3000 npx pnpm@10.13.1 run smoke:web
 通过标准：
 
 - 字段缺失时，Agent 会追问，不会硬编。
-- 字段名称不同也能映射，例如“GMV/销售额/revenue”都能识别。
+- 字段名称不同也能映射，例如“GMV/销售额/revenue/net_sales/total_sales”都能识别。
 - 退款字段也能映射，例如“refund_orders/returns/退款单数”“refund_amount/退款金额”和“refund_reason/退款原因”都能识别。
 - 金额字段可以包含币种符号或代码，例如 `US$1,200.50`、`USD 80.25`、`RMB 90`、`￥980.00`；毛利等允许负数的字段可以用 `(30.5)` 这种会计负数写法。
 - 比率字段也能映射和反推，例如“转化率/CVR”“ROAS/投产比”“毛利率”“退款率/退货率”“退款金额占比”。
@@ -98,6 +98,7 @@ SMOKE_BASE_URL=http://localhost:3000 npx pnpm@10.13.1 run smoke:web
 - 没有 `week` 列但有 `date/start_date/开始日期` 时，Agent 会用日期判断最近两期。
 - 没有周汇总表时，可以给订单明细；Agent 会按订单日期聚合最近两个自然周。
 - Shopify Orders 的 `Lineitem price` 会按单价处理，乘以 `Lineitem quantity` 后才进入销售额汇总。
+- Shopify Analytics 或类似销售汇总表里的 `net_sales`、`total_sales`、`gross_sales` 和 `net_quantity` 也能识别。
 - 订单明细里的 `discount_amount` / `Discount Amount` / `折扣金额` 会先从行收入中扣除，再汇总到销售额。
 - Amazon 订单 TSV 的 `item-price` 会按订单行金额处理，`item-status` 里出现 refund/return 会进入退款/退货单数。
 - 订单明细里出现买家姓名、电话、邮箱、地址、身份证或税号等个人信息列时，Agent 会提示删除或隐藏，并继续分析可用经营字段。

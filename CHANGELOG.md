@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.114-docs-analytics-header-aliases] - 2026-07-23
+
+### Changed
+
+- README、数据契约、用户准备清单和测试路径同步 Analytics 常见字段别名，例如 `net_sales`、`total_sales`、`gross_sales` 和 `net_quantity`。
+
 ## [v0.1.113-api-smoke-analytics-headers] - 2026-07-23
 
 ### Added
