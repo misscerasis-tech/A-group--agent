@@ -82,6 +82,12 @@ npx pnpm@10.13.1 run dev
 SMOKE_BASE_URL=http://localhost:3001 npx pnpm@10.13.1 run smoke:web
 ```
 
+检查分析 API 是否能处理平台中文表头和缺字段追问：
+
+```bash
+SMOKE_BASE_URL=http://localhost:3001 npx pnpm@10.13.1 run smoke:api
+```
+
 启动飞书本地长连接 worker：
 
 ```bash
