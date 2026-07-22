@@ -107,8 +107,11 @@ ECOMMERCE_COMPETITORS_CSV="data/samples/aurora-cup-competitors.csv"
 当前已接入的本地命令：
 
 ```bash
+npx pnpm@10.13.1 run feishu:doctor
 pnpm run feishu:worker
 ```
+
+先跑 `feishu:doctor` 检查 `.env` 和本地 CSV 路径；通过后再跑 `feishu:worker` 建立长连接。
 
 运行前只在本机 `.env` 填：
 

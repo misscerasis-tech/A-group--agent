@@ -16,6 +16,12 @@ FEISHU_APP_SECRET="不要提交，只放本机"
 4. 启动本地长连接：
 
 ```bash
+npx pnpm@10.13.1 run feishu:doctor
+```
+
+确认 App Secret 和本地 CSV 配置没问题后，再启动 worker：
+
+```bash
 npx pnpm@10.13.1 run feishu:worker
 ```
 
