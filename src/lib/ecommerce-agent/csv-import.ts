@@ -1273,8 +1273,11 @@ function parseNumber(value: string) {
   const trimmed = value.trim();
   const isAccountingNegative = /^\(.*\)$/.test(trimmed);
   const unsignedValue = isAccountingNegative ? trimmed.slice(1, -1) : trimmed;
+  const withoutApproximationText = unsignedValue
+    .replace(/^\s*(?:约为|大约|约|超过|超|≈|~|≥|>=)/, "")
+    .replace(/(?:左右|以上|\+)\s*$/, "");
   const cleaned = normalizeNumericSeparators(
-    unsignedValue
+    withoutApproximationText
       .replace(/人民币|美元|美金|欧元|英镑|usd|us\$|cny|rmb|eur|gbp/gi, "")
       .replace(/[$￥¥€£%\s]/g, ""),
   );
@@ -1284,16 +1287,24 @@ function parseNumber(value: string) {
   }
 
   const unitMatch = cleaned.match(
-    /^([-+]?\d+(?:\.\d+)?)(万|w|W|千|k|K)?(?:元|件|单|个|笔|次|人|条)?$/,
+    /^([-+]?\d+(?:\.\d+)?)(亿|百万|万|w|W|千|k|K|百)?(?:元|件|单|个|笔|次|人|条)?$/,
   );
 
   if (unitMatch) {
     const parsed = Number(unitMatch[1]);
-    const multiplier = ["万", "w", "W"].includes(unitMatch[2])
-      ? 10000
-      : ["千", "k", "K"].includes(unitMatch[2])
-        ? 1000
-        : 1;
+    const unit = unitMatch[2];
+    const multiplier =
+      unit === "亿"
+        ? 100000000
+        : unit === "百万"
+          ? 1000000
+          : ["万", "w", "W"].includes(unit)
+            ? 10000
+            : ["千", "k", "K"].includes(unit)
+              ? 1000
+              : unit === "百"
+                ? 100
+                : 1;
     const result = parsed * multiplier;
 
     return Number.isFinite(result) ? (isAccountingNegative ? -result : result) : null;

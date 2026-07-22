@@ -216,8 +216,8 @@ describe("ecommerce csv import", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [
         "周期,商品名称,订单数,销售额,销量,广告花费,广告成交额,库存,退款单数,退款金额",
-        "上周,黑杯,90单,1.2万元,100件,800元,3200元,50件,1单,30元",
-        "本周,黑杯,80单,9800元,88件,900元,2.6千元,40件,2单,80元",
+        "上周,黑杯,约90单,1.2万元+,100件,800元,3200元,50件,1单,30元",
+        "本周,黑杯,80单,9800元,88件,900元,2.6千元左右,3百件,2单,80元",
       ].join("\n"),
     });
 
@@ -238,7 +238,7 @@ describe("ecommerce csv import", () => {
       unitsSold: 88,
       adSpend: 900,
       adRevenue: 2600,
-      inventory: 40,
+      inventory: 300,
       refundOrders: 2,
       refundAmount: 80,
     });

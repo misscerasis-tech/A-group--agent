@@ -250,6 +250,20 @@ function main() {
   assert(europeanCurrencyFormatImport.input?.previousWeek.products[0].revenue === 1234.56, "欧式千分位金额应该能解析。");
   assert(europeanCurrencyFormatImport.input?.currentWeek.products[0].adSpend === 90.75, "欧式小数逗号应该能解析。");
 
+  const approximateChineseNumberImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "周期,商品名称,订单数,销售额,销量,广告成交额,库存",
+      "上周,黑杯,约90单,1.2万元+,100件,3200元,50件",
+      "本周,黑杯,80单,9800元,88件,2.6千元左右,3百件",
+    ].join("\n"),
+  });
+
+  assert(approximateChineseNumberImport.report.ok, "带约数和中文单位的经营表应该可以导入。");
+  assert(approximateChineseNumberImport.input?.previousWeek.products[0].orders === 90, "约数订单应该能解析。");
+  assert(approximateChineseNumberImport.input?.previousWeek.products[0].revenue === 12000, "万元加号应该能解析。");
+  assert(approximateChineseNumberImport.input?.currentWeek.products[0].adRevenue === 2600, "千元左右应该能解析。");
+  assert(approximateChineseNumberImport.input?.currentWeek.products[0].inventory === 300, "百件应该能解析。");
+
   const rateFieldImport = buildEcommerceInputFromCsv({
     metricsCsv: [
       "周期,商品名称,订单数,销售额,销量,转化率,广告消耗,ROAS,毛利率,退款率,退款金额占比",
