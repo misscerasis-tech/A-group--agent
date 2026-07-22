@@ -20,13 +20,45 @@ export type SendFeishuTextMessage = (payload: {
 
 export type BuildFeishuReply = (text: string) => string;
 
+export type FeishuEventHandlerOptions = {
+  maxProcessedMessageIds?: number;
+};
+
 export function createFeishuEventHandlers(
   sendTextMessage: SendFeishuTextMessage,
   buildReply: BuildFeishuReply = buildFeishuAgentReply,
+  options: FeishuEventHandlerOptions = {},
 ) {
+  const maxProcessedMessageIds = Math.max(options.maxProcessedMessageIds ?? 500, 1);
+  const processedMessageIds = new Set<string>();
+  const processedMessageQueue: string[] = [];
+
+  function rememberMessage(messageId: string) {
+    if (processedMessageIds.has(messageId)) {
+      return false;
+    }
+
+    processedMessageIds.add(messageId);
+    processedMessageQueue.push(messageId);
+
+    while (processedMessageQueue.length > maxProcessedMessageIds) {
+      const expiredMessageId = processedMessageQueue.shift();
+
+      if (expiredMessageId) {
+        processedMessageIds.delete(expiredMessageId);
+      }
+    }
+
+    return true;
+  }
+
   return {
     "im.message.receive_v1": async (event: FeishuReceiveMessageEvent) => {
       if (event.sender?.sender_type === "app") {
+        return;
+      }
+
+      if (!rememberMessage(event.message.message_id)) {
         return;
       }
 
@@ -40,7 +72,14 @@ export function createFeishuEventHandlers(
       }
 
       const text = parseFeishuTextContent(event.message.content);
-      const reply = buildReply(text);
+      let reply: string;
+
+      try {
+        reply = buildReply(text);
+      } catch (error) {
+        console.error("[feishu] 生成 Agent 回复失败：", error instanceof Error ? error.message : error);
+        reply = "我收到消息了，但这次生成复盘时出错。你可以先发“我需要准备什么数据”，或把经营表格再贴一次。";
+      }
 
       await sendTextMessage({
         chatId: event.message.chat_id,

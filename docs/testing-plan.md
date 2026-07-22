@@ -115,6 +115,7 @@ pnpm run feishu:worker
 ```
 
 先跑 `feishu:doctor` 检查 `.env` 和本地 CSV/TSV 路径；通过后再跑 `feishu:worker` 建立长连接。
+本地 worker 会忽略机器人自己发出的消息、去重同一个 message ID，并在复盘生成失败时回复一段可理解的兜底提示，避免用户只看到程序错误。
 
 运行前只在本机 `.env` 填：
 
