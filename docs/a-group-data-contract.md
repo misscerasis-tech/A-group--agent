@@ -270,7 +270,7 @@ Agent 可以从原始字段计算：
 - `workSession`：当前 Agent 怎么带用户工作，下一句问什么。
 - `analysis`：经营结论、风险商品、追问和结构化运营待办。
 - `feishuReply`：适合直接发到飞书的自然语言回复。
-- `taskTable`：可粘贴到飞书表格/多维表格的待办 TSV。
+- `taskTable`：可粘贴到飞书表格/多维表格的待办 TSV，默认带 `状态=待开始`。
 - `riskTable`：可粘贴到飞书表格/多维表格的风险商品 TSV。
 - `dataRequestPlan`：结构化补数清单，告诉小白下一份数据要补什么。
 - `dataRequestTable`：可粘贴到飞书表格/多维表格的补数 TSV。

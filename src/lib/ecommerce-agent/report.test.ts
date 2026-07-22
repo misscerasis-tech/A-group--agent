@@ -23,7 +23,7 @@ describe("weekly markdown report", () => {
     expect(report).toContain("杯盖漏水");
     expect(report).toContain("观察快照");
     expect(report).toContain("## 7. 下周行动");
-    expect(report).toContain("| 优先级 | 截止 | 负责人 | 任务 | 验收标准 |");
+    expect(report).toContain("| 状态 | 优先级 | 截止 | 负责人 | 任务 | 验收标准 |");
     expect(report).toContain("验收");
   });
 
@@ -31,7 +31,8 @@ describe("weekly markdown report", () => {
     const analysis = analyzeEcommerceStore(sampleEcommerceAgentInput);
     const taskTable = buildOperationalTasksTsv(analysis);
 
-    expect(taskTable.split("\n")[0]).toBe("优先级\t截止\t负责人\t任务\t第一步\t验收标准\t原因");
+    expect(taskTable.split("\n")[0]).toBe("状态\t优先级\t截止\t负责人\t任务\t第一步\t验收标准\t原因");
+    expect(taskTable).toContain("待开始");
     expect(taskTable).toContain("验收");
     expect(taskTable).toContain("店铺负责人");
   });

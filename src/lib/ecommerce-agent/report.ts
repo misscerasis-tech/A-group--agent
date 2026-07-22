@@ -86,11 +86,11 @@ function taskTable(analysis: EcommerceAgentAnalysis) {
   }
 
   return [
-    "| 优先级 | 截止 | 负责人 | 任务 | 验收标准 |",
-    "| --- | --- | --- | --- | --- |",
+    "| 状态 | 优先级 | 截止 | 负责人 | 任务 | 验收标准 |",
+    "| --- | --- | --- | --- | --- | --- |",
     ...analysis.operationalTasks.map(
       (task) =>
-        `| ${priorityLabel(task.priority)} | ${task.dueLabel} | ${task.owner} | ${task.title}：${task.firstStep} | ${task.acceptanceCriteria} |`,
+        `| 待开始 | ${priorityLabel(task.priority)} | ${task.dueLabel} | ${task.owner} | ${task.title}：${task.firstStep} | ${task.acceptanceCriteria} |`,
     ),
   ].join("\n");
 }
@@ -101,9 +101,10 @@ function tableCell(value: string) {
 
 export function buildOperationalTasksTsv(analysis: EcommerceAgentAnalysis) {
   return [
-    ["优先级", "截止", "负责人", "任务", "第一步", "验收标准", "原因"].join("\t"),
+    ["状态", "优先级", "截止", "负责人", "任务", "第一步", "验收标准", "原因"].join("\t"),
     ...analysis.operationalTasks.map((task) =>
       [
+        "待开始",
         priorityLabel(task.priority),
         task.dueLabel,
         task.owner,

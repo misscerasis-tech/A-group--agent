@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.96-task-table-status-column] - 2026-07-23
+
+### Changed
+
+- 周报行动表和可复制待办 TSV 增加 `状态` 列，默认 `待开始`，粘到飞书表格/多维表格后更方便团队跟进。
+- API smoke 和文档同步待办表新列。
+
 ## [v0.1.95-incomplete-period-reference-table] - 2026-07-23
 
 ### Changed
