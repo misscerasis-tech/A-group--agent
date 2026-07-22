@@ -171,6 +171,18 @@ function main() {
     "带个人信息列的订单表应该提醒用户删除隐私字段。",
   );
 
+  const currencyFormatImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "周期,商品名称,订单数,销售额,销量,广告花费,毛利",
+      '上周,黑杯,10,"US$1,200.50",12,USD 80.25,$320.50',
+      '本周,黑杯,8,"￥980.00",9,RMB 90,(30.5)',
+    ].join("\n"),
+  });
+
+  assert(currencyFormatImport.report.ok, "带币种符号和会计负数的经营表应该可以导入。");
+  assert(currencyFormatImport.input?.previousWeek.products[0].revenue === 1200.5, "US$ 金额应该能解析。");
+  assert(currencyFormatImport.input?.currentWeek.products[0].grossProfit === -30.5, "会计负数毛利应该能解析。");
+
   const rateFieldImport = buildEcommerceInputFromCsv({
     metricsCsv: [
       "周期,商品名称,订单数,销售额,销量,转化率,广告消耗,ROAS,毛利率,退款率,退款金额占比",

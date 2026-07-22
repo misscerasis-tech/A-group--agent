@@ -145,6 +145,28 @@ describe("ecommerce csv import", () => {
     });
   });
 
+  it("parses currency symbols, currency codes, and accounting negatives", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,订单数,销售额,销量,广告花费,毛利",
+        '上周,黑杯,10,"US$1,200.50",12,USD 80.25,$320.50',
+        '本周,黑杯,8,"￥980.00",9,RMB 90,(30.5)',
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.previousWeek.products[0]).toMatchObject({
+      revenue: 1200.5,
+      adSpend: 80.25,
+      grossProfit: 320.5,
+    });
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      revenue: 980,
+      adSpend: 90,
+      grossProfit: -30.5,
+    });
+  });
+
   it("derives analyzable metrics from platform rate fields", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

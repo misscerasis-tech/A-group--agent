@@ -935,11 +935,13 @@ function readField<TField extends string>(
 }
 
 function parseNumber(value: string) {
-  const cleaned = value
-    .trim()
+  const trimmed = value.trim();
+  const isAccountingNegative = /^\(.*\)$/.test(trimmed);
+  const unsignedValue = isAccountingNegative ? trimmed.slice(1, -1) : trimmed;
+  const cleaned = unsignedValue
     .replace(/,/g, "")
-    .replace(/[$￥¥,%\s]/g, "")
-    .replace(/人民币|美元|美金/g, "");
+    .replace(/人民币|美元|美金|usd|us\$|cny|rmb|eur|gbp/gi, "")
+    .replace(/[$￥¥€£,%\s]/g, "");
 
   if (!cleaned || ["-", "--", "—", "暂无", "无"].includes(cleaned)) {
     return null;
@@ -956,12 +958,13 @@ function parseNumber(value: string) {
       : ["千", "k", "K"].includes(unitMatch[2])
         ? 1000
         : 1;
+    const result = parsed * multiplier;
 
-    return Number.isFinite(parsed) ? parsed * multiplier : null;
+    return Number.isFinite(result) ? (isAccountingNegative ? -result : result) : null;
   }
 
   const parsed = Number(cleaned);
-  return Number.isFinite(parsed) ? parsed : null;
+  return Number.isFinite(parsed) ? (isAccountingNegative ? -parsed : parsed) : null;
 }
 
 function parseRatio(value: string, options: { percentageWhenAboveOne: boolean }) {
