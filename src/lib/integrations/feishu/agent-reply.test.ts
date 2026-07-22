@@ -189,10 +189,12 @@ describe("feishu agent reply", () => {
   });
 
   it("routes unclear messages back to beginner next steps", () => {
-    const reply = buildFeishuAgentReply("嗯？");
+    const reply = buildFeishuAgentReply("嗯？我的电话是 13800000000");
 
+    expect(reply).toContain("暂时没有识别成经营表");
     expect(reply).toContain("我现在做什么");
     expect(reply).toContain("我需要准备什么数据");
+    expect(reply).not.toContain("13800000000");
   });
 
   it("detects requests to clear the current chat import context", () => {
