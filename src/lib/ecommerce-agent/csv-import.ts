@@ -1147,6 +1147,20 @@ function findHeaderLineIndex(lines: string[], delimiter: string) {
   return bestLine.index;
 }
 
+function makeUniqueHeaders(rawHeaders: string[]) {
+  const seenHeaders = new Map<string, number>();
+
+  return rawHeaders.map((rawHeader, index) => {
+    const baseHeader = rawHeader.replace(/^\uFEFF/, "").trim() || `unnamed_${index + 1}`;
+    const normalizedHeader = normalizeHeader(baseHeader) || `unnamed${index + 1}`;
+    const count = seenHeaders.get(normalizedHeader) ?? 0;
+
+    seenHeaders.set(normalizedHeader, count + 1);
+
+    return count === 0 ? baseHeader : `${baseHeader}__${count + 1}`;
+  });
+}
+
 export function parseCsv(text: string): CsvTable {
   const lineEntries = text
     .split(/\r?\n/)
@@ -1169,7 +1183,7 @@ export function parseCsv(text: string): CsvTable {
   const readableLines = readableLineEntries.map(({ line }) => line);
   const headerLineIndex = findHeaderLineIndex(readableLines, delimiter);
   const tableLineEntries = readableLineEntries.slice(headerLineIndex);
-  const headers = splitDelimitedLine(tableLineEntries[0].line, delimiter).map((header) => header.replace(/^\uFEFF/, ""));
+  const headers = makeUniqueHeaders(splitDelimitedLine(tableLineEntries[0].line, delimiter));
   const rows = tableLineEntries.slice(1).map(({ line }) => {
     const cells = splitDelimitedLine(line, delimiter);
     return Object.fromEntries(headers.map((header, index) => [header, cells[index] ?? ""]));

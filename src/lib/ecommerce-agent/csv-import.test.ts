@@ -35,6 +35,29 @@ describe("ecommerce csv import", () => {
     expect(result.input?.currentWeek.products[0].orders).toBe(9);
   });
 
+  it("keeps duplicate headers from overwriting earlier columns", () => {
+    const table = parseCsv(
+      [
+        "week,product_name,orders,revenue,revenue,units_sold",
+        "previous,黑杯,10,500,999,12",
+        "current,黑杯,8,420,888,9",
+      ].join("\n"),
+    );
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "week,product_name,orders,revenue,revenue,units_sold",
+        "previous,黑杯,10,500,999,12",
+        "current,黑杯,8,420,888,9",
+      ].join("\n"),
+    });
+
+    expect(table.headers).toEqual(["week", "product_name", "orders", "revenue", "revenue__2", "units_sold"]);
+    expect(table.rows[0].revenue).toBe("500");
+    expect(table.rows[0].revenue__2).toBe("999");
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.currentWeek.products[0].revenue).toBe(420);
+  });
+
   it("parses markdown-style tables pasted from docs or chat", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [
