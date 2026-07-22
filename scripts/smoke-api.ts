@@ -37,6 +37,12 @@ const shopifyOrdersMetricsTable = [
   "#1004,2026-07-16 19:45:00,白杯,CUP-WHITE,3,29.9,,paid",
 ].join("\n");
 
+const shopifyDiscountOrdersMetricsTable = [
+  "Name,Paid at,Lineitem name,Lineitem sku,Lineitem quantity,Lineitem price,Discount Amount,Financial Status",
+  "#2001,2026-07-08 10:11:00,黑杯,CUP-BLACK,2,50,10,paid",
+  "#2002,2026-07-15 09:20:00,黑杯,CUP-BLACK,1,50,5,paid",
+].join("\n");
+
 const amazonOrdersMetricsTable = [
   "amazon-order-id\tpurchase-date\tproduct-name\tsku\tquantity-purchased\titem-price\titem-status",
   "112-0001\t2026-07-08T10:11:00Z\t黑杯\tCUP-BLACK\t2\t79.8\tShipped",
@@ -157,6 +163,40 @@ async function main() {
   );
   assert(shopifyOrdersAnalysis?.totals?.current?.revenue === 129.6, "Shopify Lineitem price 应该按单价乘件数汇总。");
 
+  const shopifyDiscountOrders = await postAnalyze({
+    store: {
+      storeName: "A组 Shopify 折扣测试店",
+      platform: "Shopify",
+    },
+    metricsCsv: shopifyDiscountOrdersMetricsTable,
+  });
+  const shopifyDiscountOrdersAnalysis = shopifyDiscountOrders.body.analysis as
+    | { totals?: { previous?: { revenue?: number }; current?: { revenue?: number } } }
+    | undefined;
+  assert(
+    shopifyDiscountOrders.response.status === 200,
+    `Shopify 折扣订单应该返回 200，实际 ${shopifyDiscountOrders.response.status}`,
+  );
+  assert(
+    (shopifyDiscountOrders.body.report as { metricsInputKind?: string } | undefined)?.metricsInputKind ===
+      "order_details",
+    "Shopify 折扣订单应该被接口识别为订单明细。",
+  );
+  assert(
+    shopifyDiscountOrdersAnalysis?.totals?.previous?.revenue === 90,
+    "Shopify 折扣订单上周收入应该按单价乘件数后扣折扣。",
+  );
+  assert(
+    shopifyDiscountOrdersAnalysis?.totals?.current?.revenue === 45,
+    "Shopify 折扣订单本周收入应该按单价乘件数后扣折扣。",
+  );
+  assert(
+    ((shopifyDiscountOrders.body.report as { issues?: Array<{ message?: string }> } | undefined)?.issues ?? []).some(
+      (issue) => issue.message?.includes("折扣字段"),
+    ),
+    "导入报告应该提示折扣字段已扣减。",
+  );
+
   const amazonOrders = await postAnalyze({
     store: {
       storeName: "A组 Amazon 订单测试店",
@@ -205,7 +245,7 @@ async function main() {
   );
 
   console.info(
-    `[smoke:api] /api/agent/analyze 平台表头、订单明细、Shopify Orders、Amazon 订单 TSV、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
+    `[smoke:api] /api/agent/analyze 平台表头、订单明细、Shopify Orders、Shopify 折扣、Amazon 订单 TSV、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
   );
 }
 

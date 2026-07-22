@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.105-api-smoke-shopify-discounts] - 2026-07-23
+
+### Added
+
+- API smoke 增加 Shopify Orders `Discount Amount` 场景，验证订单行收入按单价乘件数后扣折扣，并确认导入报告提示折扣扣减口径。
+
 ## [v0.1.104-shopify-discount-sample] - 2026-07-23
 
 ### Changed
