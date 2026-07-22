@@ -110,6 +110,22 @@ describe("ecommerce csv import", () => {
     expect(result.report.issues.some((issue) => issue.message.includes("最近两期"))).toBe(true);
   });
 
+  it("uses start date as the period when a platform export has no week column", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "start_date,end_date,product_name,orders,revenue,units_sold",
+        "2026-07-01,2026-07-07,黑杯,8,400,9",
+        "2026-07-08,2026-07-14,黑杯,10,500,12",
+        "2026-07-15,2026-07-21,黑杯,9,450,10",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.previousWeek.startDate).toBe("2026-07-08");
+    expect(result.input?.currentWeek.startDate).toBe("2026-07-15");
+    expect(result.input?.currentWeek.products[0].revenue).toBe(450);
+  });
+
   it("rejects impossible negative operating metrics", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

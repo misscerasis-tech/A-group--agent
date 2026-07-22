@@ -109,7 +109,24 @@ const metricRequiredFields = new Set<MetricField>([
 ]);
 
 const metricAliases: Record<MetricField, string[]> = {
-  week: ["week", "period", "label", "date_period", "time_period", "数据周期", "周期", "周", "时间段"],
+  week: [
+    "week",
+    "period",
+    "label",
+    "date",
+    "start_date",
+    "startdate",
+    "date_period",
+    "time_period",
+    "数据周期",
+    "周期",
+    "周",
+    "日期",
+    "开始日期",
+    "起始日期",
+    "统计开始日期",
+    "时间段",
+  ],
   startDate: ["start_date", "startdate", "start", "开始日期", "起始日期", "统计开始日期"],
   endDate: ["end_date", "enddate", "end", "结束日期", "统计结束日期"],
   productName: [
