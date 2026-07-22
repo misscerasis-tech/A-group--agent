@@ -7,6 +7,7 @@ import {
   buildProductFindingsTsv,
   buildWeeklyMarkdownReport,
 } from "@/lib/ecommerce-agent/report";
+import { ecommerceKpiGuide } from "@/lib/ecommerce-agent/kpi-guide";
 import { buildBeginnerWorkSession } from "@/lib/ecommerce-agent/work-session";
 import type { StoreProfile } from "@/lib/ecommerce-agent/types";
 import { formatEcommerceAnalysisForFeishu } from "@/lib/integrations/feishu/agent-reply";
@@ -42,6 +43,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error: "缺少 metricsCsv。请传经营数据 CSV、TSV、Markdown 或复制表格文本。",
+        kpiGuide: ecommerceKpiGuide,
         workSession: buildBeginnerWorkSession(),
         dataRequestPlan,
         dataRequestTable: buildDataRequestPlanTsv(dataRequestPlan),
@@ -65,6 +67,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         report: importResult.report,
+        kpiGuide: ecommerceKpiGuide,
         workSession: buildBeginnerWorkSession(importResult.report),
         dataRequestPlan,
         dataRequestTable: buildDataRequestPlanTsv(dataRequestPlan),
@@ -78,6 +81,7 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     report: importResult.report,
+    kpiGuide: ecommerceKpiGuide,
     workSession: buildBeginnerWorkSession(importResult.report, analysis.questionsForUser),
     dataRequestPlan,
     dataRequestTable: buildDataRequestPlanTsv(dataRequestPlan),

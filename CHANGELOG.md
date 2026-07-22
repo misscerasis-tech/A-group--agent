@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.70-api-kpi-guide] - 2026-07-23
+
+### Added
+
+- `/api/agent/analyze` 的成功、缺字段和缺 `metricsCsv` 响应都会返回 `kpiGuide`，方便前端或飞书解释销售额、订单、转化、广告、库存、退款/退货和竞品指标。
+
 ## [v0.1.69-currency-number-formats] - 2026-07-23
 
 ### Added

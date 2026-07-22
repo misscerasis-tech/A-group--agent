@@ -251,6 +251,7 @@ Agent 可以从原始字段计算：
 - `riskTable`：可粘贴到飞书表格/多维表格的风险商品 TSV。
 - `dataRequestPlan`：结构化补数清单，告诉小白下一份数据要补什么。
 - `dataRequestTable`：可粘贴到飞书表格/多维表格的补数 TSV。
+- `kpiGuide`：小白版指标说明，解释每个核心指标代表什么、为什么重要、首页如何体现。
 - `markdownReport`：适合沉淀为飞书文档的周报 Markdown。
 
 `dataRequestPlan.items` 每项包含：
