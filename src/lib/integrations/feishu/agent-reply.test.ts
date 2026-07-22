@@ -4,6 +4,7 @@ import {
   detectFeishuReplyIntent,
   parseFeishuTextContent,
 } from "./agent-reply";
+import { buildEcommerceInputFromCsv } from "../../ecommerce-agent/csv-import";
 import { sampleEcommerceAgentInput } from "../../ecommerce-agent/sample-data";
 
 describe("feishu agent reply", () => {
@@ -48,6 +49,27 @@ describe("feishu agent reply", () => {
 
     expect(importedReply).toContain("核心数据暂时够用");
     expect(importedReply).toContain("行动清单");
+  });
+
+  it("uses an incomplete import report instead of falling back to sample data", () => {
+    const importResult = buildEcommerceInputFromCsv({
+      metricsCsv: ["周期,商品名称,销售额", "本周,黑杯,450"].join("\n"),
+    });
+
+    const reviewReply = buildFeishuAgentReply("帮我看本周经营情况", {
+      report: importResult.report,
+      sourceLabel: "当前导入数据",
+    });
+    const dataRequestReply = buildFeishuAgentReply("我还缺什么数据", {
+      report: importResult.report,
+      sourceLabel: "当前导入数据",
+    });
+
+    expect(reviewReply).toContain("当前导入数据");
+    expect(reviewReply).toContain("还不能直接复盘");
+    expect(reviewReply).toContain("订单数");
+    expect(dataRequestReply).toContain("修正经营数据表");
+    expect(dataRequestReply).toContain("销量");
   });
 
   it("answers what the beginner should do next", () => {

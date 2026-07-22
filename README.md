@@ -100,7 +100,7 @@ SMOKE_BASE_URL=http://localhost:3001 npx pnpm@10.13.1 run smoke:api
 npx pnpm@10.13.1 run feishu:worker
 ```
 
-第一轮飞书测试使用长连接，不需要公网回调地址。运行前在本机 `.env` 填 `FEISHU_APP_ID` 和 `FEISHU_APP_SECRET`，不要提交真实密钥。
+第一轮飞书测试使用长连接，不需要公网回调地址。运行前在本机 `.env` 填 `FEISHU_APP_ID` 和 `FEISHU_APP_SECRET`，不要提交真实密钥。如果 `.env` 指向的经营表不完整，worker 也会继续启动；机器人会在飞书里按当前导入报告追问缺失字段，不会回落成样例店铺复盘。
 
 质量检查：
 

@@ -45,7 +45,7 @@ function readOptionalFile(pathValue: string | undefined) {
   return readFileSync(filePath, "utf8");
 }
 
-function loadEcommerceInputFromEnv() {
+function loadEcommerceContextFromEnv() {
   const metricsCsv = readOptionalFile(process.env.ECOMMERCE_WEEKLY_METRICS_CSV);
 
   if (!metricsCsv) {
@@ -68,23 +68,31 @@ function loadEcommerceInputFromEnv() {
   });
 
   if (!result.input) {
-    const messages = result.report.issues.map((issue) => `- ${issue.message}`).join("\n");
-    throw new Error(`导入的电商数据还不能分析：\n${messages}`);
+    return {
+      input: undefined,
+      report: result.report,
+      warningCount: result.report.issues.filter((issue) => issue.severity !== "info").length,
+    };
   }
 
   return {
     input: result.input,
+    report: result.report,
     warningCount: result.report.issues.filter((issue) => issue.severity !== "info").length,
   };
 }
 
 async function main() {
   const config = requireFeishuRuntimeConfig();
-  const importedData = loadEcommerceInputFromEnv();
+  const importedData = loadEcommerceContextFromEnv();
 
-  if (importedData) {
+  if (importedData?.input) {
     console.info(
       `[feishu] 已加载本地经营数据：${importedData.input.store.storeName}，提醒 ${importedData.warningCount} 条。`,
+    );
+  } else if (importedData) {
+    console.warn(
+      `[feishu] 已读取本地经营数据文件，但还不能分析。worker 会继续启动，并在飞书里追问缺失字段，提醒 ${importedData.warningCount} 条。`,
     );
   } else {
     console.info("[feishu] 未配置本地经营数据文件，先使用样例店铺回复。");
@@ -161,6 +169,7 @@ async function main() {
       createFeishuEventHandlers(sendTextMessage, (text) =>
         buildFeishuAgentReply(text, {
           input: importedData?.input,
+          report: importedData?.report,
           sourceLabel: importedData ? "当前导入数据" : "样例店铺",
         }),
       ),

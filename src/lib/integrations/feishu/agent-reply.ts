@@ -1,5 +1,8 @@
 import { analyzeEcommerceStore } from "../../ecommerce-agent/analysis";
-import { buildEcommerceInputFromCsv } from "../../ecommerce-agent/csv-import";
+import {
+  buildEcommerceInputFromCsv,
+  type EcommerceCsvImportReport,
+} from "../../ecommerce-agent/csv-import";
 import {
   buildDataRequestPlan,
   formatDataRequestPlanForFeishu,
@@ -8,7 +11,11 @@ import { buildKpiGuideReply } from "../../ecommerce-agent/kpi-guide";
 import { buildOperationalTasksTsv } from "../../ecommerce-agent/report";
 import { sampleEcommerceAgentInput } from "../../ecommerce-agent/sample-data";
 import { buildTestingChecklistReply } from "../../ecommerce-agent/testing-checklist";
-import type { EcommerceAgentAnalysis, EcommerceAgentInput } from "../../ecommerce-agent/types";
+import type {
+  AgentQuestion,
+  EcommerceAgentAnalysis,
+  EcommerceAgentInput,
+} from "../../ecommerce-agent/types";
 import {
   buildBeginnerWorkSession,
   formatBeginnerWorkSessionForFeishu,
@@ -186,8 +193,8 @@ export function buildFeishuUsageReply() {
   ].join("\n");
 }
 
-export function buildWorkPlanReply() {
-  return formatBeginnerWorkSessionForFeishu(buildBeginnerWorkSession());
+export function buildWorkPlanReply(report?: EcommerceCsvImportReport, questions: AgentQuestion[] = []) {
+  return formatBeginnerWorkSessionForFeishu(buildBeginnerWorkSession(report, questions));
 }
 
 export function buildFeishuTestingReply() {
@@ -202,12 +209,29 @@ export function buildTasksReply(analysis: EcommerceAgentAnalysis) {
   ].join("\n");
 }
 
-export function buildDataRequestReply(analysis: EcommerceAgentAnalysis, hasImportedContext: boolean) {
+export function buildDataRequestReply({
+  analysis,
+  report,
+  hasImportedContext,
+}: {
+  analysis?: EcommerceAgentAnalysis;
+  report?: EcommerceCsvImportReport;
+  hasImportedContext: boolean;
+}) {
   return formatDataRequestPlanForFeishu(
-    buildDataRequestPlan(undefined, hasImportedContext ? analysis.questionsForUser : [], {
+    buildDataRequestPlan(report, hasImportedContext ? (analysis?.questionsForUser ?? []) : [], {
       hasKnownInput: hasImportedContext,
     }),
   );
+}
+
+function buildIncompleteImportReply(report: EcommerceCsvImportReport) {
+  return [
+    "我读到了当前导入数据，但现在还不能直接复盘。",
+    "我不会拿样例店铺硬套；先按这份表给你列补数清单：",
+    "",
+    formatDataRequestPlanForFeishu(buildDataRequestPlan(report)),
+  ].join("\n");
 }
 
 export function buildInventoryReply(analysis: EcommerceAgentAnalysis) {
@@ -406,6 +430,7 @@ export function buildFeishuAgentReply(
   text: string,
   options: {
     input?: EcommerceAgentInput;
+    report?: EcommerceCsvImportReport;
     sourceLabel?: string;
   } = {},
 ) {
@@ -414,7 +439,7 @@ export function buildFeishuAgentReply(
   }
 
   const sourceLabel = options.sourceLabel ?? "样例店铺";
-  const analysis = analyzeEcommerceStore(options.input ?? sampleEcommerceAgentInput);
+  const hasImportedContext = Boolean(options.input);
   const intent = detectFeishuReplyIntent(text);
 
   if (intent === "usage") {
@@ -425,12 +450,33 @@ export function buildFeishuAgentReply(
     return buildFeishuDataChecklistReply();
   }
 
+  if (options.report && !options.input) {
+    if (intent === "work_plan") {
+      return buildWorkPlanReply(options.report);
+    }
+
+    if (intent === "data_request") {
+      return buildDataRequestReply({
+        report: options.report,
+        hasImportedContext: false,
+      });
+    }
+
+    return buildIncompleteImportReply(options.report);
+  }
+
+  const analysis = analyzeEcommerceStore(options.input ?? sampleEcommerceAgentInput);
+
   if (intent === "data_request") {
-    return buildDataRequestReply(analysis, Boolean(options.input));
+    return buildDataRequestReply({
+      analysis,
+      report: options.report,
+      hasImportedContext,
+    });
   }
 
   if (intent === "work_plan") {
-    return buildWorkPlanReply();
+    return buildWorkPlanReply(options.report, hasImportedContext ? analysis.questionsForUser : []);
   }
 
   if (intent === "tasks") {

@@ -214,6 +214,18 @@ function main() {
     "异常数据应该追问具体行号。",
   );
 
+  const incompleteImport = buildEcommerceInputFromCsv({
+    metricsCsv: ["周期,商品名称,销售额", "本周,黑杯,450"].join("\n"),
+  });
+  const incompleteFeishuReply = buildFeishuAgentReply("帮我看本周经营情况", {
+    report: incompleteImport.report,
+    sourceLabel: "当前导入数据",
+  });
+
+  assert(!incompleteImport.report.ok, "缺字段经营表应该不可直接分析。");
+  assert(incompleteFeishuReply.includes("还不能直接复盘"), "飞书不应该把不完整导入表回落成样例复盘。");
+  assert(incompleteFeishuReply.includes("订单数"), "飞书应该追问不完整导入表缺少的字段。");
+
   console.info("[smoke] 经营表导入、经营分析、飞书问答和异常数据拦截均通过。");
 }
 

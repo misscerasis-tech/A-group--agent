@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { buildEcommerceInputFromCsv } from "../src/lib/ecommerce-agent/csv-import";
+import { buildDataRequestPlan } from "../src/lib/ecommerce-agent/data-request";
 import { getFeishuEnvStatus } from "../src/lib/integrations/feishu/config";
 
 const knownAGroupFeishuAppId = "cli_aaea1dbb6ee1dd10";
@@ -120,15 +121,18 @@ function main() {
   });
 
   if (!importResult.input) {
-    console.error(`[feishu:doctor] 本地经营数据还不能分析：${metricsCsv.filePath}`);
+    console.warn(`[feishu:doctor] 本地经营数据还不能分析：${metricsCsv.filePath}`);
 
     for (const issue of importResult.report.issues) {
-      console.error(
+      console.warn(
         `- ${issue.rowNumber ? `第 ${issue.rowNumber} 行：` : ""}${issue.message}`,
       );
     }
 
-    process.exitCode = 1;
+    const dataRequestPlan = buildDataRequestPlan(importResult.report);
+
+    console.warn(`[feishu:doctor] worker 仍可启动，并会在飞书里继续追问：${dataRequestPlan.nextQuestion}`);
+    process.exitCode = hasError ? 1 : 0;
     return;
   }
 
