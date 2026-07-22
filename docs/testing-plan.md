@@ -98,6 +98,7 @@ SMOKE_BASE_URL=http://localhost:3000 npx pnpm@10.13.1 run smoke:web
 - Shopify Orders 的 `Lineitem price` 会按单价处理，乘以 `Lineitem quantity` 后才进入销售额汇总。
 - Amazon 订单 TSV 的 `item-price` 会按订单行金额处理，`item-status` 里出现 refund/return 会进入退款/退货单数。
 - 订单明细里出现买家姓名、电话、邮箱、地址、身份证或税号等个人信息列时，Agent 会提示删除或隐藏，并继续分析可用经营字段。
+- 订单明细只覆盖一个自然周时，Agent 会说明当前识别到的周范围，并要求补相邻一周的订单号、支付时间、商品/SKU、件数和实收金额。
 - 如果表里有三周或更多周期，Agent 会自动选择最近两期作为上周和本周。
 - 如果同一周期同一 SKU 出现多行，Agent 会先合并后分析，并在导入提醒里说明。
 - 如果另传库存/成本快照，Agent 会按 SKU/商品名更新本周库存，补齐单位成本或毛利率，并提醒未匹配行。

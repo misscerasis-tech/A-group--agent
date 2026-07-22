@@ -578,6 +578,10 @@ describe("ecommerce csv import", () => {
     expect(result.report.ok).toBe(false);
     expect(result.report.metricsInputKind).toBe("order_details");
     expect(result.report.questionsForUser.some((question) => question.includes("两个自然周"))).toBe(true);
+    expect(result.report.questionsForUser.some((question) => question.includes("2026-07-13 至 2026-07-19"))).toBe(
+      true,
+    );
+    expect(result.report.questionsForUser.some((question) => question.includes("订单号、支付时间"))).toBe(true);
   });
 
   it("rejects impossible negative operating metrics", () => {

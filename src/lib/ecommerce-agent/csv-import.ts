@@ -1723,9 +1723,14 @@ function buildWeeklyMetricSetsFromOrderDetails({
     selectedWeeks.length === 2 ? selectedWeeks : [{ startDate: new Date(0), rows: [] }, selectedWeeks[0]];
 
   if (selectedWeeks.length < 2) {
+    const recognizedWeeks =
+      sortedWeeks.length > 0
+        ? sortedWeeks.map((week) => formatWeekRange(week.startDate)).join("、")
+        : "没有识别到可用自然周";
+
     issues.push({
       severity: "error",
-      message: "订单明细至少需要覆盖两个自然周，Agent 才能判断上周到本周的变化趋势。",
+      message: `订单明细至少需要覆盖两个自然周，Agent 才能判断上周到本周的变化趋势。当前只识别到：${recognizedWeeks}。请再补相邻一周订单明细，至少包含订单号、支付时间、商品/SKU、件数和实收金额。`,
     });
   }
 
