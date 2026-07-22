@@ -23,7 +23,13 @@ const rawSetupErrorPatterns = [
 ];
 
 const requiredRouteText: Record<string, string[]> = {
-  "/agent": ["真实数据导入工作台", "Shopify 订单样例", "Amazon 订单样例", "电商一定关注哪些数据"],
+  "/agent": [
+    "真实数据导入工作台",
+    "Shopify 订单样例",
+    "Amazon 订单样例",
+    "电商一定关注哪些数据",
+    "已自动处理",
+  ],
 };
 
 async function checkRoute(route: string) {

@@ -660,6 +660,7 @@ textarea {
 }
 
 .mapping-list,
+.issue-group-list,
 .issue-list,
 .work-session-list,
 .data-request-list {
@@ -840,6 +841,52 @@ textarea {
 .mapping-row small {
   margin-left: auto;
   color: var(--muted);
+}
+
+.issue-group {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px;
+}
+
+.issue-group header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.issue-group header strong,
+.issue-group header small {
+  display: block;
+}
+
+.issue-group header small,
+.issue-group > small {
+  margin-top: 3px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.issue-group header span {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: #475467;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.issue-group.error {
+  border-color: #f4a6a1;
+}
+
+.issue-group.warning {
+  border-color: #f0d38a;
 }
 
 .issue-list p {

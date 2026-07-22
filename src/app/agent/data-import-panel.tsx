@@ -369,6 +369,26 @@ export function DataImportPanel() {
   const dataRequestTableText = buildDataRequestPlanTsv(dataRequestPlan);
   const requiredMappings = importResult.report.fieldMappings.filter((field) => field.required);
   const workSession = buildBeginnerWorkSession(importResult.report, analysis?.questionsForUser ?? []);
+  const issueGroups = [
+    {
+      severity: "error",
+      title: "必须先修正",
+      description: "不修正就不能安全复盘。",
+      items: importResult.report.issues.filter((issue) => issue.severity === "error"),
+    },
+    {
+      severity: "warning",
+      title: "建议你确认",
+      description: "可以继续分析，但结论会受这些口径影响。",
+      items: importResult.report.issues.filter((issue) => issue.severity === "warning"),
+    },
+    {
+      severity: "info",
+      title: "已自动处理",
+      description: "Agent 已经替你做了合并、选择周期或补充说明。",
+      items: importResult.report.issues.filter((issue) => issue.severity === "info"),
+    },
+  ].filter((group) => group.items.length > 0);
 
   return (
     <section className="panel import-workbench">
@@ -657,12 +677,26 @@ export function DataImportPanel() {
           {importResult.report.issues.length > 0 ? (
             <div className="import-status">
               <h4>我会先提醒你</h4>
-              <div className="issue-list">
-                {importResult.report.issues.slice(0, 5).map((issue) => (
-                  <p className={issue.severity} key={`${issue.message}-${issue.rowNumber ?? "all"}`}>
-                    {issue.rowNumber ? `第 ${issue.rowNumber} 行：` : ""}
-                    {issue.message}
-                  </p>
+              <div className="issue-group-list">
+                {issueGroups.map((group) => (
+                  <section className={`issue-group ${group.severity}`} key={group.severity}>
+                    <header>
+                      <div>
+                        <strong>{group.title}</strong>
+                        <small>{group.description}</small>
+                      </div>
+                      <span>{group.items.length} 条</span>
+                    </header>
+                    <div className="issue-list">
+                      {group.items.slice(0, 4).map((issue) => (
+                        <p className={issue.severity} key={`${issue.message}-${issue.rowNumber ?? "all"}`}>
+                          {issue.rowNumber ? `第 ${issue.rowNumber} 行：` : ""}
+                          {issue.message}
+                        </p>
+                      ))}
+                    </div>
+                    {group.items.length > 4 ? <small>还有 {group.items.length - 4} 条同类提醒。</small> : null}
+                  </section>
                 ))}
               </div>
             </div>
