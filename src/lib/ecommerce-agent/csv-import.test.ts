@@ -737,6 +737,21 @@ describe("ecommerce csv import", () => {
     expect(result.report.questionsForUser.some((question) => question.includes("销售额"))).toBe(true);
   });
 
+  it("warns when duplicate order rows may repeat order-level revenue", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "Name,Paid at,Lineitem name,Lineitem sku,Lineitem quantity,paid_amount,Financial Status",
+        "#1001,2026-07-08 10:11:00,黑杯,CUP-BLACK,2,119.7,paid",
+        "#1001,2026-07-08 10:11:00,白杯,CUP-WHITE,1,119.7,paid",
+        "#1002,2026-07-15 09:20:00,黑杯,CUP-BLACK,1,39.9,paid",
+        "#1003,2026-07-15 11:20:00,白杯,CUP-WHITE,1,29.9,paid",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.report.issues.some((issue) => issue.message.includes("整单金额重复"))).toBe(true);
+  });
+
   it("subtracts order detail discount columns before aggregating revenue", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

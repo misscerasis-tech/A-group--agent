@@ -1884,6 +1884,50 @@ function isOrderDetailUnitPriceHeader(header?: string) {
   return ["lineitemprice", "lineitemunitprice", "lineitemunitamount"].includes(normalizeHeader(header));
 }
 
+function isLikelyLineLevelRevenueHeader(header?: string) {
+  if (!header) {
+    return false;
+  }
+
+  return [
+    "itemprice",
+    "itemsubtotal",
+    "itemtotal",
+    "lineitemprice",
+    "lineitemsubtotal",
+    "lineitemtotal",
+    "lineitemunitamount",
+    "lineitemunitprice",
+  ].includes(normalizeHeader(header));
+}
+
+function addDuplicateOrderRevenueWarning(
+  rows: ParsedOrderDetailRow[],
+  mapping: Map<OrderDetailField, string>,
+  issues: ImportIssue[],
+) {
+  if (!mapping.has("orderId") || isLikelyLineLevelRevenueHeader(mapping.get("revenue"))) {
+    return;
+  }
+
+  const orderRowCounts = new Map<string, number>();
+
+  for (const row of rows) {
+    orderRowCounts.set(row.orderId, (orderRowCounts.get(row.orderId) ?? 0) + 1);
+  }
+
+  const duplicateOrderCount = [...orderRowCounts.values()].filter((count) => count > 1).length;
+
+  if (duplicateOrderCount === 0) {
+    return;
+  }
+
+  issues.push({
+    severity: "warning",
+    message: `订单明细里有 ${duplicateOrderCount} 个订单号出现多行，但收入字段「${mapping.get("revenue")}」不像 line item 行金额。请确认它不是整单金额重复在每个商品行上，否则销售额可能被算大。`,
+  });
+}
+
 function parseOrderDetailRows(
   table: CsvTable,
   mapping: Map<OrderDetailField, string>,
@@ -2103,6 +2147,7 @@ function buildWeeklyMetricSetsFromOrderDetails({
   issues: ImportIssue[];
 }) {
   const orderRows = parseOrderDetailRows(table, mapping, issues);
+  addDuplicateOrderRevenueWarning(orderRows, mapping, issues);
   const rowsByWeek = new Map<string, { startDate: Date; rows: ParsedOrderDetailRow[] }>();
 
   for (const row of orderRows) {
