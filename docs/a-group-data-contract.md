@@ -84,6 +84,34 @@
 
 竞品 CSV/TSV 也支持别名，例如 `name/竞品名称`、`url/竞品链接`、`price/价格`、`promotion/促销`、`key_selling_points/卖点`。
 
+## 用户声音 / 售后评价数据
+
+这张表可选，用来补充客服备注、差评、评价关键词、退款备注或售后原因。它不替代经营数据表，但能帮助 Agent 判断“用户到底为什么不满意”。
+
+| 字段 | 含义 | 是否必需 | 示例 |
+| --- | --- | --- | --- |
+| productName | 商品名称 | 推荐 | Aurora Cup 黑色 500ml |
+| sku | SKU | 推荐 | CUP-BLACK-500 |
+| source | 来源 | 可选 | 商品评价 / 客服售后备注 |
+| observedAt | 记录日期 | 可选 | 2026-07-19 |
+| sentiment | 情绪 | 可选 | negative / 负向 |
+| theme | 问题主题 | 推荐 | 杯盖漏水 |
+| text | 原始反馈内容 | 推荐 | 用户反馈通勤路上杯盖会渗水 |
+| count | 出现次数 | 可选 | 4 |
+
+至少要有商品名称或 SKU，并且有问题主题或反馈内容。常见别名：
+
+| 标准字段 | 可识别别名示例 |
+| --- | --- |
+| productName | product_name、商品名称、商品、品名 |
+| sku | sku、商家编码、商品编码、货号 |
+| source | source、来源、渠道、反馈来源 |
+| observedAt | observed_at、日期、反馈日期、评价日期、售后日期 |
+| sentiment | sentiment、情绪、评价类型、正负向 |
+| theme | theme、topic、keyword、标签、问题类型、售后原因、退款原因、差评原因 |
+| text | text、content、feedback、评价内容、评论内容、客服备注、售后备注、退款备注 |
+| count | count、frequency、次数、出现次数、提及次数 |
+
 ## Agent 自动计算指标
 
 Agent 可以从原始字段计算：
@@ -99,6 +127,7 @@ Agent 可以从原始字段计算：
 - 退款/退货单占比。
 - 退款金额占销售额比例。
 - 售后风险商品。
+- 用户声音中的主要售后/评价问题。
 - 商品贡献度。
 - 异常商品。
 - 竞品价格差。

@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 type AnalyzeRequestBody = {
   metricsCsv?: string;
   competitorsCsv?: string;
+  customerVoicesCsv?: string;
   store?: Partial<StoreProfile>;
 };
 
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
   const importResult = buildEcommerceInputFromCsv({
     metricsCsv: body.metricsCsv,
     competitorsCsv: body.competitorsCsv,
+    customerVoicesCsv: body.customerVoicesCsv,
     store: body.store,
   });
 

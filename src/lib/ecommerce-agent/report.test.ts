@@ -15,6 +15,8 @@ describe("weekly markdown report", () => {
     expect(report).toContain("客单价变化");
     expect(report).toContain("| 退款金额 |");
     expect(report).toContain("退款/退货单占比变化");
-    expect(report).toContain("## 6. 下周行动");
+    expect(report).toContain("## 5. 用户声音");
+    expect(report).toContain("杯盖漏水");
+    expect(report).toContain("## 7. 下周行动");
   });
 });

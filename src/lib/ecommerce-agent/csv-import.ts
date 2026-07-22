@@ -1,5 +1,6 @@
 import type {
   CompetitorSignal,
+  CustomerVoiceSignal,
   EcommerceAgentInput,
   ProductMetric,
   StoreProfile,
@@ -25,6 +26,7 @@ export type EcommerceCsvImportReport = {
   ok: boolean;
   metricsRows: number;
   competitorRows: number;
+  customerVoiceRows: number;
   fieldMappings: FieldMapping[];
   issues: ImportIssue[];
   questionsForUser: string[];
@@ -81,6 +83,16 @@ type CompetitorField =
   | "rating"
   | "reviews"
   | "keySellingPoints";
+
+type CustomerVoiceField =
+  | "productName"
+  | "sku"
+  | "source"
+  | "observedAt"
+  | "sentiment"
+  | "theme"
+  | "text"
+  | "count";
 
 const defaultStore: StoreProfile = {
   storeName: "待导入店铺",
@@ -386,6 +398,48 @@ const competitorAliases: Record<CompetitorField, string[]> = {
   rating: ["rating", "score", "评分", "星级"],
   reviews: ["reviews", "review_count", "评论数", "评价数"],
   keySellingPoints: ["key_selling_points", "selling_points", "卖点", "核心卖点", "关键词"],
+};
+
+const customerVoiceAliases: Record<CustomerVoiceField, string[]> = {
+  productName: ["product_name", "product", "item_name", "商品名称", "商品", "产品名称", "品名"],
+  sku: ["sku", "seller_sku", "商家编码", "商品编码", "货号", "规格编码"],
+  source: ["source", "channel", "来源", "渠道", "数据来源", "反馈来源"],
+  observedAt: ["observed_at", "date", "created_at", "feedback_date", "日期", "反馈日期", "评价日期", "售后日期"],
+  sentiment: ["sentiment", "polarity", "type", "情绪", "倾向", "评价类型", "正负向"],
+  theme: [
+    "theme",
+    "topic",
+    "keyword",
+    "keywords",
+    "reason",
+    "issue",
+    "标签",
+    "主题",
+    "关键词",
+    "问题",
+    "问题类型",
+    "问题原因",
+    "售后原因",
+    "退款原因",
+    "差评原因",
+  ],
+  text: [
+    "text",
+    "content",
+    "feedback",
+    "comment",
+    "review",
+    "message",
+    "评价内容",
+    "评论内容",
+    "用户反馈",
+    "客户反馈",
+    "客服备注",
+    "售后备注",
+    "退款备注",
+    "差评内容",
+  ],
+  count: ["count", "qty", "frequency", "times", "mentions", "数量", "次数", "出现次数", "提及次数"],
 };
 
 function normalizeHeader(header: string) {
@@ -1094,13 +1148,95 @@ function buildCompetitors(
   return { competitors, rows: table.rows.length };
 }
 
+function normalizeSentiment(value: string): CustomerVoiceSignal["sentiment"] {
+  const normalized = value.trim().toLowerCase();
+
+  if (["positive", "good", "好评", "正向", "满意", "表扬"].some((keyword) => normalized.includes(keyword))) {
+    return "positive";
+  }
+
+  if (["neutral", "普通", "中性", "一般"].some((keyword) => normalized.includes(keyword))) {
+    return "neutral";
+  }
+
+  return "negative";
+}
+
+function buildCustomerVoices(
+  text: string | undefined,
+  issues: ImportIssue[],
+): { customerVoices: CustomerVoiceSignal[]; rows: number } {
+  if (!text?.trim()) {
+    return { customerVoices: [], rows: 0 };
+  }
+
+  const table = parseCsv(text);
+  const { mapping } = buildHeaderMap(
+    table.headers,
+    customerVoiceAliases,
+    new Set<CustomerVoiceField>(),
+    {
+      productName: "商品名称",
+      sku: "SKU",
+      source: "来源",
+      observedAt: "日期",
+      sentiment: "情绪",
+      theme: "问题主题",
+      text: "反馈内容",
+      count: "出现次数",
+    },
+  );
+
+  const customerVoices = table.rows.flatMap((row, index) => {
+    const productName = readField(row, mapping, "productName");
+    const sku = readField(row, mapping, "sku");
+    const theme = readField(row, mapping, "theme");
+    const voiceText = readField(row, mapping, "text");
+
+    if (!productName && !sku) {
+      issues.push({
+        severity: "warning",
+        rowNumber: index + 2,
+        message: "有一行用户声音缺少商品名称或 SKU，已跳过。",
+      });
+      return [];
+    }
+
+    if (!theme && !voiceText) {
+      issues.push({
+        severity: "warning",
+        rowNumber: index + 2,
+        message: "有一行用户声音缺少问题主题或反馈内容，已跳过。",
+      });
+      return [];
+    }
+
+    return [
+      {
+        productName: productName || sku,
+        sku: sku || undefined,
+        source: readField(row, mapping, "source") || "用户声音表",
+        observedAt: readField(row, mapping, "observedAt") || new Date().toISOString().slice(0, 10),
+        sentiment: normalizeSentiment(readField(row, mapping, "sentiment")),
+        theme: theme || voiceText.slice(0, 18),
+        text: voiceText || theme,
+        count: Math.max(optionalNumber(readField(row, mapping, "count")) ?? 1, 1),
+      },
+    ];
+  });
+
+  return { customerVoices, rows: table.rows.length };
+}
+
 export function buildEcommerceInputFromCsv({
   metricsCsv,
   competitorsCsv,
+  customerVoicesCsv,
   store,
 }: {
   metricsCsv: string;
   competitorsCsv?: string;
+  customerVoicesCsv?: string;
   store?: Partial<StoreProfile>;
 }): EcommerceCsvImportResult {
   const issues: ImportIssue[] = [];
@@ -1159,6 +1295,7 @@ export function buildEcommerceInputFromCsv({
   }
 
   const competitorResult = buildCompetitors(competitorsCsv, issues);
+  const customerVoiceResult = buildCustomerVoices(customerVoicesCsv, issues);
   const previousWeek = buildWeeklyMetricSet({
     label: "上周",
     rows: explicitPreviousRows,
@@ -1188,6 +1325,7 @@ export function buildEcommerceInputFromCsv({
     ok: errorIssues.length === 0 && previousWeek.products.length > 0 && currentWeek.products.length > 0,
     metricsRows: metricsTable.rows.length,
     competitorRows: competitorResult.rows,
+    customerVoiceRows: customerVoiceResult.rows,
     fieldMappings,
     issues,
     questionsForUser,
@@ -1207,6 +1345,7 @@ export function buildEcommerceInputFromCsv({
       previousWeek,
       currentWeek,
       competitors: competitorResult.competitors,
+      customerVoices: customerVoiceResult.customerVoices,
     },
   };
 }

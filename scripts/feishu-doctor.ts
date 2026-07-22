@@ -81,10 +81,12 @@ function main() {
 
   let metricsCsv: ReturnType<typeof readConfiguredCsv>;
   let competitorsCsv: ReturnType<typeof readConfiguredCsv>;
+  let customerVoicesCsv: ReturnType<typeof readConfiguredCsv>;
 
   try {
     metricsCsv = readConfiguredCsv(process.env.ECOMMERCE_WEEKLY_METRICS_CSV);
     competitorsCsv = readConfiguredCsv(process.env.ECOMMERCE_COMPETITORS_CSV);
+    customerVoicesCsv = readConfiguredCsv(process.env.ECOMMERCE_CUSTOMER_VOICES_CSV);
   } catch (error) {
     console.error(`[feishu:doctor] ${(error as Error).message}`);
     process.exitCode = 1;
@@ -101,6 +103,7 @@ function main() {
   const importResult = buildEcommerceInputFromCsv({
     metricsCsv: metricsCsv.content,
     competitorsCsv: competitorsCsv?.content,
+    customerVoicesCsv: customerVoicesCsv?.content,
     store: {
       storeName: process.env.ECOMMERCE_STORE_NAME,
       platform: process.env.ECOMMERCE_PLATFORM,
@@ -128,7 +131,7 @@ function main() {
   }
 
   console.info(
-    `[feishu:doctor] 本地经营数据可用：${importResult.input.store.storeName}，经营行 ${importResult.report.metricsRows} 行，竞品行 ${importResult.report.competitorRows} 行。`,
+    `[feishu:doctor] 本地经营数据可用：${importResult.input.store.storeName}，经营行 ${importResult.report.metricsRows} 行，竞品行 ${importResult.report.competitorRows} 行，用户声音行 ${importResult.report.customerVoiceRows} 行。`,
   );
 
   if (hasError) {

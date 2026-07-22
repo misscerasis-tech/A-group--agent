@@ -44,6 +44,21 @@ function metricTable(previous: MetricTotals, current: MetricTotals) {
   ].join("\n");
 }
 
+function customerVoiceLines(input: EcommerceAgentInput) {
+  const voices = input.customerVoices ?? [];
+
+  if (voices.length === 0) {
+    return ["暂时没有单独导入客服备注、评价或售后文本。"];
+  }
+
+  return voices
+    .slice(0, 6)
+    .map(
+      (voice, index) =>
+        `${index + 1}. **${voice.productName}**：${voice.theme}（${voice.source}，提及 ${voice.count} 次）  \n${voice.text}`,
+    );
+}
+
 export function buildWeeklyMarkdownReport(
   input: EcommerceAgentInput,
   analysis: EcommerceAgentAnalysis,
@@ -79,16 +94,19 @@ export function buildWeeklyMarkdownReport(
         )
       : ["暂时没有明显商品异常。"]),
     "",
-    "## 5. 竞品判断",
+    "## 5. 用户声音",
+    ...customerVoiceLines(input),
+    "",
+    "## 6. 竞品判断",
     ...analysis.competitorInsights.map((item) => `- ${item}`),
     "",
-    "## 6. 下周行动",
+    "## 7. 下周行动",
     ...analysis.nextActions.map(
       (action, index) =>
         `${index + 1}. **${action.title}**  \n负责人：${action.owner}  \n原因：${action.reason}  \n第一步：${action.firstStep}`,
     ),
     "",
-    "## 7. Agent 还需要追问",
+    "## 8. Agent 还需要追问",
     ...analysis.questionsForUser.map(
       (question, index) => `${index + 1}. ${question.question}  \n为什么重要：${question.whyItMatters}`,
     ),

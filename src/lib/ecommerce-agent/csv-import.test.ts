@@ -294,6 +294,31 @@ describe("ecommerce csv import", () => {
     ).toBe(true);
   });
 
+  it("imports customer voice rows from review or service tables", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,SKU,订单数,销售额,销量,退款单数,退款金额",
+        "上周,黑杯,CUP-BLACK,10,500,12,1,30",
+        "本周,黑杯,CUP-BLACK,9,450,10,2,80",
+      ].join("\n"),
+      customerVoicesCsv: [
+        "商品名称,商家编码,反馈来源,评价日期,正负向,问题类型,评价内容,出现次数",
+        "黑杯,CUP-BLACK,商品评价,2026-07-19,负向,杯盖漏水,用户说杯盖渗水,4",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.report.customerVoiceRows).toBe(1);
+    expect(result.input?.customerVoices?.[0]).toMatchObject({
+      productName: "黑杯",
+      sku: "CUP-BLACK",
+      source: "商品评价",
+      sentiment: "negative",
+      theme: "杯盖漏水",
+      count: 4,
+    });
+  });
+
   it("uses the latest two periods when a platform export contains more than two weeks", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

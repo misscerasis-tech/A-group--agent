@@ -1,0 +1,4 @@
+product_name,sku,source,observed_at,sentiment,theme,text,count
+Aurora Cup 黑色 500ml,CUP-BLACK-500,客服售后备注,2026-07-19,negative,杯盖漏水,用户反馈通勤路上杯盖会渗水，要求退货,4
+Aurora Cup 白色 500ml,CUP-WHITE-500,商品评价,2026-07-19,negative,颜色有色差,评价里提到实物颜色比页面偏黄,3
+Aurora Cup 礼盒套装,CUP-GIFT-SET,客服售后备注,2026-07-19,negative,礼盒压痕,送礼用户反馈外盒压痕明显，不适合直接送人,2

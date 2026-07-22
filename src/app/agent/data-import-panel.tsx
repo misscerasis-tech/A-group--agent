@@ -34,6 +34,12 @@ const starterCompetitorCsv = [
   "Ember Travel Mug 2,https://ember.com/products/ember-travel-mug-2,Ember 官方商品页,2026-07-22,199.95,高端温控旅行杯,4.7,12000,精确温控 / App 控制 / 旅行场景",
 ].join("\n");
 
+const starterCustomerVoiceCsv = [
+  "product_name,sku,source,observed_at,sentiment,theme,text,count",
+  "Aurora Cup 黑色 500ml,CUP-BLACK-500,客服售后备注,2026-07-19,negative,杯盖漏水,用户反馈通勤路上杯盖会渗水，要求退货,4",
+  "Aurora Cup 白色 500ml,CUP-WHITE-500,商品评价,2026-07-19,negative,颜色有色差,评价里提到实物颜色比页面偏黄,3",
+].join("\n");
+
 const importDraftStorageKey = "a-group-ecommerce-agent-import-draft-v1";
 const defaultStoreGoal = "同时看销量、利润、广告回本、库存风险、退款/退货和竞品压力";
 
@@ -45,6 +51,7 @@ type ImportDraft = {
   goal?: string;
   metricsCsv?: string;
   competitorCsv?: string;
+  customerVoicesCsv?: string;
 };
 
 function formatMoney(value: number) {
@@ -84,6 +91,7 @@ export function DataImportPanel() {
   const [goal, setGoal] = useState(defaultStoreGoal);
   const [metricsCsv, setMetricsCsv] = useState(starterMetricsCsv);
   const [competitorCsv, setCompetitorCsv] = useState(starterCompetitorCsv);
+  const [customerVoicesCsv, setCustomerVoicesCsv] = useState(starterCustomerVoiceCsv);
   const [hasRun, setHasRun] = useState(false);
   const [hasLoadedDraft, setHasLoadedDraft] = useState(false);
   const [copiedTarget, setCopiedTarget] = useState<"feishu" | "markdown" | null>(null);
@@ -96,6 +104,7 @@ export function DataImportPanel() {
     setGoal(defaultStoreGoal);
     setMetricsCsv(starterMetricsCsv);
     setCompetitorCsv(starterCompetitorCsv);
+    setCustomerVoicesCsv(starterCustomerVoiceCsv);
     setHasRun(false);
   }
 
@@ -107,12 +116,14 @@ export function DataImportPanel() {
     setGoal(defaultStoreGoal);
     setMetricsCsv(platformHeaderMetricsTable);
     setCompetitorCsv(starterCompetitorCsv);
+    setCustomerVoicesCsv(starterCustomerVoiceCsv);
     setHasRun(false);
   }
 
   function clearImportDraft() {
     setMetricsCsv("");
     setCompetitorCsv("");
+    setCustomerVoicesCsv("");
     setHasRun(false);
     window.localStorage.removeItem(importDraftStorageKey);
   }
@@ -141,6 +152,7 @@ export function DataImportPanel() {
         setGoal(draft.goal ?? defaultStoreGoal);
         setMetricsCsv(draft.metricsCsv ?? starterMetricsCsv);
         setCompetitorCsv(draft.competitorCsv ?? starterCompetitorCsv);
+        setCustomerVoicesCsv(draft.customerVoicesCsv ?? starterCustomerVoiceCsv);
       }
     } catch {
       window.localStorage.removeItem(importDraftStorageKey);
@@ -162,16 +174,18 @@ export function DataImportPanel() {
       goal,
       metricsCsv,
       competitorCsv,
+      customerVoicesCsv,
     };
 
     window.localStorage.setItem(importDraftStorageKey, JSON.stringify(draft));
-  }, [category, competitorCsv, goal, hasLoadedDraft, market, metricsCsv, platform, storeName]);
+  }, [category, competitorCsv, customerVoicesCsv, goal, hasLoadedDraft, market, metricsCsv, platform, storeName]);
 
   const importResult = useMemo(
     () =>
       buildEcommerceInputFromCsv({
         metricsCsv,
         competitorsCsv: competitorCsv,
+        customerVoicesCsv,
         store: {
           storeName,
           platform,
@@ -180,7 +194,7 @@ export function DataImportPanel() {
           goal,
         },
       }),
-    [category, competitorCsv, goal, market, metricsCsv, platform, storeName],
+    [category, competitorCsv, customerVoicesCsv, goal, market, metricsCsv, platform, storeName],
   );
   const analysis = importResult.input ? analyzeEcommerceStore(importResult.input) : null;
   const markdownReport =
@@ -281,6 +295,30 @@ export function DataImportPanel() {
               spellCheck={false}
               value={competitorCsv}
               onChange={(event) => setCompetitorCsv(event.target.value)}
+            />
+          </div>
+
+          <div className="csv-box">
+            <div className="csv-box-header">
+              <span>
+                <ClipboardList size={16} aria-hidden="true" />
+                用户声音/售后评价表
+              </span>
+              <label className="button secondary file-button">
+                <FileUp size={16} aria-hidden="true" />
+                上传
+                <input
+                  accept=".csv,.tsv,.md,.markdown,text/csv,text/tab-separated-values,text/markdown,text/plain"
+                  type="file"
+                  onChange={(event) => void readFileIntoState(event, setCustomerVoicesCsv)}
+                />
+              </label>
+            </div>
+            <textarea
+              aria-label="用户声音、客服备注、评价或售后文本 CSV、TSV、Markdown"
+              spellCheck={false}
+              value={customerVoicesCsv}
+              onChange={(event) => setCustomerVoicesCsv(event.target.value)}
             />
           </div>
 

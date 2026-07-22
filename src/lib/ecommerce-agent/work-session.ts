@@ -96,7 +96,7 @@ export function buildBeginnerWorkSession(
           warningQuestions.length > 0
             ? warningQuestions.slice(0, 2).join(" ")
             : "暂时不用补，当前关键风险字段已经够用。",
-        agentAction: "把缺少的流量、广告、库存、毛利、退款/退货或竞品数据标成不确定项。",
+        agentAction: "把缺少的流量、广告、库存、毛利、退款/退货、用户声音或竞品数据标成不确定项。",
         output: "避免把缺失数据编成确定结论。",
       },
       {

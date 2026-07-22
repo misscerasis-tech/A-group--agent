@@ -6,6 +6,11 @@ const platformHeaderMetricsTable = [
   "本周,黑杯,CUP-BLACK,120,9,450,10,90,180,40,330,120,2,80,杯盖漏水 / 物流慢",
 ].join("\n");
 
+const customerVoiceTable = [
+  "商品名称,商家编码,反馈来源,评价日期,正负向,问题类型,评价内容,出现次数",
+  "黑杯,CUP-BLACK,商品评价,2026-07-19,负向,杯盖漏水,用户说杯盖渗水,4",
+].join("\n");
+
 async function postAnalyze(body: unknown) {
   const response = await fetch(new URL("/api/agent/analyze", baseUrl), {
     method: "POST",
@@ -34,12 +39,16 @@ async function main() {
       platform: "平台导出表",
     },
     metricsCsv: platformHeaderMetricsTable,
+    customerVoicesCsv: customerVoiceTable,
   });
 
   assert(success.response.status === 200, `平台表头数据应该返回 200，实际 ${success.response.status}`);
-  const report = success.body.report as { ok?: boolean; fieldMappings?: Array<{ sourceHeader?: string }> } | undefined;
+  const report = success.body.report as
+    | { ok?: boolean; fieldMappings?: Array<{ sourceHeader?: string }>; customerVoiceRows?: number }
+    | undefined;
   assert(report?.ok === true, "平台表头数据应该可分析。");
   assert(report.fieldMappings?.every((mapping) => mapping.sourceHeader), "字段映射不应该出现空 sourceHeader。");
+  assert(report.customerVoiceRows === 1, "接口应该识别用户声音表行数。");
   assert(typeof success.body.feishuReply === "string", "接口应该返回飞书回复文本。");
   assert((success.body.feishuReply as string).includes("退款/退货"), "飞书回复应该包含售后风险口径。");
   assert((success.body.feishuReply as string).includes("杯盖漏水"), "飞书回复应该引用退款/退货原因。");

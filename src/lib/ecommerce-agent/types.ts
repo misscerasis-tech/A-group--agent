@@ -44,11 +44,23 @@ export type CompetitorSignal = {
   keySellingPoints: string[];
 };
 
+export type CustomerVoiceSignal = {
+  productName: string;
+  sku?: string;
+  source: string;
+  observedAt: string;
+  sentiment: "negative" | "neutral" | "positive";
+  theme: string;
+  text: string;
+  count: number;
+};
+
 export type EcommerceAgentInput = {
   store: StoreProfile;
   previousWeek: WeeklyMetricSet;
   currentWeek: WeeklyMetricSet;
   competitors: CompetitorSignal[];
+  customerVoices?: CustomerVoiceSignal[];
 };
 
 export type MetricTotals = {

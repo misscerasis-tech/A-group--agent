@@ -35,6 +35,7 @@ cp .env.example .env
 ```bash
 FEISHU_APP_ID="cli_aaea1dbb6ee1dd10"
 FEISHU_APP_SECRET="不要提交，只放本机"
+ECOMMERCE_CUSTOMER_VOICES_CSV="data/samples/aurora-cup-customer-voices.csv"
 ```
 
 7. 先做飞书配置和本地数据体检：
@@ -72,6 +73,8 @@ current,黑杯,CUP-BLACK,8,420,9,90,2,80,杯盖漏水 / 物流慢
 回到 `/agent` 页，先填本周目标，再把经营表粘贴进“真实数据导入工作台”并点击“生成复盘”。
 
 如果手里是平台导出的多周期表，不需要手工裁成两周。Agent 会自动选择最近两期，并在导入报告里说明。没有 `week` 列也没关系，有 `date/start_date/开始日期` 就能判断周期。也可以直接从 Excel、飞书表格或 Google Sheets 复制表格粘贴进工作台。
+
+如果有客服备注、差评关键词、退款备注或售后问题导出，也可以粘贴到“用户声音/售后评价表”。这张表会帮助 Agent 把高退款商品解释到具体原因，例如杯盖漏水、物流慢、色差或礼盒破损。
 
 ## 需要决策
 

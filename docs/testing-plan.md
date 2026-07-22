@@ -38,6 +38,7 @@ npx pnpm@10.13.1 run agent:smoke
 
 - 上传或粘贴经营数据 CSV/TSV/Markdown 表格。
 - 上传或粘贴竞品数据 CSV/TSV/Markdown 表格。
+- 上传或粘贴用户声音/售后评价表，例如客服备注、差评关键词、退款备注。
 - 点击“演示样例”可恢复 Shopify 演示数据。
 - 点击“平台表头样例”可测试 `商品访客数`、`支付买家数`、`商品支付金额`、`退款成功金额`、`退款原因` 这类平台导出字段。
 - 也可以测试 `转化率`、`ROAS/投产比`、`毛利率`、`退款率`、`退款金额占比` 这类平台只给比率的字段。
@@ -45,6 +46,7 @@ npx pnpm@10.13.1 run agent:smoke
 - 查看缺失字段追问。
 - 生成基于导入数据的复盘和飞书回写文本。
 - 展开“飞书文档 Markdown”，检查是否能直接沉淀成周报。
+- 检查周报里是否出现“用户声音”章节。
 
 也可以直接调本地 API：
 
@@ -95,9 +97,10 @@ ECOMMERCE_MARKET="美国"
 ECOMMERCE_CATEGORY="旅行杯"
 ECOMMERCE_WEEKLY_METRICS_CSV="data/samples/aurora-cup-weekly-metrics.csv"
 ECOMMERCE_COMPETITORS_CSV="data/samples/aurora-cup-competitors.csv"
+ECOMMERCE_CUSTOMER_VOICES_CSV="data/samples/aurora-cup-customer-voices.csv"
 ```
 
-如果不配置经营表路径，飞书 worker 会使用样例店铺回复；配置后会按“当前导入数据”回复。
+如果不配置经营表路径，飞书 worker 会使用样例店铺回复；配置后会按“当前导入数据”回复。配置用户声音表后，售后风险会优先引用客服备注、评价或售后文本里的问题主题。
 
 ## 阶段 3：飞书机器人测试
 

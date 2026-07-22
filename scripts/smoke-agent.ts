@@ -18,6 +18,7 @@ function main() {
   const sampleImport = buildEcommerceInputFromCsv({
     metricsCsv: readSample("data/samples/aurora-cup-weekly-metrics.csv"),
     competitorsCsv: readSample("data/samples/aurora-cup-competitors.csv"),
+    customerVoicesCsv: readSample("data/samples/aurora-cup-customer-voices.csv"),
     store: {
       storeName: "Smoke Test Aurora Cup",
       platform: "Shopify",
@@ -29,6 +30,7 @@ function main() {
 
   assert(sampleImport.report.ok, "样例 CSV 应该可以导入。");
   assert(sampleImport.input, "样例 CSV 应该生成 Agent 输入。");
+  assert(sampleImport.report.customerVoiceRows === 3, "样例用户声音表应该可以导入。");
 
   const input = sampleImport.input;
 
@@ -89,6 +91,21 @@ function main() {
   assert(duplicateSkuImport.report.ok, "重复 SKU 经营表应该可以导入。");
   assert(duplicateSkuImport.input?.currentWeek.products.length === 1, "同周期重复 SKU 应该先合并。");
   assert(duplicateSkuImport.input?.currentWeek.products[0].revenue === 420, "重复 SKU 销售额应该合并。");
+
+  const voiceImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "周期,商品名称,SKU,订单数,销售额,销量,退款单数,退款金额",
+      "上周,黑杯,CUP-BLACK,10,500,12,1,30",
+      "本周,黑杯,CUP-BLACK,8,420,9,2,80",
+    ].join("\n"),
+    customerVoicesCsv: [
+      "商品名称,商家编码,反馈来源,问题类型,评价内容,出现次数",
+      "黑杯,CUP-BLACK,商品评价,杯盖漏水,用户说杯盖渗水,4",
+    ].join("\n"),
+  });
+
+  assert(voiceImport.report.customerVoiceRows === 1, "用户声音表应该可以导入。");
+  assert(voiceImport.input?.customerVoices?.[0].theme === "杯盖漏水", "用户声音主题应该被识别。");
 
   const workPlanReply = buildFeishuAgentReply("我现在做什么");
   const pastedTableReply = buildFeishuAgentReply(

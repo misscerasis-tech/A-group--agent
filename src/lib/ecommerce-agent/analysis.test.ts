@@ -125,6 +125,43 @@ describe("ecommerce agent analysis", () => {
     expect(analysis.plainSummary.some((line) => line.includes("退款/退货这块"))).toBe(true);
   });
 
+  it("uses customer voices to explain return risk when refund reasons are missing", () => {
+    const analysis = analyzeEcommerceStore({
+      ...sampleEcommerceAgentInput,
+      previousWeek: {
+        ...sampleEcommerceAgentInput.previousWeek,
+        products: sampleEcommerceAgentInput.previousWeek.products.map((product) => ({
+          ...product,
+          refundReason: undefined,
+        })),
+      },
+      currentWeek: {
+        ...sampleEcommerceAgentInput.currentWeek,
+        products: sampleEcommerceAgentInput.currentWeek.products.map((product) =>
+          product.sku === "CUP-BLACK-500"
+            ? {
+                ...product,
+                refundOrders: 16,
+                refundAmount: 680,
+                refundReason: undefined,
+              }
+            : {
+                ...product,
+                refundReason: undefined,
+              },
+        ),
+      },
+    });
+
+    expect(analysis.dataHealth.some((item) => item.includes("用户声音"))).toBe(true);
+    expect(
+      analysis.productFindings.some(
+        (finding) => finding.issue === "售后风险偏高" && finding.plainReason.includes("杯盖漏水"),
+      ),
+    ).toBe(true);
+    expect(analysis.questionsForUser.some((item) => item.question.includes("客服备注"))).toBe(false);
+  });
+
   it("explains average order value drops separately from order drops", () => {
     const analysis = analyzeEcommerceStore({
       ...sampleEcommerceAgentInput,

@@ -21,6 +21,7 @@ describe("feishu agent reply", () => {
 
     expect(reply).toContain("销售额");
     expect(reply).toContain("首页也是按这个重要性体现");
+    expect(reply).toContain("客服备注");
     expect(reply).toContain("不会假装看懂");
   });
 
