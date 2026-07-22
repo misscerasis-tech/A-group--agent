@@ -408,8 +408,8 @@ describe("ecommerce csv import", () => {
         "本周,黑杯,CUP-BLACK,9,450,10,2,80",
       ].join("\n"),
       customerVoicesCsv: [
-        "商品名称,商家编码,反馈来源,评价日期,正负向,问题类型,评价内容,出现次数",
-        "黑杯,CUP-BLACK,商品评价,2026-07-19,负向,杯盖漏水,用户说杯盖渗水,4",
+        "商品名称,商家编码,反馈来源,评价日期,正负向,问题类型,评价内容,出现次数,买家姓名,手机号",
+        "黑杯,CUP-BLACK,商品评价,2026-07-19,负向,杯盖漏水,用户说杯盖渗水,4,张三,13800000000",
       ].join("\n"),
     });
 
@@ -423,6 +423,11 @@ describe("ecommerce csv import", () => {
       theme: "杯盖漏水",
       count: 4,
     });
+    expect(
+      result.report.issues.some(
+        (issue) => issue.message.includes("用户声音/售后评价表") && issue.message.includes("个人信息字段"),
+      ),
+    ).toBe(true);
   });
 
   it("matches standalone inventory snapshots into current week products", () => {

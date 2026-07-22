@@ -1985,6 +1985,7 @@ function buildCustomerVoices(
   }
 
   const table = parseCsv(text);
+  addSensitiveHeaderWarnings(table.headers, issues, "用户声音/售后评价表");
   const { mapping } = buildHeaderMap(
     table.headers,
     customerVoiceAliases,

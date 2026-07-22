@@ -267,6 +267,23 @@ function main() {
   assert(voiceImport.report.customerVoiceRows === 1, "用户声音表应该可以导入。");
   assert(voiceImport.input?.customerVoices?.[0].theme === "杯盖漏水", "用户声音主题应该被识别。");
 
+  const voicePrivacyImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "周期,商品名称,SKU,订单数,销售额,销量",
+      "上周,黑杯,CUP-BLACK,10,500,12",
+      "本周,黑杯,CUP-BLACK,8,420,9",
+    ].join("\n"),
+    customerVoicesCsv: [
+      "商品名称,商家编码,问题类型,评价内容,买家姓名,手机号",
+      "黑杯,CUP-BLACK,杯盖漏水,用户说杯盖渗水,张三,13800000000",
+    ].join("\n"),
+  });
+
+  assert(
+    voicePrivacyImport.report.issues.some((issue) => issue.message.includes("用户声音/售后评价表")),
+    "用户声音表带个人信息字段时应该提醒删除。",
+  );
+
   const workPlanReply = buildFeishuAgentReply("我现在做什么");
   const pastedTableReply = buildFeishuAgentReply(
     [
