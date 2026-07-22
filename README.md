@@ -66,6 +66,14 @@ npx pnpm@10.13.1 install
 npx pnpm@10.13.1 run dev
 ```
 
+启动飞书本地长连接 worker：
+
+```bash
+npx pnpm@10.13.1 run feishu:worker
+```
+
+第一轮飞书测试使用长连接，不需要公网回调地址。运行前在本机 `.env` 填 `FEISHU_APP_ID` 和 `FEISHU_APP_SECRET`，不要提交真实密钥。
+
 质量检查：
 
 ```bash

@@ -1,0 +1,53 @@
+export type FeishuRuntimeConfig = {
+  appId: string;
+  appSecret: string;
+  defaultChatId?: string;
+};
+
+export type FeishuEnvStatus = {
+  configured: boolean;
+  missing: string[];
+  config?: FeishuRuntimeConfig;
+};
+
+const requiredKeys = ["FEISHU_APP_ID", "FEISHU_APP_SECRET"] as const;
+
+function readOptionalEnv(env: NodeJS.ProcessEnv, key: string) {
+  const value = env[key]?.trim();
+  return value ? value : undefined;
+}
+
+export function getFeishuEnvStatus(env: NodeJS.ProcessEnv = process.env): FeishuEnvStatus {
+  const missing = requiredKeys.filter((key) => !readOptionalEnv(env, key));
+
+  if (missing.length > 0) {
+    return {
+      configured: false,
+      missing,
+    };
+  }
+
+  return {
+    configured: true,
+    missing: [],
+    config: {
+      appId: readOptionalEnv(env, "FEISHU_APP_ID")!,
+      appSecret: readOptionalEnv(env, "FEISHU_APP_SECRET")!,
+      defaultChatId: readOptionalEnv(env, "FEISHU_DEFAULT_CHAT_ID"),
+    },
+  };
+}
+
+export function requireFeishuRuntimeConfig(
+  env: NodeJS.ProcessEnv = process.env,
+): FeishuRuntimeConfig {
+  const status = getFeishuEnvStatus(env);
+
+  if (!status.config) {
+    throw new Error(
+      `飞书本地 worker 缺少环境变量：${status.missing.join("、")}。请只写入本机 .env，不要提交 Git。`,
+    );
+  }
+
+  return status.config;
+}
