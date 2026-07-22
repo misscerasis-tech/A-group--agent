@@ -84,6 +84,29 @@ function taskTable(analysis: EcommerceAgentAnalysis) {
   ].join("\n");
 }
 
+function tableCell(value: string) {
+  return value.replace(/\r?\n/g, " ").replace(/\t/g, " ").trim();
+}
+
+export function buildOperationalTasksTsv(analysis: EcommerceAgentAnalysis) {
+  return [
+    ["优先级", "截止", "负责人", "任务", "第一步", "验收标准", "原因"].join("\t"),
+    ...analysis.operationalTasks.map((task) =>
+      [
+        priorityLabel(task.priority),
+        task.dueLabel,
+        task.owner,
+        task.title,
+        task.firstStep,
+        task.acceptanceCriteria,
+        task.reason,
+      ]
+        .map(tableCell)
+        .join("\t"),
+    ),
+  ].join("\n");
+}
+
 export function buildWeeklyMarkdownReport(
   input: EcommerceAgentInput,
   analysis: EcommerceAgentAnalysis,

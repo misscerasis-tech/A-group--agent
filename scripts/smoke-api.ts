@@ -87,6 +87,7 @@ async function main() {
     Array.isArray((success.body.analysis as { operationalTasks?: unknown } | undefined)?.operationalTasks),
     "接口应该返回结构化运营待办。",
   );
+  assert(String(success.body.taskTable ?? "").includes("优先级\t截止\t负责人"), "接口应该返回可粘贴的待办表格。");
   assert(String(success.body.markdownReport).includes("验收标准"), "Markdown 周报应该包含待办验收标准。");
   assert(
     String((success.body.workSession as { nextQuestion?: string } | undefined)?.nextQuestion ?? "").includes("竞品"),

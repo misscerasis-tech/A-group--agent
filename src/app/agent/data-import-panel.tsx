@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { analyzeEcommerceStore } from "../../lib/ecommerce-agent/analysis";
 import { buildEcommerceInputFromCsv } from "../../lib/ecommerce-agent/csv-import";
-import { buildWeeklyMarkdownReport } from "../../lib/ecommerce-agent/report";
+import { buildOperationalTasksTsv, buildWeeklyMarkdownReport } from "../../lib/ecommerce-agent/report";
 import { buildBeginnerWorkSession } from "../../lib/ecommerce-agent/work-session";
 import { formatEcommerceAnalysisForFeishu } from "../../lib/integrations/feishu/agent-reply";
 
@@ -275,14 +275,7 @@ export function DataImportPanel() {
   const markdownReport =
     importResult.input && analysis ? buildWeeklyMarkdownReport(importResult.input, analysis) : "";
   const feishuReplyText = analysis ? formatEcommerceAnalysisForFeishu(analysis, "当前导入数据") : "";
-  const taskListText = analysis
-    ? analysis.operationalTasks
-        .map(
-          (task, index) =>
-            `${index + 1}. [${formatPriority(task.priority)}][${task.dueLabel}][${task.owner}] ${task.title}\n第一步：${task.firstStep}\n验收：${task.acceptanceCriteria}`,
-        )
-        .join("\n\n")
-    : "";
+  const taskTableText = analysis ? buildOperationalTasksTsv(analysis) : "";
   const requiredMappings = importResult.report.fieldMappings.filter((field) => field.required);
   const workSession = buildBeginnerWorkSession(importResult.report, analysis?.questionsForUser ?? []);
 
@@ -588,14 +581,14 @@ export function DataImportPanel() {
                 <button
                   className="button secondary"
                   type="button"
-                  onClick={() => void copyOutput("tasks", taskListText)}
+                  onClick={() => void copyOutput("tasks", taskTableText)}
                 >
                   {copiedTarget === "tasks" ? (
                     <CheckCircle2 size={16} aria-hidden="true" />
                   ) : (
                     <Copy size={16} aria-hidden="true" />
                   )}
-                  {copiedTarget === "tasks" ? "已复制待办" : "复制待办"}
+                  {copiedTarget === "tasks" ? "已复制待办表格" : "复制待办表格"}
                 </button>
                 <button
                   className="button secondary"
