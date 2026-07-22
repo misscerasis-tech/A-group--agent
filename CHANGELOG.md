@@ -2,6 +2,14 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.88-api-table-templates] - 2026-07-23
+
+### Added
+
+- 新增共享数据表模板模块，网页复制模板和 API 返回模板共用同一份 CSV。
+- `/api/agent/analyze` 在成功、缺参和缺字段响应里都返回 `tableTemplates`，方便外部入口把模板直接给小白用户填数。
+- API smoke 和真实测试文档覆盖 `tableTemplates` 返回。
+
 ## [v0.1.87-ui-copy-table-templates] - 2026-07-23
 
 ### Added

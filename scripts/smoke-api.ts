@@ -100,6 +100,13 @@ async function main() {
       (success.body.kpiGuide as Array<{ name?: string }>).some((item) => item.name === "销售额"),
     "接口应该返回小白 KPI 指南。",
   );
+  assert(
+    Array.isArray(success.body.tableTemplates) &&
+      (success.body.tableTemplates as Array<{ id?: string; csv?: string }>).some(
+        (template) => template.id === "weeklyMetrics" && template.csv?.includes("platform_fee"),
+      ),
+    "接口应该返回可复制的数据表模板。",
+  );
   assert(typeof success.body.feishuReply === "string", "接口应该返回飞书回复文本。");
   assert((success.body.feishuReply as string).includes("退款/退货"), "飞书回复应该包含售后风险口径。");
   assert((success.body.feishuReply as string).includes("杯盖漏水"), "飞书回复应该引用退款/退货原因。");
@@ -175,6 +182,7 @@ async function main() {
     "缺 metricsCsv 的错误提示应该说明要传经营数据。",
   );
   assert(Array.isArray(missingBody.body.kpiGuide), "缺 metricsCsv 时也应该返回 KPI 指南。");
+  assert(Array.isArray(missingBody.body.tableTemplates), "缺 metricsCsv 时也应该返回数据表模板。");
 
   const missingFields = await postAnalyze({
     metricsCsv: ["周期,商品名称,销售额", "本周,黑杯,450"].join("\n"),
@@ -182,6 +190,7 @@ async function main() {
   assert(missingFields.response.status === 422, `缺必填字段应该返回 422，实际 ${missingFields.response.status}`);
   assert(missingFields.body.workSession, "缺字段时应该返回 Agent 接手步骤。");
   assert(Array.isArray(missingFields.body.kpiGuide), "缺字段时也应该返回 KPI 指南。");
+  assert(Array.isArray(missingFields.body.tableTemplates), "缺字段时也应该返回数据表模板。");
   assert(
     String((missingFields.body.dataRequestPlan as { nextQuestion?: string } | undefined)?.nextQuestion ?? "").includes(
       "订单数",
