@@ -87,6 +87,36 @@ const starterCustomerVoiceCsv = [
   "Aurora Cup 白色 500ml,CUP-WHITE-500,商品评价,2026-07-19,negative,颜色有色差,评价里提到实物颜色比页面偏黄,3",
 ].join("\n");
 
+const metricsTemplateCsv = [
+  "week,product_name,sku,orders,revenue,units_sold,visitors,ad_spend,ad_revenue,inventory,product_cost,platform_fee,payment_fee,fulfillment_cost,gross_profit,refund_orders,refund_amount,refund_reason",
+  "previous,黑杯,CUP-BLACK,10,500,12,120,80,240,50,300,50,5,15,130,1,30,杯盖漏水",
+  "current,黑杯,CUP-BLACK,8,420,9,100,90,180,40,310,42,6,18,44,2,80,杯盖漏水 / 物流慢",
+].join("\n");
+
+const competitorTemplateCsv = [
+  "name,url,source,observed_at,price,promotion,rating,reviews,key_selling_points",
+  "竞品 A,https://example.com/competitor-a,手动记录,2026-07-19,39.9,满减,4.6,1200,低价 / 大容量",
+  "竞品 B,https://example.com/competitor-b,手动记录,2026-07-19,59.9,赠品,4.8,860,质感好 / 送礼",
+].join("\n");
+
+const adsTemplateCsv = [
+  "week,product_name,sku,campaign_name,ad_spend,acos",
+  "previous,黑杯,CUP-BLACK,品牌词,80,25%",
+  "current,黑杯,CUP-BLACK,品牌词,90,50%",
+].join("\n");
+
+const inventoryTemplateCsv = [
+  "product_name,sku,inventory,unit_cost,gross_margin_rate,observed_at",
+  "黑杯,CUP-BLACK,40,22,0.35,2026-07-19",
+  "白杯,CUP-WHITE,80,18,0.42,2026-07-19",
+].join("\n");
+
+const customerVoiceTemplateCsv = [
+  "product_name,sku,source,observed_at,sentiment,theme,text,count",
+  "黑杯,CUP-BLACK,客服备注,2026-07-19,negative,杯盖漏水,用户反馈杯盖渗水并要求退款,4",
+  "黑杯,CUP-BLACK,商品评价,2026-07-19,negative,物流慢,用户说到货比承诺时间晚两天,3",
+].join("\n");
+
 const importDraftStorageKey = "a-group-ecommerce-agent-import-draft-v1";
 const defaultStoreGoal = "同时看销量、利润、广告回本、库存风险、退款/退货和竞品压力";
 const tableFileAccept = [
@@ -116,6 +146,18 @@ type ImportDraft = {
   adsCsv?: string;
   customerVoicesCsv?: string;
 };
+
+type CopyTarget =
+  | "feishu"
+  | "markdown"
+  | "tasks"
+  | "risks"
+  | "dataRequests"
+  | "metricsTemplate"
+  | "competitorTemplate"
+  | "adsTemplate"
+  | "inventoryTemplate"
+  | "customerVoiceTemplate";
 
 function formatMoney(value: number) {
   return `$${value.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
@@ -187,8 +229,7 @@ export function DataImportPanel() {
   const [fileImportError, setFileImportError] = useState<string | null>(null);
   const [hasRun, setHasRun] = useState(false);
   const [hasLoadedDraft, setHasLoadedDraft] = useState(false);
-  const [copiedTarget, setCopiedTarget] =
-    useState<"feishu" | "markdown" | "tasks" | "risks" | "dataRequests" | null>(null);
+  const [copiedTarget, setCopiedTarget] = useState<CopyTarget | null>(null);
 
   function loadStarterSample() {
     setStoreName("Aurora Cup 独立站");
@@ -270,10 +311,7 @@ export function DataImportPanel() {
     window.localStorage.removeItem(importDraftStorageKey);
   }
 
-  async function copyOutput(
-    target: "feishu" | "markdown" | "tasks" | "risks" | "dataRequests",
-    text: string,
-  ) {
+  async function copyOutput(target: CopyTarget, text: string) {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedTarget(target);
@@ -390,6 +428,17 @@ export function DataImportPanel() {
     },
   ].filter((group) => group.items.length > 0);
 
+  function templateButton(target: CopyTarget, text: string) {
+    const copied = copiedTarget === target;
+
+    return (
+      <button className="button secondary compact-button" type="button" onClick={() => void copyOutput(target, text)}>
+        {copied ? <CheckCircle2 size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
+        {copied ? "已复制模板" : "复制模板"}
+      </button>
+    );
+  }
+
   return (
     <section className="panel import-workbench">
       <div className="section-heading">
@@ -443,15 +492,18 @@ export function DataImportPanel() {
                 <Database size={16} aria-hidden="true" />
                 经营数据表
               </span>
-              <label className="button secondary file-button">
-                <FileUp size={16} aria-hidden="true" />
-                上传
-                <input
-                  accept={tableFileAccept}
-                  type="file"
-                  onChange={(event) => void readFileIntoState(event, setMetricsCsv, setFileImportError)}
-                />
-              </label>
+              <div className="csv-box-actions">
+                {templateButton("metricsTemplate", metricsTemplateCsv)}
+                <label className="button secondary file-button">
+                  <FileUp size={16} aria-hidden="true" />
+                  上传
+                  <input
+                    accept={tableFileAccept}
+                    type="file"
+                    onChange={(event) => void readFileIntoState(event, setMetricsCsv, setFileImportError)}
+                  />
+                </label>
+              </div>
             </div>
             <textarea
               aria-label="经营数据 CSV、TSV、Markdown 或复制表格"
@@ -467,15 +519,18 @@ export function DataImportPanel() {
                 <ClipboardList size={16} aria-hidden="true" />
                 竞品数据表
               </span>
-              <label className="button secondary file-button">
-                <FileUp size={16} aria-hidden="true" />
-                上传
-                <input
-                  accept={tableFileAccept}
-                  type="file"
-                  onChange={(event) => void readFileIntoState(event, setCompetitorCsv, setFileImportError)}
-                />
-              </label>
+              <div className="csv-box-actions">
+                {templateButton("competitorTemplate", competitorTemplateCsv)}
+                <label className="button secondary file-button">
+                  <FileUp size={16} aria-hidden="true" />
+                  上传
+                  <input
+                    accept={tableFileAccept}
+                    type="file"
+                    onChange={(event) => void readFileIntoState(event, setCompetitorCsv, setFileImportError)}
+                  />
+                </label>
+              </div>
             </div>
             <textarea
               aria-label="竞品数据 CSV、TSV、Markdown 或复制表格"
@@ -491,15 +546,18 @@ export function DataImportPanel() {
                 <ClipboardList size={16} aria-hidden="true" />
                 广告数据表
               </span>
-              <label className="button secondary file-button">
-                <FileUp size={16} aria-hidden="true" />
-                上传
-                <input
-                  accept={tableFileAccept}
-                  type="file"
-                  onChange={(event) => void readFileIntoState(event, setAdsCsv, setFileImportError)}
-                />
-              </label>
+              <div className="csv-box-actions">
+                {templateButton("adsTemplate", adsTemplateCsv)}
+                <label className="button secondary file-button">
+                  <FileUp size={16} aria-hidden="true" />
+                  上传
+                  <input
+                    accept={tableFileAccept}
+                    type="file"
+                    onChange={(event) => void readFileIntoState(event, setAdsCsv, setFileImportError)}
+                  />
+                </label>
+              </div>
             </div>
             <textarea
               aria-label="广告数据 CSV、TSV、Markdown 或复制表格"
@@ -515,15 +573,18 @@ export function DataImportPanel() {
                 <Database size={16} aria-hidden="true" />
                 库存/成本快照表
               </span>
-              <label className="button secondary file-button">
-                <FileUp size={16} aria-hidden="true" />
-                上传
-                <input
-                  accept={tableFileAccept}
-                  type="file"
-                  onChange={(event) => void readFileIntoState(event, setInventoryCsv, setFileImportError)}
-                />
-              </label>
+              <div className="csv-box-actions">
+                {templateButton("inventoryTemplate", inventoryTemplateCsv)}
+                <label className="button secondary file-button">
+                  <FileUp size={16} aria-hidden="true" />
+                  上传
+                  <input
+                    accept={tableFileAccept}
+                    type="file"
+                    onChange={(event) => void readFileIntoState(event, setInventoryCsv, setFileImportError)}
+                  />
+                </label>
+              </div>
             </div>
             <textarea
               aria-label="库存、成本快照 CSV、TSV、Markdown 或复制表格"
@@ -539,15 +600,18 @@ export function DataImportPanel() {
                 <ClipboardList size={16} aria-hidden="true" />
                 用户声音/售后评价表
               </span>
-              <label className="button secondary file-button">
-                <FileUp size={16} aria-hidden="true" />
-                上传
-                <input
-                  accept={tableFileAccept}
-                  type="file"
-                  onChange={(event) => void readFileIntoState(event, setCustomerVoicesCsv, setFileImportError)}
-                />
-              </label>
+              <div className="csv-box-actions">
+                {templateButton("customerVoiceTemplate", customerVoiceTemplateCsv)}
+                <label className="button secondary file-button">
+                  <FileUp size={16} aria-hidden="true" />
+                  上传
+                  <input
+                    accept={tableFileAccept}
+                    type="file"
+                    onChange={(event) => void readFileIntoState(event, setCustomerVoicesCsv, setFileImportError)}
+                  />
+                </label>
+              </div>
             </div>
             <textarea
               aria-label="用户声音、客服备注、评价或售后文本 CSV、TSV、Markdown"

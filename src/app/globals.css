@@ -617,6 +617,18 @@ textarea {
   gap: 8px;
 }
 
+.csv-box-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.compact-button {
+  padding: 8px 10px;
+}
+
 .csv-box textarea {
   min-height: 142px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -1169,6 +1181,10 @@ textarea {
   .button-row {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .csv-box-actions {
+    justify-content: flex-start;
   }
 
   .metric-guide-grid,

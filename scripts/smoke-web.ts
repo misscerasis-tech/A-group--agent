@@ -27,6 +27,7 @@ const requiredRouteText: Record<string, string[]> = {
     "真实数据导入工作台",
     "Shopify 订单样例",
     "Amazon 订单样例",
+    "复制模板",
     "电商一定关注哪些数据",
     "已自动处理",
   ],
