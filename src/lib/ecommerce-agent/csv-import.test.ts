@@ -533,6 +533,23 @@ describe("ecommerce csv import", () => {
     expect(result.input?.currentWeek.products.find((product) => product.sku === "CUP-WHITE")?.revenue).toBe(89.7);
   });
 
+  it("warns about personal information columns without blocking order analysis", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "amazon-order-id\tpurchase-date\tproduct-name\tsku\tquantity-purchased\titem-price\tbuyer-email\tbuyer-name\tship-address-1\tbuyer-phone-number",
+        "112-0001\t2026-07-08T10:11:00Z\t黑杯\tCUP-BLACK\t2\t79.8\tbuyer@example.com\t张三\t测试路 1 号\t13800000000",
+        "112-0002\t2026-07-15T09:20:00Z\t黑杯\tCUP-BLACK\t1\t39.9\tbuyer@example.com\t张三\t测试路 1 号\t13800000000",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.report.issues.some((issue) => issue.severity === "warning" && issue.message.includes("个人信息字段"))).toBe(
+      true,
+    );
+    expect(result.report.issues.some((issue) => issue.message.includes("邮箱"))).toBe(true);
+    expect(result.report.issues.some((issue) => issue.message.includes("收货地址"))).toBe(true);
+  });
+
   it("uses the latest two natural weeks when order details cover more than two weeks", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

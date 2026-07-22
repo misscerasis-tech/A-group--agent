@@ -718,6 +718,89 @@ function normalizeAlias(alias: string) {
   return normalizeHeader(alias);
 }
 
+type SensitiveHeaderGroup = {
+  label: string;
+  matches: (normalizedHeader: string, rawHeader: string) => boolean;
+};
+
+const sensitiveHeaderGroups: SensitiveHeaderGroup[] = [
+  {
+    label: "买家/收件人姓名",
+    matches: (normalizedHeader, rawHeader) =>
+      [
+        "buyername",
+        "customername",
+        "recipientname",
+        "receivername",
+        "shipname",
+        "shippingname",
+        "consigneename",
+      ].includes(normalizedHeader) ||
+      rawHeader.includes("买家姓名") ||
+      rawHeader.includes("客户姓名") ||
+      rawHeader.includes("收件人") ||
+      rawHeader.includes("收货人"),
+  },
+  {
+    label: "电话/手机号",
+    matches: (normalizedHeader, rawHeader) =>
+      normalizedHeader.includes("phone") ||
+      normalizedHeader.includes("mobile") ||
+      normalizedHeader.includes("telephone") ||
+      rawHeader.includes("手机号") ||
+      rawHeader.includes("电话") ||
+      rawHeader.includes("手机"),
+  },
+  {
+    label: "邮箱",
+    matches: (normalizedHeader, rawHeader) => normalizedHeader.includes("email") || rawHeader.includes("邮箱"),
+  },
+  {
+    label: "收货地址",
+    matches: (normalizedHeader, rawHeader) =>
+      normalizedHeader.includes("address") ||
+      normalizedHeader.includes("street") ||
+      normalizedHeader.includes("postalcode") ||
+      normalizedHeader.includes("zipcode") ||
+      normalizedHeader.includes("postcode") ||
+      rawHeader.includes("地址") ||
+      rawHeader.includes("邮编"),
+  },
+  {
+    label: "身份证/税号",
+    matches: (normalizedHeader, rawHeader) =>
+      normalizedHeader.includes("idcard") ||
+      normalizedHeader.includes("identity") ||
+      normalizedHeader.includes("taxid") ||
+      rawHeader.includes("身份证") ||
+      rawHeader.includes("证件号") ||
+      rawHeader.includes("税号"),
+  },
+];
+
+function addSensitiveHeaderWarnings(headers: string[], issues: ImportIssue[], tableLabel: string) {
+  const matchedLabels = new Set<string>();
+
+  for (const header of headers) {
+    const normalizedHeader = normalizeHeader(header);
+    const rawHeader = header.trim().toLowerCase();
+    const matchedGroup = sensitiveHeaderGroups.find((group) => group.matches(normalizedHeader, rawHeader));
+
+    if (matchedGroup) {
+      matchedLabels.add(matchedGroup.label);
+    }
+  }
+
+  if (matchedLabels.size === 0) {
+    return;
+  }
+
+  issues.push({
+    severity: "warning",
+    message: `${tableLabel}里包含可能的个人信息字段：${[...matchedLabels].join("、")}。这些字段不会参与复盘，建议导出前隐藏或删除，只保留订单号、时间、SKU、金额、件数和售后状态。`,
+  });
+}
+
 function splitDelimitedLine(line: string, delimiter: string) {
   const cells: string[] = [];
   let current = "";
@@ -2179,6 +2262,9 @@ export function buildEcommerceInputFromCsv({
 }): EcommerceCsvImportResult {
   const issues: ImportIssue[] = [];
   const metricsTable = parseCsv(metricsCsv);
+
+  addSensitiveHeaderWarnings(metricsTable.headers, issues, "经营数据表");
+
   const { mapping, fieldMappings: weeklyFieldMappings } = buildHeaderMap(
     metricsTable.headers,
     metricAliases,

@@ -157,6 +157,20 @@ function main() {
     "Amazon item-status 退款状态应该能转成退款/退货单数。",
   );
 
+  const privacyWarningImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "amazon-order-id\tpurchase-date\tproduct-name\tsku\tquantity-purchased\titem-price\tbuyer-email\tbuyer-name\tship-address-1\tbuyer-phone-number",
+      "112-0001\t2026-07-08T10:11:00Z\t黑杯\tCUP-BLACK\t2\t79.8\tbuyer@example.com\t张三\t测试路 1 号\t13800000000",
+      "112-0002\t2026-07-15T09:20:00Z\t黑杯\tCUP-BLACK\t1\t39.9\tbuyer@example.com\t张三\t测试路 1 号\t13800000000",
+    ].join("\n"),
+  });
+
+  assert(privacyWarningImport.report.ok, "带个人信息列的订单表仍应该可分析经营字段。");
+  assert(
+    privacyWarningImport.report.issues.some((issue) => issue.message.includes("个人信息字段")),
+    "带个人信息列的订单表应该提醒用户删除隐私字段。",
+  );
+
   const rateFieldImport = buildEcommerceInputFromCsv({
     metricsCsv: [
       "周期,商品名称,订单数,销售额,销量,转化率,广告消耗,ROAS,毛利率,退款率,退款金额占比",
