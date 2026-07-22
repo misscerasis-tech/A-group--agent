@@ -387,6 +387,7 @@ function main() {
   const taskReply = buildFeishuAgentReply("给我待办清单");
   const riskReply = buildFeishuAgentReply("给我风险商品表");
   const dataRequestReply = buildFeishuAgentReply("我还缺什么数据");
+  const fileQuestionReply = buildFeishuAgentReply("Excel 文件可以直接发吗");
 
   assert(workPlanReply.includes("经营数据表"), "飞书工作计划回复应该提示经营数据表。");
   assert(workPlanReply.includes("Markdown"), "飞书工作计划回复应该提示支持 Markdown 表格。");
@@ -411,6 +412,7 @@ function main() {
   assert(taskReply.includes("优先级\t截止\t负责人"), "飞书应该能返回可复制的待办表格。");
   assert(riskReply.includes("排查状态\t优先级\t建议负责人"), "飞书应该能返回可复制的风险商品表。");
   assert(dataRequestReply.includes("最近两期经营对比表"), "飞书应该能回答下一份要补的数据。");
+  assert(fileQuestionReply.includes("附件消息我暂时不会下载"), "飞书应该解释 Excel/CSV 文件怎么给。");
 
   const invalidImport = buildEcommerceInputFromCsv({
     metricsCsv: [

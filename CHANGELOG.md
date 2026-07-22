@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.116-agent-smoke-file-guidance] - 2026-07-23
+
+### Added
+
+- `agent:smoke` 覆盖“Excel 文件可以直接发吗”这类飞书问法，确保机器人会说明复制表格或到 `/agent` 上传，而不是误导用户发送不可读取附件。
+
 ## [v0.1.115-feishu-file-guidance-copy-paste] - 2026-07-23
 
 ### Changed
