@@ -14,5 +14,7 @@ describe("ecommerce testing checklist", () => {
     expect(reply).toContain("通过标准");
     expect(reply).toContain("我现在做什么");
     expect(reply).toContain("清空这份数据");
+    expect(reply).toContain("previous,黑杯,CUP-BLACK,10,500,12");
+    expect(reply).toContain("current,黑杯,CUP-BLACK,8,420,9");
   });
 });

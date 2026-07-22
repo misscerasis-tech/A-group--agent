@@ -7,7 +7,7 @@
 ## 当前最新稳定点
 
 - 最新代码：`main`
-- 最新标签：`v0.1.102-autonomous-progress-log`
+- 最新标签：`v0.1.109-copyable-testing-csv-progress`
 - 本地测试入口：`http://localhost:3001/agent`
 - 远端仓库：`misscerasis-tech/A-group--agent.git`
 
@@ -32,7 +32,10 @@
 4. 飞书接入更稳。
    - 本地长连接 worker 支持飞书会话级数据缓存。
    - 同一飞书会话可先贴经营表，再继续合并广告、库存/成本、用户声音或竞品表。
+   - 飞书里只发竞品裸链接时，会进入竞品补数流程，不会套样例竞品结论。
+   - 飞书里问“怎么真正测试”会返回可直接发送的测试消息、通过标准和最短验收路径。
    - 发送回复失败时，同一事件重试不会被去重吞掉。
+   - 未知消息兜底回复不再复述用户原文，降低误发敏感信息时被二次扩散的风险。
    - `feishu:doctor` 会给出飞书开放平台入口、App Secret 复制位置和长连接配置步骤。
 
 5. 真实竞品和隐私边界更清楚。
@@ -49,6 +52,8 @@
 - `SMOKE_BASE_URL=http://localhost:3001 npx pnpm@10.13.1 run smoke:api`
 - `SMOKE_BASE_URL=http://localhost:3001 npx pnpm@10.13.1 run smoke:web`
 - `npx pnpm@10.13.1 run build`
+
+最新 API smoke 已额外覆盖 Shopify Orders 的 `Discount Amount`：订单行收入会按单价乘件数后扣除折扣，再汇总到销售额。
 
 ## 用户回来后还必须亲自做
 

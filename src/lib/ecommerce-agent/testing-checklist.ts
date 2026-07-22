@@ -22,7 +22,11 @@ export const ecommerceAgentTestingStages: TestingStage[] = [
     reason: "真实可用的核心是能接店铺导出数据，而不是只跑演示模板。",
     checks: ["准备 previous/current 两段经营数据", "上传或粘贴到真实数据导入工作台", "检查 workSession 下一句追问"],
     tryMessages: [
-      "week,product_name,sku,orders,revenue,units_sold",
+      [
+        "week,product_name,sku,orders,revenue,units_sold",
+        "previous,黑杯,CUP-BLACK,10,500,12",
+        "current,黑杯,CUP-BLACK,8,420,9",
+      ].join("\n"),
       "给我待办清单",
       "给我风险商品表",
     ],
