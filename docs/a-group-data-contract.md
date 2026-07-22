@@ -193,6 +193,7 @@ Agent 可以从原始字段计算：
 - 异常商品。
 - 竞品价格差。
 - 结构化运营待办：负责人、优先级、截止时间、第一步和验收标准。
+- 结构化补数清单：下一份要补的数据、负责人、去哪里找、要复制的列、为什么重要、首页会变准的位置。
 
 ## 小白解释规则
 
@@ -232,3 +233,31 @@ Agent 可以从原始字段计算：
 
 - 让用户提供竞品链接。
 - 或根据产品名称生成待观察竞品清单。
+
+## API 输出给前端和飞书的工作结构
+
+`POST /api/agent/analyze` 在成功分析时会返回：
+
+- `workSession`：当前 Agent 怎么带用户工作，下一句问什么。
+- `analysis`：经营结论、风险商品、追问和结构化运营待办。
+- `feishuReply`：适合直接发到飞书的自然语言回复。
+- `taskTable`：可粘贴到飞书表格/多维表格的待办 TSV。
+- `dataRequestPlan`：结构化补数清单，告诉小白下一份数据要补什么。
+- `dataRequestTable`：可粘贴到飞书表格/多维表格的补数 TSV。
+- `markdownReport`：适合沉淀为飞书文档的周报 Markdown。
+
+`dataRequestPlan.items` 每项包含：
+
+| 字段 | 含义 |
+| --- | --- |
+| title | 要补的数据 |
+| owner | 建议负责人 |
+| priorityLabel | 必须先补 / 建议补 / 可后补 |
+| statusLabel | 缺失 / 部分已有 / 已够用 |
+| ask | Agent 下一句可以怎么问用户 |
+| whereToFind | 小白应该去哪里找这份数据 |
+| fields | 需要复制或导出的字段列 |
+| whyItMatters | 为什么这份数据重要 |
+| homepageImpact | 补了之后首页哪部分判断会更准 |
+
+当经营表缺必填字段时，即使接口返回 `422`，也会返回 `workSession`、`dataRequestPlan` 和 `dataRequestTable`，让前端或飞书能继续带用户补数据。

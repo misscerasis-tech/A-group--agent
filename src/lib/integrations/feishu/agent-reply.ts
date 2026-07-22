@@ -1,5 +1,9 @@
 import { analyzeEcommerceStore } from "../../ecommerce-agent/analysis";
 import { buildEcommerceInputFromCsv } from "../../ecommerce-agent/csv-import";
+import {
+  buildDataRequestPlan,
+  formatDataRequestPlanForFeishu,
+} from "../../ecommerce-agent/data-request";
 import { buildKpiGuideReply } from "../../ecommerce-agent/kpi-guide";
 import { buildOperationalTasksTsv } from "../../ecommerce-agent/report";
 import { sampleEcommerceAgentInput } from "../../ecommerce-agent/sample-data";
@@ -13,6 +17,7 @@ import {
 export type FeishuReplyIntent =
   | "store_review"
   | "data_checklist"
+  | "data_request"
   | "work_plan"
   | "tasks"
   | "testing"
@@ -55,6 +60,14 @@ export function detectFeishuReplyIntent(text: string): FeishuReplyIntent {
 
   if (["待办", "任务清单", "行动清单", "分工", "负责人", "验收标准"].some((keyword) => normalized.includes(keyword))) {
     return "tasks";
+  }
+
+  if (
+    ["还缺什么", "缺什么数据", "补什么数据", "补哪些数据", "下一份数据", "补数", "数据缺口", "要我补"].some(
+      (keyword) => normalized.includes(keyword),
+    )
+  ) {
+    return "data_request";
   }
 
   if (["退款", "退货", "售后", "退单", "差评"].some((keyword) => normalized.includes(keyword))) {
@@ -161,6 +174,7 @@ export function buildFeishuUsageReply() {
     "",
     "- “帮我看本周经营情况”",
     "- “我需要准备什么数据？”",
+    "- “我还缺什么数据？”",
     "- “先看库存风险”",
     "- “退款/退货风险怎么看？”",
     "- “这周先降低退款/退货”",
@@ -186,6 +200,14 @@ export function buildTasksReply(analysis: EcommerceAgentAnalysis) {
     "",
     buildOperationalTasksTsv(analysis),
   ].join("\n");
+}
+
+export function buildDataRequestReply(analysis: EcommerceAgentAnalysis, hasImportedContext: boolean) {
+  return formatDataRequestPlanForFeishu(
+    buildDataRequestPlan(undefined, hasImportedContext ? analysis.questionsForUser : [], {
+      hasKnownInput: hasImportedContext,
+    }),
+  );
 }
 
 export function buildInventoryReply(analysis: EcommerceAgentAnalysis) {
@@ -366,12 +388,14 @@ function buildPastedMetricsTableReply(text: string) {
       .filter((issue) => issue.severity === "error")
       .slice(0, 5)
       .map((issue, index) => `${index + 1}. ${issue.message}`);
+    const dataRequestPlan = buildDataRequestPlan(result.report);
 
     return [
       "我看到了你贴的表格，但现在还不能直接复盘。",
       "需要你先补这些信息：",
       ...issues,
-      "最小格式可以是周汇总表：week、product_name、orders、revenue、units_sold；也可以是订单明细：订单号、支付时间、商品名称、实付金额、购买数量。CSV、TSV、Markdown 或复制表格都可以。",
+      "",
+      formatDataRequestPlanForFeishu(dataRequestPlan),
     ].join("\n");
   }
 
@@ -399,6 +423,10 @@ export function buildFeishuAgentReply(
 
   if (intent === "data_checklist") {
     return buildFeishuDataChecklistReply();
+  }
+
+  if (intent === "data_request") {
+    return buildDataRequestReply(analysis, Boolean(options.input));
   }
 
   if (intent === "work_plan") {

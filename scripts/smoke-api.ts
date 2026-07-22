@@ -88,6 +88,10 @@ async function main() {
     "接口应该返回结构化运营待办。",
   );
   assert(String(success.body.taskTable ?? "").includes("优先级\t截止\t负责人"), "接口应该返回可粘贴的待办表格。");
+  assert(
+    String(success.body.dataRequestTable ?? "").includes("优先级\t状态\t要补的数据"),
+    "接口应该返回可粘贴的补数清单。",
+  );
   assert(String(success.body.markdownReport).includes("验收标准"), "Markdown 周报应该包含待办验收标准。");
   assert(
     String((success.body.workSession as { nextQuestion?: string } | undefined)?.nextQuestion ?? "").includes("竞品"),
@@ -119,6 +123,12 @@ async function main() {
   });
   assert(missingFields.response.status === 422, `缺必填字段应该返回 422，实际 ${missingFields.response.status}`);
   assert(missingFields.body.workSession, "缺字段时应该返回 Agent 接手步骤。");
+  assert(
+    String((missingFields.body.dataRequestPlan as { nextQuestion?: string } | undefined)?.nextQuestion ?? "").includes(
+      "订单数",
+    ),
+    "缺字段时应该返回下一句补数追问。",
+  );
 
   console.info(
     `[smoke:api] /api/agent/analyze 平台表头、订单明细、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,

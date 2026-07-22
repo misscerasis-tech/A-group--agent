@@ -47,8 +47,10 @@ npx pnpm@10.13.1 run agent:smoke
 - 也可以测试 `转化率`、`ROAS/投产比`、`毛利率`、`退款率`、`退款金额占比` 这类平台只给比率的字段。
 - 查看字段识别结果。
 - 查看缺失字段追问。
+- 查看“下一份要补的数据”，确认它说明了负责人、数据来源、字段列、为什么重要和首页影响。
 - 生成基于导入数据的复盘和飞书回写文本。
 - 检查“下周行动”是否包含负责人、优先级、截止时间和验收标准，并可复制为待办表格。
+- 检查补数清单是否能复制为 TSV，直接粘贴到飞书表格或多维表格。
 - 展开“飞书文档 Markdown”，检查是否能直接沉淀成周报。
 - 检查周报里是否出现“用户声音”章节。
 
@@ -60,7 +62,7 @@ curl -X POST http://localhost:3001/api/agent/analyze \
   -d '{"metricsCsv":"week,product_name,orders,revenue,units_sold,refund_orders,refund_amount\nprevious,黑杯,10,500,12,1,30\ncurrent,黑杯,8,420,9,2,80","store":{"storeName":"测试店铺"}}'
 ```
 
-API 会返回 `analysis`、`feishuReply`、`taskTable` 和 `markdownReport`。其中 `analysis.operationalTasks` 是结构化运营待办，`taskTable` 是可直接粘贴到飞书表格/多维表格的 TSV。
+API 会返回 `analysis`、`feishuReply`、`taskTable`、`dataRequestPlan`、`dataRequestTable` 和 `markdownReport`。其中 `analysis.operationalTasks` 是结构化运营待办，`taskTable` 是可直接粘贴到飞书表格/多维表格的待办 TSV，`dataRequestTable` 是可直接粘贴给团队补数的 TSV。
 其中 `workSession` 会告诉前端或飞书：当前还缺什么、下一句应该问用户什么、Agent 接下来能不能继续跑。
 
 页面健康检查也可以自动跑一遍，专门确认导航页面不会再把原始 Prisma/DATABASE_URL 错误露给用户：
@@ -92,6 +94,7 @@ SMOKE_BASE_URL=http://localhost:3000 npx pnpm@10.13.1 run smoke:web
 - 如果另传广告数据表，Agent 会按周期和 SKU/商品名更新广告花费、广告成交额或 ROAS 反推结果。
 - 输出仍然是小白可读的自然语言。
 - 返回的 `workSession.nextQuestion` 能直接作为 Agent 追问用户的下一句话。
+- 返回的 `dataRequestPlan.nextQuestion` 能直接告诉小白下一份数据要补什么，并解释补了首页哪部分判断会更准。
 - `smoke:api` 能通过平台中文表头、缺参数和缺必填字段三类接口检查。
 - `smoke:web` 里所有导航页面返回 200，并且不出现原始数据库配置错误。
 
@@ -170,6 +173,7 @@ FEISHU_EVENT_SUBSCRIPTION_MODE="long_connection"
 
 - `帮我看本周经营情况`
 - `我需要准备什么数据`
+- `我还缺什么数据`
 - `先看库存风险`
 - `这周先保利润`
 - `广告怎么看`

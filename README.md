@@ -8,6 +8,7 @@
 
 - 主动追问缺失信息。
 - 自动识别数据完整度。
+- 生成补数清单，说明下一份要补什么、去哪找、复制哪些列、补了首页哪部分会更准。
 - 分析销量、订单、转化、广告回本、库存、退款/退货和竞品压力。
 - 用自然语言解释“发生了什么、为什么、先做什么”。
 - 输出下周行动清单。
@@ -60,7 +61,7 @@ http://localhost:3001/agent
 
 样例数据用于演示 Agent 工作流，不代表真实经营结果。拿到真实数据后优先替换样例数据，同时保留样例作为现场演示降级。
 
-首页已经提供“真实数据导入工作台”，可以直接粘贴或上传 CSV/TSV/Markdown 表格，也可以从 Excel、飞书表格或 Google Sheets 复制表格粘贴进来。经营数据既可以是按上周/本周汇总好的 SKU 表，也可以是覆盖最近两周的订单明细。工作台会显示 Agent 接手步骤、下一句要追问什么、字段识别结果和飞书回写预览。飞书 worker 也可以通过 `.env` 的 `ECOMMERCE_WEEKLY_METRICS_CSV`、`ECOMMERCE_COMPETITORS_CSV`、`ECOMMERCE_ADS_CSV`、`ECOMMERCE_INVENTORY_CSV` 和 `ECOMMERCE_CUSTOMER_VOICES_CSV` 指向本地经营表、竞品表、广告表、库存/成本快照表和用户声音表文件。
+首页已经提供“真实数据导入工作台”，可以直接粘贴或上传 CSV/TSV/Markdown 表格，也可以从 Excel、飞书表格或 Google Sheets 复制表格粘贴进来。经营数据既可以是按上周/本周汇总好的 SKU 表，也可以是覆盖最近两周的订单明细。工作台会显示 Agent 接手步骤、下一句要追问什么、下一份要补的数据、字段识别结果和飞书回写预览；补数清单可以复制成 TSV，方便贴到飞书表格或多维表格。飞书 worker 也可以通过 `.env` 的 `ECOMMERCE_WEEKLY_METRICS_CSV`、`ECOMMERCE_COMPETITORS_CSV`、`ECOMMERCE_ADS_CSV`、`ECOMMERCE_INVENTORY_CSV` 和 `ECOMMERCE_CUSTOMER_VOICES_CSV` 指向本地经营表、竞品表、广告表、库存/成本快照表和用户声音表文件。
 
 ## 本地开发
 

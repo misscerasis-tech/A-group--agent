@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { analyzeEcommerceStore } from "@/lib/ecommerce-agent/analysis";
 import { buildEcommerceInputFromCsv } from "@/lib/ecommerce-agent/csv-import";
+import { buildDataRequestPlan, buildDataRequestPlanTsv } from "@/lib/ecommerce-agent/data-request";
 import { buildOperationalTasksTsv, buildWeeklyMarkdownReport } from "@/lib/ecommerce-agent/report";
 import { buildBeginnerWorkSession } from "@/lib/ecommerce-agent/work-session";
 import type { StoreProfile } from "@/lib/ecommerce-agent/types";
@@ -32,9 +33,14 @@ export async function POST(request: Request) {
   }
 
   if (!body.metricsCsv?.trim()) {
+    const dataRequestPlan = buildDataRequestPlan();
+
     return NextResponse.json(
       {
         error: "缺少 metricsCsv。请传经营数据 CSV、TSV、Markdown 或复制表格文本。",
+        workSession: buildBeginnerWorkSession(),
+        dataRequestPlan,
+        dataRequestTable: buildDataRequestPlanTsv(dataRequestPlan),
       },
       { status: 400 },
     );
@@ -50,20 +56,27 @@ export async function POST(request: Request) {
   });
 
   if (!importResult.input) {
+    const dataRequestPlan = buildDataRequestPlan(importResult.report);
+
     return NextResponse.json(
       {
         report: importResult.report,
         workSession: buildBeginnerWorkSession(importResult.report),
+        dataRequestPlan,
+        dataRequestTable: buildDataRequestPlanTsv(dataRequestPlan),
       },
       { status: 422 },
     );
   }
 
   const analysis = analyzeEcommerceStore(importResult.input);
+  const dataRequestPlan = buildDataRequestPlan(importResult.report, analysis.questionsForUser);
 
   return NextResponse.json({
     report: importResult.report,
     workSession: buildBeginnerWorkSession(importResult.report, analysis.questionsForUser),
+    dataRequestPlan,
+    dataRequestTable: buildDataRequestPlanTsv(dataRequestPlan),
     analysis,
     feishuReply: formatEcommerceAnalysisForFeishu(analysis, "当前导入数据"),
     taskTable: buildOperationalTasksTsv(analysis),

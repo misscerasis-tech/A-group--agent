@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { analyzeEcommerceStore } from "../src/lib/ecommerce-agent/analysis";
 import { buildEcommerceInputFromCsv } from "../src/lib/ecommerce-agent/csv-import";
+import { buildDataRequestPlan } from "../src/lib/ecommerce-agent/data-request";
 import { buildFeishuAgentReply } from "../src/lib/integrations/feishu/agent-reply";
 
 function assert(condition: unknown, message: string) {
@@ -43,6 +44,7 @@ function main() {
   }
 
   const analysis = analyzeEcommerceStore(input);
+  const dataRequestPlan = buildDataRequestPlan(sampleImport.report, analysis.questionsForUser);
 
   assert(analysis.headline.includes("Smoke Test Aurora Cup"), "分析标题应该包含店铺名。");
   assert(analysis.nextActions.length > 0, "分析应该生成下一步行动。");
@@ -59,6 +61,7 @@ function main() {
     analysis.dataHealth.some((item) => item.includes("退款/退货原因")),
     "分析应该说明退款/退货原因状态。",
   );
+  assert(dataRequestPlan.summary.includes("核心数据暂时够用"), "完整样例数据应该提示可以先生成复盘。");
 
   const tsvImport = buildEcommerceInputFromCsv({
     metricsCsv: [
@@ -182,6 +185,7 @@ function main() {
   const testingReply = buildFeishuAgentReply("怎么真正测试，接入飞书吗");
   const returnsReply = buildFeishuAgentReply("退款退货怎么看");
   const taskReply = buildFeishuAgentReply("给我待办清单");
+  const dataRequestReply = buildFeishuAgentReply("我还缺什么数据");
 
   assert(workPlanReply.includes("经营数据表"), "飞书工作计划回复应该提示经营数据表。");
   assert(workPlanReply.includes("Markdown"), "飞书工作计划回复应该提示支持 Markdown 表格。");
@@ -194,6 +198,7 @@ function main() {
   assert(testingReply.includes("App Secret"), "飞书测试回复应该提示 App Secret。");
   assert(returnsReply.includes("售后把成交吃回去"), "飞书应该能单独回答退款/退货问题。");
   assert(taskReply.includes("优先级\t截止\t负责人"), "飞书应该能返回可复制的待办表格。");
+  assert(dataRequestReply.includes("最近两期经营对比表"), "飞书应该能回答下一份要补的数据。");
 
   const invalidImport = buildEcommerceInputFromCsv({
     metricsCsv: [

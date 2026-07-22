@@ -27,6 +27,29 @@ describe("feishu agent reply", () => {
     expect(reply).toContain("不会假装看懂");
   });
 
+  it("answers contextual data gap requests", () => {
+    expect(detectFeishuReplyIntent("我还缺什么数据")).toBe("data_request");
+
+    const starterReply = buildFeishuAgentReply("我还缺什么数据");
+
+    expect(starterReply).toContain("最近两期经营对比表");
+    expect(starterReply).toContain("下一句我会问你");
+
+    const importedReply = buildFeishuAgentReply("我还缺什么数据", {
+      input: {
+        ...sampleEcommerceAgentInput,
+        store: {
+          ...sampleEcommerceAgentInput.store,
+          goal: "这周先保利润",
+        },
+      },
+      sourceLabel: "当前导入数据",
+    });
+
+    expect(importedReply).toContain("核心数据暂时够用");
+    expect(importedReply).toContain("行动清单");
+  });
+
   it("answers what the beginner should do next", () => {
     const reply = buildFeishuAgentReply("我现在做什么");
 

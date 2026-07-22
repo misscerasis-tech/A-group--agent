@@ -13,6 +13,10 @@ import {
 } from "lucide-react";
 import { analyzeEcommerceStore } from "../../lib/ecommerce-agent/analysis";
 import { buildEcommerceInputFromCsv } from "../../lib/ecommerce-agent/csv-import";
+import {
+  buildDataRequestPlan,
+  buildDataRequestPlanTsv,
+} from "../../lib/ecommerce-agent/data-request";
 import { buildOperationalTasksTsv, buildWeeklyMarkdownReport } from "../../lib/ecommerce-agent/report";
 import { buildBeginnerWorkSession } from "../../lib/ecommerce-agent/work-session";
 import { formatEcommerceAnalysisForFeishu } from "../../lib/integrations/feishu/agent-reply";
@@ -131,7 +135,7 @@ export function DataImportPanel() {
   const [customerVoicesCsv, setCustomerVoicesCsv] = useState(starterCustomerVoiceCsv);
   const [hasRun, setHasRun] = useState(false);
   const [hasLoadedDraft, setHasLoadedDraft] = useState(false);
-  const [copiedTarget, setCopiedTarget] = useState<"feishu" | "markdown" | "tasks" | null>(null);
+  const [copiedTarget, setCopiedTarget] = useState<"feishu" | "markdown" | "tasks" | "dataRequests" | null>(null);
 
   function loadStarterSample() {
     setStoreName("Aurora Cup 独立站");
@@ -185,7 +189,7 @@ export function DataImportPanel() {
     window.localStorage.removeItem(importDraftStorageKey);
   }
 
-  async function copyOutput(target: "feishu" | "markdown" | "tasks", text: string) {
+  async function copyOutput(target: "feishu" | "markdown" | "tasks" | "dataRequests", text: string) {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedTarget(target);
@@ -276,6 +280,8 @@ export function DataImportPanel() {
     importResult.input && analysis ? buildWeeklyMarkdownReport(importResult.input, analysis) : "";
   const feishuReplyText = analysis ? formatEcommerceAnalysisForFeishu(analysis, "当前导入数据") : "";
   const taskTableText = analysis ? buildOperationalTasksTsv(analysis) : "";
+  const dataRequestPlan = buildDataRequestPlan(importResult.report, analysis?.questionsForUser ?? []);
+  const dataRequestTableText = buildDataRequestPlanTsv(dataRequestPlan);
   const requiredMappings = importResult.report.fieldMappings.filter((field) => field.required);
   const workSession = buildBeginnerWorkSession(importResult.report, analysis?.questionsForUser ?? []);
 
@@ -487,6 +493,46 @@ export function DataImportPanel() {
                   </header>
                   <p>{step.userAction}</p>
                   <small>{step.output}</small>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="import-status data-request-panel">
+            <div className="data-request-heading">
+              <div>
+                <h4>下一份要补的数据</h4>
+                <p>{dataRequestPlan.summary}</p>
+              </div>
+              <button
+                className="button secondary"
+                type="button"
+                onClick={() => void copyOutput("dataRequests", dataRequestTableText)}
+              >
+                {copiedTarget === "dataRequests" ? (
+                  <CheckCircle2 size={16} aria-hidden="true" />
+                ) : (
+                  <Copy size={16} aria-hidden="true" />
+                )}
+                {copiedTarget === "dataRequests" ? "已复制补数清单" : "复制补数清单"}
+              </button>
+            </div>
+            <p className="next-question">{dataRequestPlan.nextQuestion}</p>
+            <div className="data-request-list">
+              {dataRequestPlan.items.slice(0, 4).map((item) => (
+                <article className="data-request-row" key={item.id}>
+                  <header>
+                    <strong>{item.title}</strong>
+                    <span className={`data-request-badge ${item.priority}`}>{item.priorityLabel}</span>
+                  </header>
+                  <p>{item.ask}</p>
+                  <div className="data-request-fields">
+                    {item.fields.slice(0, 5).map((field) => (
+                      <span key={`${item.id}-${field}`}>{field}</span>
+                    ))}
+                  </div>
+                  <small>去哪找：{item.whereToFind}</small>
+                  <small>首页会变准：{item.homepageImpact}</small>
                 </article>
               ))}
             </div>
