@@ -223,6 +223,7 @@ export function buildFeishuDataChecklistReply() {
     buildKpiGuideReply(),
     "",
     "最小经营表可以是周汇总：week、product_name、orders、revenue、units_sold；也可以是订单明细：订单号、支付时间、商品名称、实付金额、购买数量。",
+    "如果是 Excel/CSV 文件，飞书里当前最稳的是直接复制表头和数据行粘贴给我；附件消息我暂时不会下载。也可以到 `/agent` 工作台上传 CSV/Excel，再复制复盘结果回飞书。",
     "如果你有广告、库存/成本快照、退款/退货、客服备注、评价内容和竞品，我会把结论从“能复盘”升级成“能安排动作”。",
     "缺什么我会继续问，不会假装看懂。",
   ].join("\n");

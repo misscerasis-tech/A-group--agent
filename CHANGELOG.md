@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.115-feishu-file-guidance-copy-paste] - 2026-07-23
+
+### Changed
+
+- 飞书数据准备回复明确说明当前不会下载附件，建议用户复制 Excel/CSV 表头和数据行粘贴，或到 `/agent` 工作台上传后再回传结果。
+
 ## [v0.1.114-docs-analytics-header-aliases] - 2026-07-23
 
 ### Changed

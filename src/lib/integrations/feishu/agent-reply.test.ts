@@ -43,6 +43,8 @@ describe("feishu agent reply", () => {
     expect(reply).toContain("订单明细");
     expect(reply).toContain("库存/成本快照");
     expect(reply).toContain("客服备注");
+    expect(reply).toContain("附件消息我暂时不会下载");
+    expect(reply).toContain("/agent");
     expect(reply).toContain("不会假装看懂");
   });
 
