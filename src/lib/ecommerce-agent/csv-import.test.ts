@@ -73,9 +73,9 @@ describe("ecommerce csv import", () => {
   it("maps platform-style Chinese export headers into agent input", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [
-        "周期,商品名称,商家编码,商品访客数,支付买家数,商品支付金额,支付商品件数,消耗,直接成交金额,可售件数,成本金额,毛利额,退款成功单数,退款成功金额",
-        "上周,黑杯,CUP-BLACK,100,10,500,12,80,240,50,320,180,1,30",
-        "本周,黑杯,CUP-BLACK,120,9,450,10,90,180,40,330,120,2,80",
+        "周期,商品名称,商家编码,商品访客数,支付买家数,商品支付金额,支付商品件数,消耗,直接成交金额,可售件数,成本金额,毛利额,退款成功单数,退款成功金额,退款原因",
+        "上周,黑杯,CUP-BLACK,100,10,500,12,80,240,50,320,180,1,30,杯盖漏水",
+        "本周,黑杯,CUP-BLACK,120,9,450,10,90,180,40,330,120,2,80,杯盖漏水 / 物流慢",
       ].join("\n"),
     });
 
@@ -95,6 +95,7 @@ describe("ecommerce csv import", () => {
       grossProfit: 120,
       refundOrders: 2,
       refundAmount: 80,
+      refundReason: "杯盖漏水 / 物流慢",
     });
   });
 
@@ -207,6 +208,24 @@ describe("ecommerce csv import", () => {
     expect(
       result.report.fieldMappings.some(
         (mapping) => mapping.canonicalField === "refundOrders" && mapping.sourceHeader === "退款单数",
+      ),
+    ).toBe(true);
+  });
+
+  it("imports refund and return reasons from Chinese headers", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,订单数,销售额,销量,退款单数,退款金额,售后原因",
+        "上周,黑杯,10,500,12,1,30,杯盖漏水",
+        "本周,黑杯,9,450,10,2,80,物流慢 / 漏水",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.currentWeek.products[0].refundReason).toBe("物流慢 / 漏水");
+    expect(
+      result.report.fieldMappings.some(
+        (mapping) => mapping.canonicalField === "refundReason" && mapping.sourceHeader === "售后原因",
       ),
     ).toBe(true);
   });

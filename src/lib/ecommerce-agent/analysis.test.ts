@@ -12,6 +12,7 @@ describe("ecommerce agent analysis", () => {
     expect(analysis.nextActions.length).toBeGreaterThanOrEqual(3);
     expect(analysis.feishuReply).toContain("飞书");
     expect(analysis.dataHealth.some((item) => item.includes("已有成本或毛利数据"))).toBe(true);
+    expect(analysis.dataHealth.some((item) => item.includes("已有退款/退货原因"))).toBe(true);
   });
 
   it("asks for missing data instead of guessing", () => {
@@ -76,6 +77,7 @@ describe("ecommerce agent analysis", () => {
           ...product,
           refundOrders: undefined,
           refundAmount: undefined,
+          refundReason: undefined,
         })),
       },
       currentWeek: {
@@ -84,6 +86,7 @@ describe("ecommerce agent analysis", () => {
           ...product,
           refundOrders: undefined,
           refundAmount: undefined,
+          refundReason: undefined,
         })),
       },
     });
@@ -105,6 +108,7 @@ describe("ecommerce agent analysis", () => {
                 ...product,
                 refundOrders: 18,
                 refundAmount: 760,
+                refundReason: "颜色有色差 / 杯盖漏水",
               }
             : product,
         ),
@@ -112,6 +116,11 @@ describe("ecommerce agent analysis", () => {
     });
 
     expect(analysis.productFindings.some((finding) => finding.issue === "售后风险偏高")).toBe(true);
+    expect(
+      analysis.productFindings.some(
+        (finding) => finding.issue === "售后风险偏高" && finding.plainReason.includes("颜色有色差"),
+      ),
+    ).toBe(true);
     expect(analysis.nextActions.some((action) => action.title === "先查退款/退货原因")).toBe(true);
     expect(analysis.plainSummary.some((line) => line.includes("退款/退货这块"))).toBe(true);
   });

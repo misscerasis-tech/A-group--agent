@@ -17,15 +17,15 @@ import { buildBeginnerWorkSession } from "../../lib/ecommerce-agent/work-session
 import { formatEcommerceAnalysisForFeishu } from "../../lib/integrations/feishu/agent-reply";
 
 const starterMetricsCsv = [
-  "week,start_date,end_date,product_name,sku,visitors,orders,revenue,units_sold,ad_spend,ad_revenue,inventory,gross_profit,refund_orders,refund_amount",
-  "previous,2026-07-06,2026-07-12,Aurora Cup 黑色 500ml,CUP-BLACK-500,4200,168,6048,176,1320,3960,320,2419,5,180",
-  "current,2026-07-13,2026-07-19,Aurora Cup 黑色 500ml,CUP-BLACK-500,4380,122,4392,128,1510,2920,118,878,4,160",
+  "week,start_date,end_date,product_name,sku,visitors,orders,revenue,units_sold,ad_spend,ad_revenue,inventory,gross_profit,refund_orders,refund_amount,refund_reason",
+  "previous,2026-07-06,2026-07-12,Aurora Cup 黑色 500ml,CUP-BLACK-500,4200,168,6048,176,1320,3960,320,2419,5,180,杯盖漏水 / 温控不准",
+  "current,2026-07-13,2026-07-19,Aurora Cup 黑色 500ml,CUP-BLACK-500,4380,122,4392,128,1510,2920,118,878,4,160,杯盖漏水 / 物流慢",
 ].join("\n");
 
 const platformHeaderMetricsTable = [
-  "周期,商品名称,商家编码,商品访客数,支付买家数,商品支付金额,支付商品件数,消耗,直接成交金额,可售件数,成本金额,毛利额,退款成功单数,退款成功金额",
-  "上周,Aurora Cup 黑色 500ml,CUP-BLACK-500,4200,168,6048,176,1320,3960,320,3629,2419,5,180",
-  "本周,Aurora Cup 黑色 500ml,CUP-BLACK-500,4380,122,4392,128,1510,2920,118,3514,878,4,160",
+  "周期,商品名称,商家编码,商品访客数,支付买家数,商品支付金额,支付商品件数,消耗,直接成交金额,可售件数,成本金额,毛利额,退款成功单数,退款成功金额,退款原因",
+  "上周,Aurora Cup 黑色 500ml,CUP-BLACK-500,4200,168,6048,176,1320,3960,320,3629,2419,5,180,杯盖漏水 / 温控不准",
+  "本周,Aurora Cup 黑色 500ml,CUP-BLACK-500,4380,122,4392,128,1510,2920,118,3514,878,4,160,杯盖漏水 / 物流慢",
 ].join("\n");
 
 const starterCompetitorCsv = [

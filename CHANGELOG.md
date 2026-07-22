@@ -8,6 +8,20 @@
 
 - 暂无。
 
+## [v0.1.38-refund-reason-diagnosis] - 2026-07-22
+
+### Added
+
+- 经营表导入支持 `refund_reason`、`退款原因`、`退货原因`、`售后原因` 等退款/退货原因字段。
+- 分析和飞书售后回复会直接引用用户给到的退款/退货原因，并给出商品页说明、质检、物流和客服话术检查方向。
+- 样例数据、平台表头样例、smoke 检查和用户准备文档同步加入退款/退货原因。
+
+## [v0.1.37-changelog-refresh] - 2026-07-22
+
+### Changed
+
+- 更新 changelog，补齐近期 tag 与 smoke 命令记录。
+
 ## [v0.1.36-competitor-source-refresh] - 2026-07-22
 
 ### Changed

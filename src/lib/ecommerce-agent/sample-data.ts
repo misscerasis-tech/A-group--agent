@@ -27,6 +27,7 @@ export const sampleEcommerceAgentInput: EcommerceAgentInput = {
         grossProfit: 2419,
         refundOrders: 5,
         refundAmount: 180,
+        refundReason: "杯盖漏水 / 温控不准",
       },
       {
         productName: "Aurora Cup 白色 500ml",
@@ -41,6 +42,7 @@ export const sampleEcommerceAgentInput: EcommerceAgentInput = {
         grossProfit: 1613,
         refundOrders: 3,
         refundAmount: 90,
+        refundReason: "颜色有色差",
       },
       {
         productName: "Aurora Cup 礼盒套装",
@@ -55,6 +57,7 @@ export const sampleEcommerceAgentInput: EcommerceAgentInput = {
         grossProfit: 1699,
         refundOrders: 2,
         refundAmount: 120,
+        refundReason: "礼盒压痕",
       },
     ],
   },
@@ -76,6 +79,7 @@ export const sampleEcommerceAgentInput: EcommerceAgentInput = {
         grossProfit: 878,
         refundOrders: 4,
         refundAmount: 160,
+        refundReason: "杯盖漏水 / 物流慢",
       },
       {
         productName: "Aurora Cup 白色 500ml",
@@ -90,6 +94,7 @@ export const sampleEcommerceAgentInput: EcommerceAgentInput = {
         grossProfit: 1026,
         refundOrders: 3,
         refundAmount: 110,
+        refundReason: "颜色有色差 / 预期不符",
       },
       {
         productName: "Aurora Cup 礼盒套装",
@@ -104,6 +109,7 @@ export const sampleEcommerceAgentInput: EcommerceAgentInput = {
         grossProfit: 2030,
         refundOrders: 3,
         refundAmount: 180,
+        refundReason: "礼盒压痕 / 送达太晚",
       },
     ],
   },

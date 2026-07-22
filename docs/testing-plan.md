@@ -39,7 +39,7 @@ npx pnpm@10.13.1 run agent:smoke
 - 上传或粘贴经营数据 CSV/TSV/Markdown 表格。
 - 上传或粘贴竞品数据 CSV/TSV/Markdown 表格。
 - 点击“演示样例”可恢复 Shopify 演示数据。
-- 点击“平台表头样例”可测试 `商品访客数`、`支付买家数`、`商品支付金额`、`退款成功金额` 这类平台导出字段。
+- 点击“平台表头样例”可测试 `商品访客数`、`支付买家数`、`商品支付金额`、`退款成功金额`、`退款原因` 这类平台导出字段。
 - 查看字段识别结果。
 - 查看缺失字段追问。
 - 生成基于导入数据的复盘和飞书回写文本。
@@ -74,7 +74,7 @@ SMOKE_BASE_URL=http://localhost:3000 npx pnpm@10.13.1 run smoke:web
 
 - 字段缺失时，Agent 会追问，不会硬编。
 - 字段名称不同也能映射，例如“GMV/销售额/revenue”都能识别。
-- 退款字段也能映射，例如“refund_orders/returns/退款单数”和“refund_amount/退款金额”都能识别。
+- 退款字段也能映射，例如“refund_orders/returns/退款单数”“refund_amount/退款金额”和“refund_reason/退款原因”都能识别。
 - CSV、TSV、Markdown 表格，以及从 Excel/飞书表格直接复制出来的制表符数据都能识别。
 - 没有 `week` 列但有 `date/start_date/开始日期` 时，Agent 会用日期判断最近两期。
 - 如果表里有三周或更多周期，Agent 会自动选择最近两期作为上周和本周。
@@ -166,9 +166,9 @@ FEISHU_EVENT_SUBSCRIPTION_MODE="long_connection"
 也可以直接在飞书里粘贴一小段经营 CSV/TSV/Markdown 表格：
 
 ```csv
-week,product_name,orders,revenue,units_sold,refund_orders,refund_amount
-previous,黑杯,10,500,12,1,30
-current,黑杯,8,420,9,2,80
+week,product_name,orders,revenue,units_sold,refund_orders,refund_amount,refund_reason
+previous,黑杯,10,500,12,1,30,杯盖漏水
+current,黑杯,8,420,9,2,80,杯盖漏水 / 物流慢
 ```
 
 第一版会用样例店铺回复，验证闭环后再把输入换成真实表格。

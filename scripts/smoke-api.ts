@@ -1,9 +1,9 @@
 const baseUrl = process.env.SMOKE_BASE_URL ?? "http://localhost:3001";
 
 const platformHeaderMetricsTable = [
-  "周期,商品名称,商家编码,商品访客数,支付买家数,商品支付金额,支付商品件数,消耗,直接成交金额,可售件数,成本金额,毛利额,退款成功单数,退款成功金额",
-  "上周,黑杯,CUP-BLACK,100,10,500,12,80,240,50,320,180,1,30",
-  "本周,黑杯,CUP-BLACK,120,9,450,10,90,180,40,330,120,2,80",
+  "周期,商品名称,商家编码,商品访客数,支付买家数,商品支付金额,支付商品件数,消耗,直接成交金额,可售件数,成本金额,毛利额,退款成功单数,退款成功金额,退款原因",
+  "上周,黑杯,CUP-BLACK,100,10,500,12,80,240,50,320,180,1,30,杯盖漏水",
+  "本周,黑杯,CUP-BLACK,120,9,450,10,90,180,40,330,120,2,80,杯盖漏水 / 物流慢",
 ].join("\n");
 
 async function postAnalyze(body: unknown) {
@@ -42,6 +42,7 @@ async function main() {
   assert(report.fieldMappings?.every((mapping) => mapping.sourceHeader), "字段映射不应该出现空 sourceHeader。");
   assert(typeof success.body.feishuReply === "string", "接口应该返回飞书回复文本。");
   assert((success.body.feishuReply as string).includes("退款/退货"), "飞书回复应该包含售后风险口径。");
+  assert((success.body.feishuReply as string).includes("杯盖漏水"), "飞书回复应该引用退款/退货原因。");
   assert(typeof success.body.markdownReport === "string", "接口应该返回 Markdown 周报。");
 
   const missingBody = await postAnalyze({});

@@ -58,9 +58,9 @@ npx pnpm@10.13.1 run feishu:worker
 可以先不整理成完美模板。最小 CSV/TSV/Markdown 表格：
 
 ```csv
-week,product_name,sku,orders,revenue,units_sold,gross_profit,refund_orders,refund_amount
-previous,黑杯,CUP-BLACK,10,500,12,180,1,30
-current,黑杯,CUP-BLACK,8,420,9,90,2,80
+week,product_name,sku,orders,revenue,units_sold,gross_profit,refund_orders,refund_amount,refund_reason
+previous,黑杯,CUP-BLACK,10,500,12,180,1,30,杯盖漏水
+current,黑杯,CUP-BLACK,8,420,9,90,2,80,杯盖漏水 / 物流慢
 ```
 
 回到 `/agent` 页，先填本周目标，再把经营表粘贴进“真实数据导入工作台”并点击“生成复盘”。

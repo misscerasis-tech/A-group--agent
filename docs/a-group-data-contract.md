@@ -32,6 +32,7 @@
 | grossProfit | 毛利 | 可选 | 1380 |
 | refundOrders | 退款或退货单数 | 可选 | 3 |
 | refundAmount | 退款金额 | 可选 | 120 |
+| refundReason | 退款、退货或售后原因 | 可选 | 杯盖漏水 / 物流慢 |
 
 当前导入器已经支持 CSV/TSV/Markdown 表格，不要求字段名完全一致。从 Excel、飞书表格或 Google Sheets 直接复制出来的制表符表格也能识别。常见别名会自动识别：
 
@@ -55,6 +56,7 @@
 | grossProfit | gross_profit、profit、毛利、毛利润、利润、毛利额 |
 | refundOrders | refund_orders、refunds、returns、return_count、退款单数、退款成功单数、售后单数 |
 | refundAmount | refund_amount、refunded_amount、return_amount、退款金额、退款成功金额、售后金额 |
+| refundReason | refund_reason、return_reason、售后原因、退款原因、退货原因、差评原因 |
 
 ## 竞品数据
 

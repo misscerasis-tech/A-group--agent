@@ -42,9 +42,14 @@ function main() {
   assert(analysis.nextActions.length > 0, "分析应该生成下一步行动。");
   assert(analysis.nextActions[0].title === "先核对利润口径", "保利润目标应该优先核对利润口径。");
   assert(input.currentWeek.products[0].refundAmount === 160, "样例 CSV 应该导入退款金额。");
+  assert(input.currentWeek.products[0].refundReason?.includes("杯盖漏水"), "样例 CSV 应该导入退款原因。");
   assert(
     analysis.dataHealth.some((item) => item.includes("退款/退货数据")),
     "分析应该说明退款/退货数据状态。",
+  );
+  assert(
+    analysis.dataHealth.some((item) => item.includes("退款/退货原因")),
+    "分析应该说明退款/退货原因状态。",
   );
 
   const tsvImport = buildEcommerceInputFromCsv({

@@ -259,7 +259,10 @@ export function buildReturnsReply(analysis: EcommerceAgentAnalysis) {
         }。`
       : "1. 先补退款单数、退货数或退款金额。不完整时，我不会判断售后风险高低。",
     returnFindings.length > 0
-      ? `2. 优先查这些售后风险商品：${returnFindings.map((finding) => finding.productName).join("、")}。`
+      ? `2. 优先查这些售后风险商品：${returnFindings
+          .slice(0, 2)
+          .map((finding) => `${finding.productName}：${finding.plainReason} 建议：${finding.suggestedAction}`)
+          .join("；")}`
       : "2. 当前没有明显高退款/退货 SKU；如果真实数据里没有退款字段，我会先追问你补。",
     "3. 第一张表先给到 SKU、订单数、销售额、退款单数、退款金额。下一步再看退款原因、差评关键词和物流异常。",
   ].join("\n");

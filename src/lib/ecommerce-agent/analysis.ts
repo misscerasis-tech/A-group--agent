@@ -191,6 +191,23 @@ function describeRefundRisk(product: ProductMetric) {
   return parts.join("，");
 }
 
+function refundReasonParts(product: ProductMetric) {
+  return (product.refundReason ?? "")
+    .split(/[\/|;；、,，\n]/)
+    .map((reason) => reason.trim())
+    .filter(Boolean);
+}
+
+function describeRefundReason(product: ProductMetric) {
+  const reasons = refundReasonParts(product).slice(0, 3);
+
+  if (reasons.length === 0) {
+    return null;
+  }
+
+  return reasons.join("、");
+}
+
 function buildDataHealth(input: EcommerceAgentInput) {
   const health: string[] = [];
   const allProducts = [...input.previousWeek.products, ...input.currentWeek.products];
@@ -227,6 +244,12 @@ function buildDataHealth(input: EcommerceAgentInput) {
     health.push("退款/退货数据只覆盖部分 SKU，售后风险判断会先作为提示项。");
   } else {
     health.push("已有退款/退货数据，可以判断售后、描述或物流问题是否拖累真实利润。");
+  }
+
+  if (allProducts.some((product) => refundReasonParts(product).length > 0)) {
+    health.push("已有退款/退货原因，可以把售后风险直接落到商品描述、质量、物流或预期管理上。");
+  } else if (refundDataRows > 0) {
+    health.push("还没有退款/退货原因；能判断售后占比，但还不能直接知道用户为什么退。");
   }
 
   if (input.competitors.length === 0) {
@@ -325,12 +348,17 @@ function buildProductFindings(input: EcommerceAgentInput): ProductFinding[] {
     }
 
     if (highestRefundRate >= 0.08) {
+      const refundReason = describeRefundReason(currentProduct);
       findings.push({
         sku: currentProduct.sku,
         productName: currentProduct.productName,
         issue: "售后风险偏高",
-        plainReason: `${describeRefundRisk(currentProduct)}。这说明部分成交被退款或退货吃回去，需要检查商品描述、质量、物流或售后承诺是否让用户失望。`,
-        suggestedAction: "导出这款 SKU 的退款原因、差评关键词和物流异常记录，先改最常出现的 1 个问题。",
+        plainReason: refundReason
+          ? `${describeRefundRisk(currentProduct)}。你给到的主要退款/退货原因是：${refundReason}。`
+          : `${describeRefundRisk(currentProduct)}。这说明部分成交被退款或退货吃回去，需要检查商品描述、质量、物流或售后承诺是否让用户失望。`,
+        suggestedAction: refundReason
+          ? `先围绕「${refundReasonParts(currentProduct)[0]}」检查商品页说明、发货质检、物流承诺和客服话术。`
+          : "导出这款 SKU 的退款原因、差评关键词和物流异常记录，先改最常出现的 1 个问题。",
         priority: highestRefundRate >= 0.15 ? "high" : "medium",
       });
     }
@@ -453,6 +481,11 @@ function buildQuestions(input: EcommerceAgentInput): AgentQuestion[] {
     questions.push({
       question: "能否补齐缺少退款/退货数据的 SKU？",
       whyItMatters: "售后风险要按商品看，缺几款就容易漏掉真正拖利润的商品。",
+    });
+  } else if (allProducts.every((product) => refundReasonParts(product).length === 0)) {
+    questions.push({
+      question: "能否补退款/退货原因或差评关键词？",
+      whyItMatters: "这样我才能告诉你该先改商品描述、质量、物流，还是客服承诺。",
     });
   }
 

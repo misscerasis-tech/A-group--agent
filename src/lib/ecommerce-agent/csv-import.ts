@@ -62,7 +62,8 @@ type MetricField =
   | "productCost"
   | "grossProfit"
   | "refundOrders"
-  | "refundAmount";
+  | "refundAmount"
+  | "refundReason";
 
 type CompetitorField =
   | "name"
@@ -110,6 +111,7 @@ const metricFieldLabels: Record<MetricField, string> = {
   grossProfit: "毛利",
   refundOrders: "退款/退货单数",
   refundAmount: "退款金额",
+  refundReason: "退款/退货原因",
 };
 
 const metricRequiredFields = new Set<MetricField>([
@@ -282,6 +284,22 @@ const metricAliases: Record<MetricField, string[]> = {
     "售后退款金额",
     "退货金额",
     "售后金额",
+  ],
+  refundReason: [
+    "refund_reason",
+    "refundreason",
+    "return_reason",
+    "returnreason",
+    "after_sale_reason",
+    "aftersalereason",
+    "售后原因",
+    "退款原因",
+    "退货原因",
+    "退款退货原因",
+    "退款/退货原因",
+    "原因",
+    "问题原因",
+    "差评原因",
   ],
 };
 
@@ -717,6 +735,7 @@ function buildMetricRow(
     }),
     refundOrders,
     refundAmount,
+    refundReason: readField(row, mapping, "refundReason") || null,
   };
 }
 

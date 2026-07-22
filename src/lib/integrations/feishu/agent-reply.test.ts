@@ -4,6 +4,7 @@ import {
   detectFeishuReplyIntent,
   parseFeishuTextContent,
 } from "./agent-reply";
+import { sampleEcommerceAgentInput } from "../../ecommerce-agent/sample-data";
 
 describe("feishu agent reply", () => {
   it("parses text content from Feishu message payload", () => {
@@ -46,6 +47,31 @@ describe("feishu agent reply", () => {
     expect(buildFeishuAgentReply("竞品怎么看")).toContain("价格、促销、卖点");
     expect(buildFeishuAgentReply("退款退货怎么看")).toContain("售后把成交吃回去");
     expect(buildFeishuAgentReply("先保销量")).toContain("目标是保销量");
+  });
+
+  it("mentions refund reasons in direct returns replies when provided", () => {
+    const reply = buildFeishuAgentReply("退款退货怎么看", {
+      input: {
+        ...sampleEcommerceAgentInput,
+        currentWeek: {
+          ...sampleEcommerceAgentInput.currentWeek,
+          products: sampleEcommerceAgentInput.currentWeek.products.map((product) =>
+            product.sku === "CUP-BLACK-500"
+              ? {
+                  ...product,
+                  refundOrders: 16,
+                  refundAmount: 680,
+                  refundReason: "杯盖漏水 / 物流慢",
+                }
+              : product,
+          ),
+        },
+      },
+    });
+
+    expect(reply).toContain("Aurora Cup 黑色");
+    expect(reply).toContain("杯盖漏水");
+    expect(reply).toContain("商品页说明");
   });
 
   it("returns an ecommerce review for store review requests", () => {
