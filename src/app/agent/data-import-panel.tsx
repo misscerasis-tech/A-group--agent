@@ -129,6 +129,7 @@ function formatPriority(priority: string) {
 async function readFileIntoState(
   event: React.ChangeEvent<HTMLInputElement>,
   setValue: (value: string) => void,
+  setError: (value: string | null) => void,
 ) {
   const file = event.target.files?.[0];
 
@@ -136,16 +137,24 @@ async function readFileIntoState(
     return;
   }
 
-  if (/\.(xlsx|xls)$/i.test(file.name)) {
-    const { workbookArrayBufferToCsv } = await import("../../lib/ecommerce-agent/workbook-import");
+  try {
+    if (/\.(xlsx|xls)$/i.test(file.name)) {
+      const { workbookArrayBufferToCsv } = await import("../../lib/ecommerce-agent/workbook-import");
 
-    setValue(workbookArrayBufferToCsv(await file.arrayBuffer()));
+      setValue(workbookArrayBufferToCsv(await file.arrayBuffer()));
+      setError(null);
+      return;
+    }
+
+    setValue(await file.text());
+    setError(null);
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "文件内容无法读取。";
+
+    setError(`无法读取「${file.name}」：${reason} 你也可以从 Excel/飞书表格复制表格内容后直接粘贴。`);
+  } finally {
     event.target.value = "";
-    return;
   }
-
-  setValue(await file.text());
-  event.target.value = "";
 }
 
 export function DataImportPanel() {
@@ -159,6 +168,7 @@ export function DataImportPanel() {
   const [inventoryCsv, setInventoryCsv] = useState(starterInventoryCsv);
   const [adsCsv, setAdsCsv] = useState(starterAdsCsv);
   const [customerVoicesCsv, setCustomerVoicesCsv] = useState(starterCustomerVoiceCsv);
+  const [fileImportError, setFileImportError] = useState<string | null>(null);
   const [hasRun, setHasRun] = useState(false);
   const [hasLoadedDraft, setHasLoadedDraft] = useState(false);
   const [copiedTarget, setCopiedTarget] =
@@ -375,7 +385,7 @@ export function DataImportPanel() {
                 <input
                   accept={tableFileAccept}
                   type="file"
-                  onChange={(event) => void readFileIntoState(event, setMetricsCsv)}
+                  onChange={(event) => void readFileIntoState(event, setMetricsCsv, setFileImportError)}
                 />
               </label>
             </div>
@@ -399,7 +409,7 @@ export function DataImportPanel() {
                 <input
                   accept={tableFileAccept}
                   type="file"
-                  onChange={(event) => void readFileIntoState(event, setCompetitorCsv)}
+                  onChange={(event) => void readFileIntoState(event, setCompetitorCsv, setFileImportError)}
                 />
               </label>
             </div>
@@ -423,7 +433,7 @@ export function DataImportPanel() {
                 <input
                   accept={tableFileAccept}
                   type="file"
-                  onChange={(event) => void readFileIntoState(event, setAdsCsv)}
+                  onChange={(event) => void readFileIntoState(event, setAdsCsv, setFileImportError)}
                 />
               </label>
             </div>
@@ -447,7 +457,7 @@ export function DataImportPanel() {
                 <input
                   accept={tableFileAccept}
                   type="file"
-                  onChange={(event) => void readFileIntoState(event, setInventoryCsv)}
+                  onChange={(event) => void readFileIntoState(event, setInventoryCsv, setFileImportError)}
                 />
               </label>
             </div>
@@ -471,7 +481,7 @@ export function DataImportPanel() {
                 <input
                   accept={tableFileAccept}
                   type="file"
-                  onChange={(event) => void readFileIntoState(event, setCustomerVoicesCsv)}
+                  onChange={(event) => void readFileIntoState(event, setCustomerVoicesCsv, setFileImportError)}
                 />
               </label>
             </div>
@@ -509,6 +519,12 @@ export function DataImportPanel() {
               清空
             </button>
           </div>
+          {fileImportError ? (
+            <p className="file-import-error">
+              <AlertTriangle size={16} aria-hidden="true" />
+              {fileImportError}
+            </p>
+          ) : null}
         </div>
 
         <div className="import-output">

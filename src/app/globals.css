@@ -641,6 +641,24 @@ textarea {
   justify-content: flex-start;
 }
 
+.file-import-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  border: 1px solid #f4a6a1;
+  border-radius: 8px;
+  background: #fffafa;
+  color: var(--danger);
+  padding: 9px 10px;
+  line-height: 1.5;
+}
+
+.file-import-error svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
 .mapping-list,
 .issue-list,
 .work-session-list,
