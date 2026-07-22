@@ -18,6 +18,7 @@ function main() {
   const sampleImport = buildEcommerceInputFromCsv({
     metricsCsv: readSample("data/samples/aurora-cup-weekly-metrics.csv"),
     competitorsCsv: readSample("data/samples/aurora-cup-competitors.csv"),
+    inventoryCsv: readSample("data/samples/aurora-cup-inventory.csv"),
     customerVoicesCsv: readSample("data/samples/aurora-cup-customer-voices.csv"),
     store: {
       storeName: "Smoke Test Aurora Cup",
@@ -30,6 +31,7 @@ function main() {
 
   assert(sampleImport.report.ok, "样例 CSV 应该可以导入。");
   assert(sampleImport.input, "样例 CSV 应该生成 Agent 输入。");
+  assert(sampleImport.report.inventoryRows === 3, "样例库存快照表应该可以导入。");
   assert(sampleImport.report.customerVoiceRows === 3, "样例用户声音表应该可以导入。");
 
   const input = sampleImport.input;
@@ -63,6 +65,18 @@ function main() {
   });
 
   assert(tsvImport.report.ok, "从 Excel/飞书表格复制的 TSV 应该可以导入。");
+
+  const inventoryImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "周期,商品名称,SKU,订单数,销售额,销量",
+      "上周,黑杯,CUP-BLACK,10,500,12",
+      "本周,黑杯,CUP-BLACK,9,450,10",
+    ].join("\n"),
+    inventoryCsv: ["商品名称,商家编码,当前库存", "黑杯,CUP-BLACK,18"].join("\n"),
+  });
+
+  assert(inventoryImport.report.inventoryRows === 1, "库存快照表应该可以导入。");
+  assert(inventoryImport.input?.currentWeek.products[0].inventory === 18, "库存快照应该更新本周 SKU 库存。");
 
   const orderDetailImport = buildEcommerceInputFromCsv({
     metricsCsv: readSample("data/samples/aurora-cup-order-details.csv"),

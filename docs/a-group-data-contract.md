@@ -103,6 +103,28 @@
 
 竞品 CSV/TSV 也支持别名，例如 `name/竞品名称`、`url/竞品链接`、`price/价格`、`promotion/促销`、`key_selling_points/卖点`。
 
+## 库存快照数据
+
+这张表可选，用来补充独立库存表或仓库快照。它会按 SKU 或商品名称匹配本周商品，更新当前库存，用于判断热卖断货风险。
+
+| 字段 | 含义 | 是否必需 | 示例 |
+| --- | --- | --- | --- |
+| productName | 商品名称 | 商品名称和 SKU 至少有一个 | Aurora Cup 黑色 500ml |
+| sku | SKU | 商品名称和 SKU 至少有一个 | CUP-BLACK-500 |
+| inventory | 当前库存 | 必需 | 118 |
+| observedAt | 库存日期 | 可选 | 2026-07-19 |
+
+常见别名：
+
+| 标准字段 | 可识别别名示例 |
+| --- | --- |
+| productName | product_name、商品名称、商品、品名 |
+| sku | sku、商家编码、商品编码、货号 |
+| inventory | inventory、stock、available_stock、当前库存、可售库存、库存数、可售件数 |
+| observedAt | observed_at、date、库存日期、盘点日期、统计日期 |
+
+如果库存表里有 SKU 不在本周经营数据中，Agent 会提醒“暂不参与断货判断”，不会把未匹配库存硬塞进结论。
+
 ## 用户声音 / 售后评价数据
 
 这张表可选，用来补充客服备注、差评、评价关键词、退款备注或售后原因。它不替代经营数据表，但能帮助 Agent 判断“用户到底为什么不满意”。

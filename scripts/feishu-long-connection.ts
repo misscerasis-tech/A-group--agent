@@ -56,6 +56,7 @@ function loadEcommerceInputFromEnv() {
     metricsCsv,
     competitorsCsv: readOptionalFile(process.env.ECOMMERCE_COMPETITORS_CSV),
     customerVoicesCsv: readOptionalFile(process.env.ECOMMERCE_CUSTOMER_VOICES_CSV),
+    inventoryCsv: readOptionalFile(process.env.ECOMMERCE_INVENTORY_CSV),
     store: {
       storeName: process.env.ECOMMERCE_STORE_NAME,
       platform: process.env.ECOMMERCE_PLATFORM,

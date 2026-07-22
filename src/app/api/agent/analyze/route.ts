@@ -12,6 +12,7 @@ type AnalyzeRequestBody = {
   metricsCsv?: string;
   competitorsCsv?: string;
   customerVoicesCsv?: string;
+  inventoryCsv?: string;
   store?: Partial<StoreProfile>;
 };
 
@@ -42,6 +43,7 @@ export async function POST(request: Request) {
     metricsCsv: body.metricsCsv,
     competitorsCsv: body.competitorsCsv,
     customerVoicesCsv: body.customerVoicesCsv,
+    inventoryCsv: body.inventoryCsv,
     store: body.store,
   });
 

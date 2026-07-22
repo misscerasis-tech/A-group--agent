@@ -319,6 +319,27 @@ describe("ecommerce csv import", () => {
     });
   });
 
+  it("matches standalone inventory snapshots into current week products", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,SKU,订单数,销售额,销量",
+        "上周,黑杯,CUP-BLACK,10,500,12",
+        "本周,黑杯,CUP-BLACK,9,450,10",
+      ].join("\n"),
+      inventoryCsv: [
+        "商品名称,商家编码,当前库存,库存日期",
+        "黑杯,CUP-BLACK,18,2026-07-19",
+        "蓝杯,CUP-BLUE,7,2026-07-19",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.report.inventoryRows).toBe(2);
+    expect(result.input?.currentWeek.products[0].inventory).toBe(18);
+    expect(result.report.issues.some((issue) => issue.message.includes("库存快照"))).toBe(true);
+    expect(result.report.issues.some((issue) => issue.message.includes("没有匹配"))).toBe(true);
+  });
+
   it("uses the latest two periods when a platform export contains more than two weeks", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

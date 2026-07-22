@@ -42,6 +42,13 @@ const starterCompetitorCsv = [
   "Ember Travel Mug 2,https://ember.com/products/ember-travel-mug-2,Ember 官方商品页,2026-07-22,199.95,高端温控旅行杯,4.7,12000,精确温控 / App 控制 / 旅行场景",
 ].join("\n");
 
+const starterInventoryCsv = [
+  "product_name,sku,inventory,observed_at",
+  "Aurora Cup 黑色 500ml,CUP-BLACK-500,118,2026-07-19",
+  "Aurora Cup 白色 500ml,CUP-WHITE-500,206,2026-07-19",
+  "Aurora Cup 礼盒套装,CUP-GIFT-SET,42,2026-07-19",
+].join("\n");
+
 const starterCustomerVoiceCsv = [
   "product_name,sku,source,observed_at,sentiment,theme,text,count",
   "Aurora Cup 黑色 500ml,CUP-BLACK-500,客服售后备注,2026-07-19,negative,杯盖漏水,用户反馈通勤路上杯盖会渗水，要求退货,4",
@@ -59,6 +66,7 @@ type ImportDraft = {
   goal?: string;
   metricsCsv?: string;
   competitorCsv?: string;
+  inventoryCsv?: string;
   customerVoicesCsv?: string;
 };
 
@@ -99,6 +107,7 @@ export function DataImportPanel() {
   const [goal, setGoal] = useState(defaultStoreGoal);
   const [metricsCsv, setMetricsCsv] = useState(starterMetricsCsv);
   const [competitorCsv, setCompetitorCsv] = useState(starterCompetitorCsv);
+  const [inventoryCsv, setInventoryCsv] = useState(starterInventoryCsv);
   const [customerVoicesCsv, setCustomerVoicesCsv] = useState(starterCustomerVoiceCsv);
   const [hasRun, setHasRun] = useState(false);
   const [hasLoadedDraft, setHasLoadedDraft] = useState(false);
@@ -112,6 +121,7 @@ export function DataImportPanel() {
     setGoal(defaultStoreGoal);
     setMetricsCsv(starterMetricsCsv);
     setCompetitorCsv(starterCompetitorCsv);
+    setInventoryCsv(starterInventoryCsv);
     setCustomerVoicesCsv(starterCustomerVoiceCsv);
     setHasRun(false);
   }
@@ -124,6 +134,7 @@ export function DataImportPanel() {
     setGoal(defaultStoreGoal);
     setMetricsCsv(platformHeaderMetricsTable);
     setCompetitorCsv(starterCompetitorCsv);
+    setInventoryCsv(starterInventoryCsv);
     setCustomerVoicesCsv(starterCustomerVoiceCsv);
     setHasRun(false);
   }
@@ -136,6 +147,7 @@ export function DataImportPanel() {
     setGoal(defaultStoreGoal);
     setMetricsCsv(orderDetailMetricsTable);
     setCompetitorCsv(starterCompetitorCsv);
+    setInventoryCsv(starterInventoryCsv);
     setCustomerVoicesCsv(starterCustomerVoiceCsv);
     setHasRun(false);
   }
@@ -143,6 +155,7 @@ export function DataImportPanel() {
   function clearImportDraft() {
     setMetricsCsv("");
     setCompetitorCsv("");
+    setInventoryCsv("");
     setCustomerVoicesCsv("");
     setHasRun(false);
     window.localStorage.removeItem(importDraftStorageKey);
@@ -172,6 +185,7 @@ export function DataImportPanel() {
         setGoal(draft.goal ?? defaultStoreGoal);
         setMetricsCsv(draft.metricsCsv ?? starterMetricsCsv);
         setCompetitorCsv(draft.competitorCsv ?? starterCompetitorCsv);
+        setInventoryCsv(draft.inventoryCsv ?? starterInventoryCsv);
         setCustomerVoicesCsv(draft.customerVoicesCsv ?? starterCustomerVoiceCsv);
       }
     } catch {
@@ -194,17 +208,30 @@ export function DataImportPanel() {
       goal,
       metricsCsv,
       competitorCsv,
+      inventoryCsv,
       customerVoicesCsv,
     };
 
     window.localStorage.setItem(importDraftStorageKey, JSON.stringify(draft));
-  }, [category, competitorCsv, customerVoicesCsv, goal, hasLoadedDraft, market, metricsCsv, platform, storeName]);
+  }, [
+    category,
+    competitorCsv,
+    customerVoicesCsv,
+    goal,
+    hasLoadedDraft,
+    inventoryCsv,
+    market,
+    metricsCsv,
+    platform,
+    storeName,
+  ]);
 
   const importResult = useMemo(
     () =>
       buildEcommerceInputFromCsv({
         metricsCsv,
         competitorsCsv: competitorCsv,
+        inventoryCsv,
         customerVoicesCsv,
         store: {
           storeName,
@@ -214,7 +241,7 @@ export function DataImportPanel() {
           goal,
         },
       }),
-    [category, competitorCsv, customerVoicesCsv, goal, market, metricsCsv, platform, storeName],
+    [category, competitorCsv, customerVoicesCsv, goal, inventoryCsv, market, metricsCsv, platform, storeName],
   );
   const analysis = importResult.input ? analyzeEcommerceStore(importResult.input) : null;
   const markdownReport =
@@ -315,6 +342,30 @@ export function DataImportPanel() {
               spellCheck={false}
               value={competitorCsv}
               onChange={(event) => setCompetitorCsv(event.target.value)}
+            />
+          </div>
+
+          <div className="csv-box">
+            <div className="csv-box-header">
+              <span>
+                <Database size={16} aria-hidden="true" />
+                库存快照表
+              </span>
+              <label className="button secondary file-button">
+                <FileUp size={16} aria-hidden="true" />
+                上传
+                <input
+                  accept=".csv,.tsv,.md,.markdown,text/csv,text/tab-separated-values,text/markdown,text/plain"
+                  type="file"
+                  onChange={(event) => void readFileIntoState(event, setInventoryCsv)}
+                />
+              </label>
+            </div>
+            <textarea
+              aria-label="库存快照 CSV、TSV、Markdown 或复制表格"
+              spellCheck={false}
+              value={inventoryCsv}
+              onChange={(event) => setInventoryCsv(event.target.value)}
             />
           </div>
 

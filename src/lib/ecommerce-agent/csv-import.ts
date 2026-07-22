@@ -28,6 +28,7 @@ export type EcommerceCsvImportReport = {
   metricsRows: number;
   competitorRows: number;
   customerVoiceRows: number;
+  inventoryRows: number;
   fieldMappings: FieldMapping[];
   issues: ImportIssue[];
   questionsForUser: string[];
@@ -106,6 +107,8 @@ type OrderDetailField =
   | "status"
   | "productCost"
   | "grossProfit";
+
+type InventoryField = "productName" | "sku" | "inventory" | "observedAt";
 
 const defaultStore: StoreProfile = {
   storeName: "待导入店铺",
@@ -568,6 +571,38 @@ const orderDetailAliases: Record<OrderDetailField, string[]> = {
   ],
   productCost: metricAliases.productCost,
   grossProfit: metricAliases.grossProfit,
+};
+
+const inventoryFieldLabels: Record<InventoryField, string> = {
+  productName: "商品名称",
+  sku: "SKU",
+  inventory: "当前库存",
+  observedAt: "库存日期",
+};
+
+const inventoryAliases: Record<InventoryField, string[]> = {
+  productName: metricAliases.productName,
+  sku: metricAliases.sku,
+  inventory: [
+    "inventory",
+    "stock",
+    "available_stock",
+    "availablestock",
+    "sellable_stock",
+    "sellablestock",
+    "on_hand",
+    "onhand",
+    "quantity_available",
+    "quantityavailable",
+    "库存",
+    "当前库存",
+    "可售库存",
+    "库存数",
+    "现货库存",
+    "可售件数",
+    "可用库存",
+  ],
+  observedAt: ["observed_at", "date", "snapshot_date", "stock_date", "日期", "库存日期", "盘点日期", "统计日期"],
 };
 
 function normalizeHeader(header: string) {
@@ -1664,15 +1699,138 @@ function buildCustomerVoices(
   return { customerVoices, rows: table.rows.length };
 }
 
+type InventorySnapshot = {
+  productName: string;
+  sku?: string;
+  inventory: number;
+  observedAt?: string;
+};
+
+function buildInventorySnapshots(
+  text: string | undefined,
+  issues: ImportIssue[],
+): { inventorySnapshots: InventorySnapshot[]; rows: number } {
+  if (!text?.trim()) {
+    return { inventorySnapshots: [], rows: 0 };
+  }
+
+  const table = parseCsv(text);
+  const { mapping } = buildHeaderMap(
+    table.headers,
+    inventoryAliases,
+    new Set<InventoryField>(["inventory"]),
+    inventoryFieldLabels,
+  );
+
+  const inventorySnapshots = table.rows.flatMap((row, index) => {
+    const rowNumber = index + 2;
+    const productName = readField(row, mapping, "productName");
+    const sku = readField(row, mapping, "sku");
+    const inventory = requireNonNegative(
+      requiredNumber(readField(row, mapping, "inventory"), inventoryFieldLabels.inventory, issues, rowNumber),
+      inventoryFieldLabels.inventory,
+      issues,
+      rowNumber,
+    );
+
+    if (!productName && !sku) {
+      issues.push({
+        severity: "warning",
+        rowNumber,
+        message: "有一行库存快照缺少商品名称或 SKU，已跳过。",
+      });
+      return [];
+    }
+
+    if (inventory === null) {
+      return [];
+    }
+
+    return [
+      {
+        productName: productName || sku,
+        sku: sku || undefined,
+        inventory,
+        observedAt: readField(row, mapping, "observedAt") || undefined,
+      },
+    ];
+  });
+
+  return { inventorySnapshots, rows: table.rows.length };
+}
+
+function applyInventorySnapshotsToCurrentWeek(
+  currentWeek: WeeklyMetricSet,
+  inventorySnapshots: InventorySnapshot[],
+  issues: ImportIssue[],
+) {
+  if (inventorySnapshots.length === 0) {
+    return currentWeek;
+  }
+
+  const snapshotsBySku = new Map(
+    inventorySnapshots
+      .filter((snapshot) => snapshot.sku)
+      .map((snapshot) => [snapshot.sku?.trim().toLowerCase() ?? "", snapshot]),
+  );
+  const snapshotsByProductName = new Map(
+    inventorySnapshots.map((snapshot) => [snapshot.productName.trim().toLowerCase(), snapshot]),
+  );
+  const matchedSnapshotKeys = new Set<string>();
+
+  const products = currentWeek.products.map((product) => {
+    const skuKey = product.sku.trim().toLowerCase();
+    const productNameKey = product.productName.trim().toLowerCase();
+    const snapshot = snapshotsBySku.get(skuKey) ?? snapshotsByProductName.get(productNameKey);
+
+    if (!snapshot) {
+      return product;
+    }
+
+    matchedSnapshotKeys.add(snapshot.sku?.trim().toLowerCase() || snapshot.productName.trim().toLowerCase());
+
+    return {
+      ...product,
+      inventory: snapshot.inventory,
+    };
+  });
+
+  const matchedCount = matchedSnapshotKeys.size;
+
+  issues.push({
+    severity: "info",
+    message: `已读取库存快照 ${inventorySnapshots.length} 行，并更新 ${matchedCount} 个本周商品的当前库存。`,
+  });
+
+  const unmatchedSnapshots = inventorySnapshots.filter((snapshot) => {
+    const key = snapshot.sku?.trim().toLowerCase() || snapshot.productName.trim().toLowerCase();
+    return !matchedSnapshotKeys.has(key);
+  });
+
+  if (unmatchedSnapshots.length > 0) {
+    issues.push({
+      severity: "warning",
+      message: `库存快照里有 ${unmatchedSnapshots.length} 行没有匹配到本周经营数据，已暂不参与断货判断。`,
+    });
+  }
+
+  return {
+    ...currentWeek,
+    products,
+  };
+}
+
 export function buildEcommerceInputFromCsv({
   metricsCsv,
   competitorsCsv,
   customerVoicesCsv,
+  inventoryCsv,
   store,
 }: {
   metricsCsv: string;
   competitorsCsv?: string;
   customerVoicesCsv?: string;
+  inventoryCsv?: string;
   store?: Partial<StoreProfile>;
 }): EcommerceCsvImportResult {
   const issues: ImportIssue[] = [];
@@ -1774,6 +1932,12 @@ export function buildEcommerceInputFromCsv({
 
   const competitorResult = buildCompetitors(competitorsCsv, issues);
   const customerVoiceResult = buildCustomerVoices(customerVoicesCsv, issues);
+  const inventoryResult = buildInventorySnapshots(inventoryCsv, issues);
+  currentWeek = applyInventorySnapshotsToCurrentWeek(
+    currentWeek,
+    inventoryResult.inventorySnapshots,
+    issues,
+  );
   const errorIssues = issues.filter((issue) => issue.severity === "error");
   const questionsForUser = [
     ...fieldMappings
@@ -1793,6 +1957,7 @@ export function buildEcommerceInputFromCsv({
     metricsRows: metricsTable.rows.length,
     competitorRows: competitorResult.rows,
     customerVoiceRows: customerVoiceResult.rows,
+    inventoryRows: inventoryResult.rows,
     fieldMappings,
     issues,
     questionsForUser,

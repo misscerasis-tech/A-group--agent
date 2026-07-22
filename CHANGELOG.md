@@ -2,6 +2,14 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.49-inventory-snapshot-import] - 2026-07-23
+
+### Added
+
+- 新增可选“库存快照表”，支持 SKU/商品名、当前库存和库存日期，补足订单导出里常缺的库存数据。
+- 导入器会把库存快照匹配到本周商品，用于断货风险判断，并提醒未匹配库存行。
+- `/agent` 工作台、`/api/agent/analyze`、飞书 worker、doctor、smoke、样例数据和文档同步支持库存快照。
+
 ## [v0.1.48-order-detail-import] - 2026-07-23
 
 ### Added
