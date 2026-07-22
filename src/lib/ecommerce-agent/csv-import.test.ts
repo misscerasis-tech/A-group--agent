@@ -723,6 +723,20 @@ describe("ecommerce csv import", () => {
     expect(result.input?.currentWeek.products.find((product) => product.sku === "CUP-WHITE")?.revenue).toBe(89.7);
   });
 
+  it("does not treat generic order Total as line item revenue", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "Name,Paid at,Lineitem name,Lineitem sku,Lineitem quantity,Total,Financial Status",
+        "#1001,2026-07-08 10:11:00,黑杯,CUP-BLACK,2,119.7,paid",
+        "#1001,2026-07-08 10:11:00,白杯,CUP-WHITE,1,119.7,paid",
+        "#1002,2026-07-15 09:20:00,黑杯,CUP-BLACK,1,39.9,paid",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(false);
+    expect(result.report.questionsForUser.some((question) => question.includes("销售额"))).toBe(true);
+  });
+
   it("subtracts order detail discount columns before aggregating revenue", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

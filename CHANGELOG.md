@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.118-safe-order-total-aliases] - 2026-07-23
+
+### Changed
+
+- 订单明细不再把泛用 `Total` / `Subtotal` 当成行收入字段，避免多商品订单把整单金额按行重复计算。
+- CSV 导入单测增加泛用 `Total` 订单明细防回归场景。
+
 ## [v0.1.117-refresh-autonomous-progress] - 2026-07-23
 
 ### Changed

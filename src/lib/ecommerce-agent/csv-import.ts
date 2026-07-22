@@ -723,8 +723,6 @@ const orderDetailAliases: Record<OrderDetailField, string[]> = {
     "grosssales",
     "total_sales",
     "totalsales",
-    "subtotal",
-    "total",
     "item_price",
     "itemprice",
     "item_subtotal",
