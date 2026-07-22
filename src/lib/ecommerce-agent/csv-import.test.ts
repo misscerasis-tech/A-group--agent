@@ -50,6 +50,21 @@ describe("ecommerce csv import", () => {
     expect(result.input?.currentWeek.products[0].refundAmount).toBe(80);
   });
 
+  it("parses csv wrapped in markdown code fences", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "```csv",
+        "week,product_name,orders,revenue,units_sold",
+        "previous,黑杯,10,500,12",
+        "current,黑杯,8,420,9",
+        "```",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.currentWeek.products[0].orders).toBe(8);
+  });
+
   it("maps Chinese ecommerce headers into agent input", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

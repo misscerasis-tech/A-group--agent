@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.72-fenced-table-import] - 2026-07-23
+
+### Added
+
+- CSV/TSV/Markdown 导入会忽略开头和结尾的 Markdown 代码围栏，聊天里用 `csv` 或 `text` 代码块包裹的表格也能被网页、API 和飞书粘贴路径识别。
+
 ## [v0.1.71-feishu-platform-order-paste] - 2026-07-23
 
 ### Added

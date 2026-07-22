@@ -875,6 +875,7 @@ export function parseCsv(text: string): CsvTable {
   const lines = text
     .split(/\r?\n/)
     .map((line) => line.trim())
+    .filter((line) => !/^```/.test(line))
     .filter(Boolean);
 
   if (lines.length === 0) {

@@ -268,6 +268,15 @@ function main() {
       "112-0004\t2026-07-16T19:45:00Z\t白杯\tCUP-WHITE\t3\t89.7\tShipped",
     ].join("\n"),
   );
+  const pastedFencedCsvReply = buildFeishuAgentReply(
+    [
+      "```csv",
+      "week,product_name,orders,revenue,units_sold",
+      "previous,黑杯,10,500,12",
+      "current,黑杯,8,420,9",
+      "```",
+    ].join("\n"),
+  );
   const testingReply = buildFeishuAgentReply("怎么真正测试，接入飞书吗");
   const returnsReply = buildFeishuAgentReply("退款退货怎么看");
   const taskReply = buildFeishuAgentReply("给我待办清单");
@@ -286,6 +295,7 @@ function main() {
   assert(pastedShopifyOrderReply.includes("refunded"), "飞书 Shopify Orders 回复应该引用退款状态。");
   assert(pastedAmazonOrderReply.includes("刚粘贴的表格"), "飞书应该能分析 Amazon 订单 TSV 粘贴数据。");
   assert(pastedAmazonOrderReply.includes("Refunded"), "飞书 Amazon 订单 TSV 回复应该引用退款状态。");
+  assert(pastedFencedCsvReply.includes("刚粘贴的表格"), "飞书应该能分析 Markdown 代码块里的 CSV。");
   assert(testingReply.includes("App Secret"), "飞书测试回复应该提示 App Secret。");
   assert(returnsReply.includes("售后把成交吃回去"), "飞书应该能单独回答退款/退货问题。");
   assert(taskReply.includes("优先级\t截止\t负责人"), "飞书应该能返回可复制的待办表格。");
