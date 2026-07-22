@@ -94,7 +94,7 @@ SMOKE_BASE_URL=http://localhost:3000 npx pnpm@10.13.1 run smoke:web
 - 比率字段也能映射和反推，例如“转化率/CVR”“ROAS/投产比”“毛利率”“退款率/退货率”“退款金额占比”。
 - CSV、TSV、Markdown 表格，以及从 Excel/飞书表格直接复制出来的制表符数据都能识别。
 - 从聊天或文档里复制的 Markdown 代码块表格也能识别，`csv` 或 `text` 代码围栏不会被当成表头。
-- 上传 `.xlsx/.xls` 时，网页工作台会读取第一张有数据的工作表并转成表格文本；第一页空白说明页不会阻断导入。
+- 上传 `.xlsx/.xls` 时，网页工作台会优先读取第一张像表格的数据工作表并转成表格文本；第一页空白或只有说明文字的 sheet 不会阻断导入。
 - 没有 `week` 列但有 `date/start_date/开始日期` 时，Agent 会用日期判断最近两期。
 - 没有周汇总表时，可以给订单明细；Agent 会按订单日期聚合最近两个自然周。
 - Shopify Orders 的 `Lineitem price` 会按单价处理，乘以 `Lineitem quantity` 后才进入销售额汇总。

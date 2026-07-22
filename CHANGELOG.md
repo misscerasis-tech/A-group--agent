@@ -2,6 +2,14 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.126-workbook-table-sheet-selection] - 2026-07-23
+
+### Changed
+
+- Excel 上传不再简单读取第一张非空工作表，而是优先选择第一张像表格的数据工作表；如果前面是空 sheet 或只有说明文字的 sheet，会继续往后找。
+- Workbook 导入单测覆盖非空说明页在数据表前面的场景。
+- README、数据契约和测试计划同步 Excel sheet 选择规则。
+
 ## [v0.1.125-european-number-formats] - 2026-07-23
 
 ### Added

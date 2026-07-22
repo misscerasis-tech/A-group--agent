@@ -55,4 +55,27 @@ describe("workbook import", () => {
     expect(csv).toContain("周期,商品名称,订单数,销售额,销量");
     expect(importResult.report.ok).toBe(true);
   });
+
+  it("skips non-empty note sheets and picks the first likely data table", () => {
+    const workbook = XLSX.utils.book_new();
+    const noteSheet = XLSX.utils.aoa_to_sheet([
+      ["导出说明"],
+      ["这页只是平台导出的说明文字，不是经营数据。"],
+    ]);
+    const metricsSheet = XLSX.utils.aoa_to_sheet([
+      ["周期", "商品名称", "订单数", "销售额", "销量"],
+      ["上周", "黑杯", 10, 500, 12],
+      ["本周", "黑杯", 8, 420, 9],
+    ]);
+
+    XLSX.utils.book_append_sheet(workbook, noteSheet, "说明页");
+    XLSX.utils.book_append_sheet(workbook, metricsSheet, "经营数据");
+
+    const csv = workbookArrayBufferToCsv(workbookToArrayBuffer(workbook));
+    const importResult = buildEcommerceInputFromCsv({ metricsCsv: csv });
+
+    expect(csv).toContain("周期,商品名称,订单数,销售额,销量");
+    expect(csv).not.toContain("导出说明");
+    expect(importResult.report.ok).toBe(true);
+  });
 });

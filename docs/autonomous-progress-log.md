@@ -7,7 +7,7 @@
 ## 当前最新稳定点
 
 - 最新代码：`main`
-- 最新标签：`v0.1.125-european-number-formats`
+- 最新标签：`v0.1.126-workbook-table-sheet-selection`
 - 本地测试入口：`http://localhost:3001/agent`
 - 远端仓库：`misscerasis-tech/A-group--agent.git`
 
@@ -15,6 +15,7 @@
 
 1. 数据导入更接近真实平台导出。
    - 支持 CSV、TSV、Markdown、Excel 和从表格直接复制的内容。
+   - Excel 上传会优先读取第一张像表格的数据工作表；空 sheet 或只有说明文字的 sheet 不会抢在真实数据前面。
    - 支持周汇总表和最近两周订单明细。
    - 支持 Shopify Analytics 等汇总报表里的 `net_sales`、`total_sales`、`gross_sales` 和 `net_quantity` 字段。
    - 如果周汇总表暂时没有销售额但有订单数和 `AOV / 客单价`，会先按订单数 × 客单价补出销售额口径，并提醒后续用平台原始销售额复核。
