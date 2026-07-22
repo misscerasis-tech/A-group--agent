@@ -97,3 +97,9 @@ git checkout -b hotfix/from-a-group-demo v0.1.0-a-group-ecommerce-agent
 - 平台 OAuth token
 
 `.env.example` 只能放变量名和空占位。
+
+## CI 说明
+
+本地已经有 `agent:smoke` 和 `smoke:web` 两类检查，可以在提交前手动跑。
+
+GitHub Actions workflow 需要由带 `workflow` scope 的 GitHub 凭证创建或更新。当前自动推送凭证没有这个权限，所以 Codex 不能直接把 `.github/workflows/ci.yml` 推到远端。用户回来后如果要开启 CI，可以在 GitHub 重新授权带 `workflow` scope 的 token，或手动创建 workflow。

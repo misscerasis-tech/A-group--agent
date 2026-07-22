@@ -4,6 +4,8 @@
 
 ## 飞书
 
+飞书后台当前状态已记录在 `docs/feishu-app-status.md`。确认到的应用是 `A 组电商运营 Agent`，App ID 是 `cli_aaea1dbb6ee1dd10`，机器人能力和 `im.message.receive_v1` 长连接事件已经存在，当前主要缺 App Secret、本地 `.env` 和发布确认。
+
 1. 先确认本地代码和基础能力：
 
 ```bash
