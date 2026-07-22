@@ -108,7 +108,7 @@ type OrderDetailField =
   | "productCost"
   | "grossProfit";
 
-type InventoryField = "productName" | "sku" | "inventory" | "observedAt";
+type InventoryField = "productName" | "sku" | "inventory" | "unitCost" | "grossMarginRate" | "observedAt";
 
 const defaultStore: StoreProfile = {
   storeName: "待导入店铺",
@@ -577,6 +577,8 @@ const inventoryFieldLabels: Record<InventoryField, string> = {
   productName: "商品名称",
   sku: "SKU",
   inventory: "当前库存",
+  unitCost: "单位成本",
+  grossMarginRate: "毛利率",
   observedAt: "库存日期",
 };
 
@@ -602,6 +604,21 @@ const inventoryAliases: Record<InventoryField, string[]> = {
     "可售件数",
     "可用库存",
   ],
+  unitCost: [
+    "unit_cost",
+    "unitcost",
+    "cost_per_unit",
+    "costperunit",
+    "per_unit_cost",
+    "perunitcost",
+    "采购单价",
+    "成本单价",
+    "单位成本",
+    "单件成本",
+    "单品成本",
+    "每件成本",
+  ],
+  grossMarginRate: metricAliases.grossMarginRate,
   observedAt: ["observed_at", "date", "snapshot_date", "stock_date", "日期", "库存日期", "盘点日期", "统计日期"],
 };
 
@@ -1702,7 +1719,9 @@ function buildCustomerVoices(
 type InventorySnapshot = {
   productName: string;
   sku?: string;
-  inventory: number;
+  inventory?: number;
+  unitCost?: number;
+  grossMarginRate?: number;
   observedAt?: string;
 };
 
@@ -1718,7 +1737,7 @@ function buildInventorySnapshots(
   const { mapping } = buildHeaderMap(
     table.headers,
     inventoryAliases,
-    new Set<InventoryField>(["inventory"]),
+    new Set<InventoryField>(),
     inventoryFieldLabels,
   );
 
@@ -1727,11 +1746,18 @@ function buildInventorySnapshots(
     const productName = readField(row, mapping, "productName");
     const sku = readField(row, mapping, "sku");
     const inventory = requireNonNegative(
-      requiredNumber(readField(row, mapping, "inventory"), inventoryFieldLabels.inventory, issues, rowNumber),
+      optionalNumber(readField(row, mapping, "inventory"), inventoryFieldLabels.inventory, issues, rowNumber),
       inventoryFieldLabels.inventory,
       issues,
       rowNumber,
     );
+    const unitCost = requireNonNegative(
+      optionalNumber(readField(row, mapping, "unitCost"), inventoryFieldLabels.unitCost, issues, rowNumber),
+      inventoryFieldLabels.unitCost,
+      issues,
+      rowNumber,
+    );
+    const grossMarginRate = optionalPercentRate(readField(row, mapping, "grossMarginRate"));
 
     if (!productName && !sku) {
       issues.push({
@@ -1742,7 +1768,12 @@ function buildInventorySnapshots(
       return [];
     }
 
-    if (inventory === null) {
+    if (inventory === null && unitCost === null && grossMarginRate === null) {
+      issues.push({
+        severity: "warning",
+        rowNumber,
+        message: "有一行商品快照缺少当前库存、单位成本或毛利率，已跳过。",
+      });
       return [];
     }
 
@@ -1750,7 +1781,9 @@ function buildInventorySnapshots(
       {
         productName: productName || sku,
         sku: sku || undefined,
-        inventory,
+        inventory: inventory ?? undefined,
+        unitCost: unitCost ?? undefined,
+        grossMarginRate: grossMarginRate ?? undefined,
         observedAt: readField(row, mapping, "observedAt") || undefined,
       },
     ];
@@ -1759,13 +1792,22 @@ function buildInventorySnapshots(
   return { inventorySnapshots, rows: table.rows.length };
 }
 
-function applyInventorySnapshotsToCurrentWeek(
-  currentWeek: WeeklyMetricSet,
+function snapshotKey(snapshot: InventorySnapshot) {
+  return snapshot.sku?.trim().toLowerCase() || snapshot.productName.trim().toLowerCase();
+}
+
+function applyInventorySnapshotsToMetricSet(
+  metricSet: WeeklyMetricSet,
   inventorySnapshots: InventorySnapshot[],
-  issues: ImportIssue[],
+  options: { updateInventory: boolean },
 ) {
   if (inventorySnapshots.length === 0) {
-    return currentWeek;
+    return {
+      metricSet,
+      matchedKeys: new Set<string>(),
+      updatedInventoryCount: 0,
+      updatedCostCount: 0,
+    };
   }
 
   const snapshotsBySku = new Map(
@@ -1776,9 +1818,11 @@ function applyInventorySnapshotsToCurrentWeek(
   const snapshotsByProductName = new Map(
     inventorySnapshots.map((snapshot) => [snapshot.productName.trim().toLowerCase(), snapshot]),
   );
-  const matchedSnapshotKeys = new Set<string>();
+  const matchedKeys = new Set<string>();
+  let updatedInventoryCount = 0;
+  let updatedCostCount = 0;
 
-  const products = currentWeek.products.map((product) => {
+  const products = metricSet.products.map((product) => {
     const skuKey = product.sku.trim().toLowerCase();
     const productNameKey = product.productName.trim().toLowerCase();
     const snapshot = snapshotsBySku.get(skuKey) ?? snapshotsByProductName.get(productNameKey);
@@ -1787,36 +1831,42 @@ function applyInventorySnapshotsToCurrentWeek(
       return product;
     }
 
-    matchedSnapshotKeys.add(snapshot.sku?.trim().toLowerCase() || snapshot.productName.trim().toLowerCase());
+    matchedKeys.add(snapshotKey(snapshot));
+    const nextProduct = { ...product };
 
-    return {
-      ...product,
-      inventory: snapshot.inventory,
-    };
+    if (options.updateInventory && typeof snapshot.inventory === "number") {
+      nextProduct.inventory = snapshot.inventory;
+      updatedInventoryCount += 1;
+    }
+
+    if (
+      typeof snapshot.unitCost === "number" &&
+      (nextProduct.productCost === undefined || nextProduct.productCost === null)
+    ) {
+      nextProduct.productCost = roundMetric(snapshot.unitCost * product.unitsSold);
+      updatedCostCount += 1;
+    }
+
+    if (nextProduct.grossProfit === undefined || nextProduct.grossProfit === null) {
+      if (typeof nextProduct.productCost === "number") {
+        nextProduct.grossProfit = roundMetric(product.revenue - nextProduct.productCost);
+      } else if (typeof snapshot.grossMarginRate === "number") {
+        nextProduct.grossProfit = roundMetric(product.revenue * snapshot.grossMarginRate);
+        updatedCostCount += 1;
+      }
+    }
+
+    return nextProduct;
   });
-
-  const matchedCount = matchedSnapshotKeys.size;
-
-  issues.push({
-    severity: "info",
-    message: `已读取库存快照 ${inventorySnapshots.length} 行，并更新 ${matchedCount} 个本周商品的当前库存。`,
-  });
-
-  const unmatchedSnapshots = inventorySnapshots.filter((snapshot) => {
-    const key = snapshot.sku?.trim().toLowerCase() || snapshot.productName.trim().toLowerCase();
-    return !matchedSnapshotKeys.has(key);
-  });
-
-  if (unmatchedSnapshots.length > 0) {
-    issues.push({
-      severity: "warning",
-      message: `库存快照里有 ${unmatchedSnapshots.length} 行没有匹配到本周经营数据，已暂不参与断货判断。`,
-    });
-  }
 
   return {
-    ...currentWeek,
-    products,
+    metricSet: {
+      ...metricSet,
+      products,
+    },
+    matchedKeys,
+    updatedInventoryCount,
+    updatedCostCount,
   };
 }
 
@@ -1933,11 +1983,40 @@ export function buildEcommerceInputFromCsv({
   const competitorResult = buildCompetitors(competitorsCsv, issues);
   const customerVoiceResult = buildCustomerVoices(customerVoicesCsv, issues);
   const inventoryResult = buildInventorySnapshots(inventoryCsv, issues);
-  currentWeek = applyInventorySnapshotsToCurrentWeek(
+  const previousSnapshotResult = applyInventorySnapshotsToMetricSet(
+    previousWeek,
+    inventoryResult.inventorySnapshots,
+    { updateInventory: false },
+  );
+  const currentSnapshotResult = applyInventorySnapshotsToMetricSet(
     currentWeek,
     inventoryResult.inventorySnapshots,
-    issues,
+    { updateInventory: true },
   );
+
+  previousWeek = previousSnapshotResult.metricSet;
+  currentWeek = currentSnapshotResult.metricSet;
+
+  if (inventoryResult.inventorySnapshots.length > 0) {
+    const matchedKeys = new Set([
+      ...previousSnapshotResult.matchedKeys,
+      ...currentSnapshotResult.matchedKeys,
+    ]);
+    const unmatchedCount = inventoryResult.inventorySnapshots.filter((snapshot) => !matchedKeys.has(snapshotKey(snapshot)))
+      .length;
+
+    issues.push({
+      severity: "info",
+      message: `已读取库存/成本快照 ${inventoryResult.inventorySnapshots.length} 行，更新 ${currentSnapshotResult.updatedInventoryCount} 个本周商品库存，并补齐 ${previousSnapshotResult.updatedCostCount + currentSnapshotResult.updatedCostCount} 个商品成本口径。`,
+    });
+
+    if (unmatchedCount > 0) {
+      issues.push({
+        severity: "warning",
+        message: `库存/成本快照里有 ${unmatchedCount} 行没有匹配到经营数据，已暂不参与库存或利润判断。`,
+      });
+    }
+  }
   const errorIssues = issues.filter((issue) => issue.severity === "error");
   const questionsForUser = [
     ...fieldMappings

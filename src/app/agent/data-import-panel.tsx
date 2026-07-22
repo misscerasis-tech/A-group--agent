@@ -43,10 +43,10 @@ const starterCompetitorCsv = [
 ].join("\n");
 
 const starterInventoryCsv = [
-  "product_name,sku,inventory,observed_at",
-  "Aurora Cup 黑色 500ml,CUP-BLACK-500,118,2026-07-19",
-  "Aurora Cup 白色 500ml,CUP-WHITE-500,206,2026-07-19",
-  "Aurora Cup 礼盒套装,CUP-GIFT-SET,42,2026-07-19",
+  "product_name,sku,inventory,unit_cost,observed_at",
+  "Aurora Cup 黑色 500ml,CUP-BLACK-500,118,27.45,2026-07-19",
+  "Aurora Cup 白色 500ml,CUP-WHITE-500,206,23.7,2026-07-19",
+  "Aurora Cup 礼盒套装,CUP-GIFT-SET,42,34.2,2026-07-19",
 ].join("\n");
 
 const starterCustomerVoiceCsv = [
@@ -349,7 +349,7 @@ export function DataImportPanel() {
             <div className="csv-box-header">
               <span>
                 <Database size={16} aria-hidden="true" />
-                库存快照表
+                库存/成本快照表
               </span>
               <label className="button secondary file-button">
                 <FileUp size={16} aria-hidden="true" />
@@ -362,7 +362,7 @@ export function DataImportPanel() {
               </label>
             </div>
             <textarea
-              aria-label="库存快照 CSV、TSV、Markdown 或复制表格"
+              aria-label="库存、成本快照 CSV、TSV、Markdown 或复制表格"
               spellCheck={false}
               value={inventoryCsv}
               onChange={(event) => setInventoryCsv(event.target.value)}

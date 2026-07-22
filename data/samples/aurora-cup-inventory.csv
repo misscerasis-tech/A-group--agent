@@ -1,4 +1,4 @@
-product_name,sku,inventory,observed_at
-Aurora Cup 黑色 500ml,CUP-BLACK-500,118,2026-07-19
-Aurora Cup 白色 500ml,CUP-WHITE-500,206,2026-07-19
-Aurora Cup 礼盒套装,CUP-GIFT-SET,42,2026-07-19
+product_name,sku,inventory,unit_cost,observed_at
+Aurora Cup 黑色 500ml,CUP-BLACK-500,118,27.45,2026-07-19
+Aurora Cup 白色 500ml,CUP-WHITE-500,206,23.7,2026-07-19
+Aurora Cup 礼盒套装,CUP-GIFT-SET,42,34.2,2026-07-19

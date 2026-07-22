@@ -140,8 +140,8 @@ export function buildFeishuDataChecklistReply() {
   return [
     buildKpiGuideReply(),
     "",
-    "最小经营表只要先有：week、product_name、orders、revenue、units_sold。CSV、TSV、Markdown 表格，或直接从飞书表格/Excel 复制都可以。",
-    "如果你有广告、库存、毛利、退款/退货、客服备注、评价内容和竞品，我会把结论从“能复盘”升级成“能安排动作”。",
+    "最小经营表可以是周汇总：week、product_name、orders、revenue、units_sold；也可以是订单明细：订单号、支付时间、商品名称、实付金额、购买数量。",
+    "如果你有广告、库存/成本快照、退款/退货、客服备注、评价内容和竞品，我会把结论从“能复盘”升级成“能安排动作”。",
     "缺什么我会继续问，不会假装看懂。",
   ].join("\n");
 }

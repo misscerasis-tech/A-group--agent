@@ -31,7 +31,7 @@ function main() {
 
   assert(sampleImport.report.ok, "样例 CSV 应该可以导入。");
   assert(sampleImport.input, "样例 CSV 应该生成 Agent 输入。");
-  assert(sampleImport.report.inventoryRows === 3, "样例库存快照表应该可以导入。");
+  assert(sampleImport.report.inventoryRows === 3, "样例库存/成本快照表应该可以导入。");
   assert(sampleImport.report.customerVoiceRows === 3, "样例用户声音表应该可以导入。");
 
   const input = sampleImport.input;
@@ -72,11 +72,12 @@ function main() {
       "上周,黑杯,CUP-BLACK,10,500,12",
       "本周,黑杯,CUP-BLACK,9,450,10",
     ].join("\n"),
-    inventoryCsv: ["商品名称,商家编码,当前库存", "黑杯,CUP-BLACK,18"].join("\n"),
+    inventoryCsv: ["商品名称,商家编码,当前库存,单位成本", "黑杯,CUP-BLACK,18,18"].join("\n"),
   });
 
-  assert(inventoryImport.report.inventoryRows === 1, "库存快照表应该可以导入。");
-  assert(inventoryImport.input?.currentWeek.products[0].inventory === 18, "库存快照应该更新本周 SKU 库存。");
+  assert(inventoryImport.report.inventoryRows === 1, "库存/成本快照表应该可以导入。");
+  assert(inventoryImport.input?.currentWeek.products[0].inventory === 18, "库存/成本快照应该更新本周 SKU 库存。");
+  assert(inventoryImport.input?.currentWeek.products[0].grossProfit === 270, "库存/成本快照应该补齐毛利。");
 
   const orderDetailImport = buildEcommerceInputFromCsv({
     metricsCsv: readSample("data/samples/aurora-cup-order-details.csv"),
