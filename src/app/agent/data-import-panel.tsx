@@ -184,6 +184,7 @@ export function DataImportPanel() {
                 <option value="同时看销量、利润、广告回本、库存风险、退款/退货和竞品压力" />
                 <option value="这周先保利润" />
                 <option value="这周先保销量" />
+                <option value="这周先降低退款/退货" />
                 <option value="先看库存风险" />
                 <option value="先看广告回本" />
               </datalist>

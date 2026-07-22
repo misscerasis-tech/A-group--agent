@@ -176,4 +176,16 @@ describe("ecommerce agent analysis", () => {
 
     expect(analysis.nextActions[0].title).toBe("先核对利润口径");
   });
+
+  it("prioritizes return reduction goals", () => {
+    const analysis = analyzeEcommerceStore({
+      ...sampleEcommerceAgentInput,
+      store: {
+        ...sampleEcommerceAgentInput.store,
+        goal: "这周先降低退货和差评",
+      },
+    });
+
+    expect(analysis.nextActions[0].title).toBe("先确认退款/退货口径");
+  });
 });

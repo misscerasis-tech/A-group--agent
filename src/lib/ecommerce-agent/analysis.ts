@@ -451,12 +451,40 @@ function buildNextActions(
   const hasRefundRisk = findings.some((finding) => finding.issue === "售后风险偏高");
   const hasCompetitorPromotion = competitorInsights.some((insight) => insight.includes("正在做促销"));
   const normalizedGoal = goal.toLowerCase();
+  const wantsReturns = [
+    "降低退款",
+    "降低退货",
+    "减少退款",
+    "减少退货",
+    "控制退款",
+    "控制退货",
+    "先看退款",
+    "先看退货",
+    "先查退款",
+    "先查退货",
+    "退款率",
+    "退货率",
+    "退款原因",
+    "退货原因",
+    "售后",
+    "差评",
+    "退单",
+  ].some((keyword) => normalizedGoal.includes(keyword));
   const wantsProfit = ["利润", "毛利", "赚钱", "保利润"].some((keyword) =>
     normalizedGoal.includes(keyword),
   );
   const wantsSales = ["销量", "销售额", "增长", "保销量", "冲量"].some((keyword) =>
     normalizedGoal.includes(keyword),
   );
+
+  if (wantsReturns) {
+    actions.push({
+      title: "先确认退款/退货口径",
+      owner: "客服/运营",
+      reason: "本周目标偏售后，先把退款单、退货单和退款金额口径确认清楚，避免把跨周期售后误判成商品突然变差。",
+      firstStep: "补齐 SKU、订单数、销售额、退款/退货单数、退款金额和退款原因，先按 SKU 排出售后占比最高的商品。",
+    });
+  }
 
   if (wantsProfit) {
     actions.push({
@@ -485,7 +513,7 @@ function buildNextActions(
     });
   }
 
-  if (hasRefundRisk) {
+  if (hasRefundRisk && !wantsReturns) {
     actions.push({
       title: "先查退款/退货原因",
       owner: "客服/运营",

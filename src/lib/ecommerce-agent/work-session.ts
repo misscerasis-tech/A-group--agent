@@ -54,7 +54,7 @@ export function buildBeginnerWorkSession(report?: EcommerceCsvImportReport): Beg
     ? "你能先给我一份经营数据 CSV/TSV 吗？最少要有周期、商品名称、订单数、销售额和销量。"
     : missingRequired.length > 0
       ? `我先需要你补这几个字段：${missingRequired.join("、")}。`
-      : warningQuestions[0] ?? "这周你更想保销量，还是更想保利润？";
+      : warningQuestions[0] ?? "这周你更想保销量、保利润，还是先看退款/退货和售后风险？";
 
   return {
     title: "我会这样带你把电商运营复盘做完：",
@@ -84,14 +84,14 @@ export function buildBeginnerWorkSession(report?: EcommerceCsvImportReport): Beg
           warningQuestions.length > 0
             ? warningQuestions.slice(0, 2).join(" ")
             : "暂时不用补，当前关键风险字段已经够用。",
-        agentAction: "把缺少的流量、广告、库存、毛利或竞品数据标成不确定项。",
+        agentAction: "把缺少的流量、广告、库存、毛利、退款/退货或竞品数据标成不确定项。",
         output: "避免把缺失数据编成确定结论。",
       },
       {
         title: "生成复盘和行动清单",
         status: canAnalyze ? "agent_can_run" : "later",
         userAction: canAnalyze ? "点击生成复盘，或在飞书里发“帮我看本周经营情况”。" : "先补齐经营数据。",
-        agentAction: "判断销售、订单、转化、广告、利润、库存和竞品压力。",
+        agentAction: "判断销售、订单、转化、广告、利润、库存、售后和竞品压力。",
         output: "给出人话结论、风险商品、下周行动和待追问问题。",
       },
       {

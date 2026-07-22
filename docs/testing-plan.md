@@ -140,6 +140,7 @@ FEISHU_EVENT_SUBSCRIPTION_MODE="long_connection"
 - `这周先保利润`
 - `广告怎么看`
 - `退款退货怎么看`
+- `这周先降低退款/退货`
 - `竞品怎么看`
 - `怎么用`
 
