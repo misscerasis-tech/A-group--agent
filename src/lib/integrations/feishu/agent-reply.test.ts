@@ -26,7 +26,8 @@ describe("feishu agent reply", () => {
   it("answers what the beginner should do next", () => {
     const reply = buildFeishuAgentReply("我现在做什么");
 
-    expect(reply).toContain("经营数据 CSV");
+    expect(reply).toContain("经营数据表");
+    expect(reply).toContain("Markdown");
     expect(reply).toContain("Agent 动作");
   });
 

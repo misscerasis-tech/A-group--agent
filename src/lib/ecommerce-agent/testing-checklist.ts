@@ -10,7 +10,7 @@ export const ecommerceAgentTestingStages: TestingStage[] = [
     title: "阶段 1：先测 Agent 脑子",
     status: "现在就能测",
     reason: "先确认它会不会问问题、看数据、讲人话，不把飞书权限问题和业务判断问题混在一起。",
-    checks: ["打开 /agent", "粘贴样例或真实 CSV/TSV", "检查字段缺失时是否继续追问"],
+    checks: ["打开 /agent", "粘贴样例或真实经营表", "检查字段缺失时是否继续追问"],
   },
   {
     title: "阶段 2：再测真实表格",
@@ -41,6 +41,6 @@ export function buildTestingChecklistReply() {
         `${index + 1}. ${stage.title}（${stage.status}）\n为什么：${stage.reason}\n检查：${stage.checks.join("；")}`,
     ),
     "",
-    "结论：飞书要接，但它是端到端入口；在你回来填 App Secret 前，我可以先把本地网页、API、CSV/TSV 识别、追问和周报输出磨稳。",
+    "结论：飞书要接，但它是端到端入口；在你回来填 App Secret 前，我可以先把本地网页、API、CSV/TSV/Markdown 识别、追问和周报输出磨稳。",
   ].join("\n");
 }

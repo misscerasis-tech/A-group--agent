@@ -68,7 +68,8 @@ function main() {
   const testingReply = buildFeishuAgentReply("怎么真正测试，接入飞书吗");
   const returnsReply = buildFeishuAgentReply("退款退货怎么看");
 
-  assert(workPlanReply.includes("经营数据 CSV/TSV"), "飞书工作计划回复应该提示经营 CSV/TSV。");
+  assert(workPlanReply.includes("经营数据表"), "飞书工作计划回复应该提示经营数据表。");
+  assert(workPlanReply.includes("Markdown"), "飞书工作计划回复应该提示支持 Markdown 表格。");
   assert(pastedTableReply.includes("刚粘贴的表格"), "飞书应该能分析直接粘贴的表格。");
   assert(testingReply.includes("App Secret"), "飞书测试回复应该提示 App Secret。");
   assert(returnsReply.includes("售后把成交吃回去"), "飞书应该能单独回答退款/退货问题。");

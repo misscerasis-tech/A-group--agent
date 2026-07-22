@@ -42,17 +42,17 @@
 | week | week、period、date、start_date、周期、周、日期、开始日期、时间段 |
 | productName | product_name、product、商品名称、商品、品名 |
 | sku | sku、商家编码、商品编码、货号 |
-| visitors | visitors、sessions、uv、访客数、流量 |
-| orders | orders、order_count、订单数、支付订单数 |
-| revenue | revenue、sales、gmv、销售额、成交额、支付金额 |
-| unitsSold | units_sold、quantity、qty、销量、支付件数 |
-| adSpend | ad_spend、cost、广告花费、广告消耗 |
-| adRevenue | ad_revenue、attributed_sales、广告成交额、广告销售额 |
-| inventory | inventory、stock、库存、可售库存 |
-| productCost | product_cost、cogs、cost_of_goods、商品成本、采购成本 |
-| grossProfit | gross_profit、profit、毛利、毛利润、利润 |
-| refundOrders | refund_orders、refunds、returns、return_count、退款单数、退货数、售后单数 |
-| refundAmount | refund_amount、refunded_amount、return_amount、退款金额、退货金额、售后金额 |
+| visitors | visitors、sessions、uv、访客数、商品访客数、流量 |
+| orders | orders、order_count、订单数、支付订单数、支付买家数 |
+| revenue | revenue、sales、gmv、销售额、成交额、支付金额、商品支付金额 |
+| unitsSold | units_sold、quantity、qty、销量、支付件数、支付商品件数 |
+| adSpend | ad_spend、cost、广告花费、广告消耗、消耗 |
+| adRevenue | ad_revenue、attributed_sales、广告成交额、广告销售额、直接成交金额 |
+| inventory | inventory、stock、库存、可售库存、可售件数 |
+| productCost | product_cost、cogs、cost_of_goods、商品成本、采购成本、成本金额 |
+| grossProfit | gross_profit、profit、毛利、毛利润、利润、毛利额 |
+| refundOrders | refund_orders、refunds、returns、return_count、退款单数、退款成功单数、售后单数 |
+| refundAmount | refund_amount、refunded_amount、return_amount、退款金额、退款成功金额、售后金额 |
 
 ## 竞品数据
 

@@ -70,6 +70,34 @@ describe("ecommerce csv import", () => {
     expect(result.input?.competitors[0].keySellingPoints).toEqual(["低价", "大容量"]);
   });
 
+  it("maps platform-style Chinese export headers into agent input", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,商家编码,商品访客数,支付买家数,商品支付金额,支付商品件数,消耗,直接成交金额,可售件数,成本金额,毛利额,退款成功单数,退款成功金额",
+        "上周,黑杯,CUP-BLACK,100,10,500,12,80,240,50,320,180,1,30",
+        "本周,黑杯,CUP-BLACK,120,9,450,10,90,180,40,330,120,2,80",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.report.fieldMappings.some((mapping) => mapping.canonicalField === "startDate")).toBe(false);
+    expect(result.report.fieldMappings.some((mapping) => !mapping.sourceHeader)).toBe(false);
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      sku: "CUP-BLACK",
+      visitors: 120,
+      orders: 9,
+      revenue: 450,
+      unitsSold: 10,
+      adSpend: 90,
+      adRevenue: 180,
+      inventory: 40,
+      productCost: 330,
+      grossProfit: 120,
+      refundOrders: 2,
+      refundAmount: 80,
+    });
+  });
+
   it("asks for missing required fields instead of guessing", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: ["周期,商品名称,销售额", "本周,黑杯,450"].join("\n"),
@@ -79,6 +107,11 @@ describe("ecommerce csv import", () => {
     expect(result.input).toBeUndefined();
     expect(result.report.questionsForUser.some((question) => question.includes("订单数"))).toBe(true);
     expect(result.report.issues.some((issue) => issue.severity === "error")).toBe(true);
+    expect(
+      result.report.fieldMappings.some(
+        (mapping) => mapping.canonicalField === "orders" && mapping.required && !mapping.sourceHeader,
+      ),
+    ).toBe(true);
   });
 
   it("uses product name as a temporary key when sku is missing", () => {

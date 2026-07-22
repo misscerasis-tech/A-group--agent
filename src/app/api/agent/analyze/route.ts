@@ -31,7 +31,7 @@ export async function POST(request: Request) {
   if (!body.metricsCsv?.trim()) {
     return NextResponse.json(
       {
-        error: "缺少 metricsCsv。请传经营数据 CSV/TSV。",
+        error: "缺少 metricsCsv。请传经营数据 CSV、TSV、Markdown 或复制表格文本。",
       },
       { status: 400 },
     );

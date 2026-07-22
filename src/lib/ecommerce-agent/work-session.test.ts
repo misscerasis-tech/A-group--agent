@@ -9,7 +9,8 @@ describe("beginner work session", () => {
   it("asks for a metrics CSV when there is no data yet", () => {
     const session = buildBeginnerWorkSession();
 
-    expect(session.nextQuestion).toContain("经营数据 CSV/TSV");
+    expect(session.nextQuestion).toContain("经营数据表");
+    expect(session.nextQuestion).toContain("Markdown");
     expect(session.steps.some((step) => step.status === "needs_user")).toBe(true);
   });
 

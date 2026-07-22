@@ -195,20 +195,20 @@ export function DataImportPanel() {
             <div className="csv-box-header">
               <span>
                 <Database size={16} aria-hidden="true" />
-                经营数据 CSV/TSV
+                经营数据表
               </span>
               <label className="button secondary file-button">
                 <FileUp size={16} aria-hidden="true" />
                 上传
                 <input
-                  accept=".csv,.tsv,text/csv,text/tab-separated-values"
+                  accept=".csv,.tsv,.md,.markdown,text/csv,text/tab-separated-values,text/markdown,text/plain"
                   type="file"
                   onChange={(event) => void readFileIntoState(event, setMetricsCsv)}
                 />
               </label>
             </div>
             <textarea
-              aria-label="经营数据 CSV 或 TSV"
+              aria-label="经营数据 CSV、TSV、Markdown 或复制表格"
               spellCheck={false}
               value={metricsCsv}
               onChange={(event) => setMetricsCsv(event.target.value)}
@@ -219,20 +219,20 @@ export function DataImportPanel() {
             <div className="csv-box-header">
               <span>
                 <ClipboardList size={16} aria-hidden="true" />
-                竞品数据 CSV/TSV
+                竞品数据表
               </span>
               <label className="button secondary file-button">
                 <FileUp size={16} aria-hidden="true" />
                 上传
                 <input
-                  accept=".csv,.tsv,text/csv,text/tab-separated-values"
+                  accept=".csv,.tsv,.md,.markdown,text/csv,text/tab-separated-values,text/markdown,text/plain"
                   type="file"
                   onChange={(event) => void readFileIntoState(event, setCompetitorCsv)}
                 />
               </label>
             </div>
             <textarea
-              aria-label="竞品数据 CSV 或 TSV"
+              aria-label="竞品数据 CSV、TSV、Markdown 或复制表格"
               spellCheck={false}
               value={competitorCsv}
               onChange={(event) => setCompetitorCsv(event.target.value)}

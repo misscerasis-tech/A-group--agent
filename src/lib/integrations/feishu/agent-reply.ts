@@ -131,7 +131,7 @@ export function formatEcommerceAnalysisForFeishu(
     ...questions,
     "",
     sourceLabel === "样例店铺"
-      ? "等你把真实订单、商品、库存、广告和竞品数据给我，我会用同一套逻辑重新判断，不会拿样例结论硬套。"
+      ? "等你把真实订单、商品、库存、广告、退款/退货和竞品数据给我，我会用同一套逻辑重新判断，不会拿样例结论硬套。"
       : "这版结论来自当前导入数据。如果字段缺失，我会继续追问，不会把缺失项硬编成确定结论。",
   ].join("\n");
 }
@@ -140,7 +140,7 @@ export function buildFeishuDataChecklistReply() {
   return [
     buildKpiGuideReply(),
     "",
-    "最小 CSV/TSV 只要先有：week、product_name、orders、revenue、units_sold。",
+    "最小经营表只要先有：week、product_name、orders、revenue、units_sold。CSV、TSV、Markdown 表格，或直接从飞书表格/Excel 复制都可以。",
     "如果你有广告、库存、毛利、退款/退货和竞品，我会把结论从“能复盘”升级成“能安排动作”。",
     "缺什么我会继续问，不会假装看懂。",
   ].join("\n");
@@ -158,7 +158,7 @@ export function buildFeishuUsageReply() {
     "- “这周目标是保销量/保利润”",
     "- “我现在做什么？”",
     "",
-    "也可以直接粘贴一小段 CSV/TSV，或从 Excel/飞书表格复制几行。我会先检查字段，缺什么就问你，不会把缺失项说成确定结论。",
+    "也可以直接粘贴一小段 CSV/TSV/Markdown 表格，或从 Excel/飞书表格复制几行。我会先检查字段，缺什么就问你，不会把缺失项说成确定结论。",
   ].join("\n");
 }
 
@@ -269,7 +269,7 @@ export function buildCompetitorsReply(analysis: EcommerceAgentAnalysis) {
   return [
     "竞品我会先看三件事：价格、促销、卖点。",
     ...analysis.competitorInsights.map((insight, index) => `${index + 1}. ${insight}`),
-    "第一步：给我 1 到 3 个你最在意的竞品链接；如果已经有竞品 CSV/TSV，就补价格、促销、评分、评论数和核心卖点。",
+    "第一步：给我 1 到 3 个你最在意的竞品链接；如果已经有竞品数据表，就补价格、促销、评分、评论数和核心卖点。",
   ].join("\n");
 }
 
@@ -307,7 +307,7 @@ function buildPastedMetricsTableReply(text: string) {
       "我看到了你贴的表格，但现在还不能直接复盘。",
       "需要你先补这些信息：",
       ...issues,
-      "最小格式需要：week、product_name、orders、revenue、units_sold，并且要同时有 previous/current 两段数据。CSV、TSV 或复制表格都可以。",
+      "最小格式需要：week、product_name、orders、revenue、units_sold，并且要同时有 previous/current 两段数据。CSV、TSV、Markdown 或复制表格都可以。",
     ].join("\n");
   }
 
@@ -319,7 +319,7 @@ export function buildFeishuAgentReply(
   options: {
     input?: EcommerceAgentInput;
     sourceLabel?: string;
-} = {},
+  } = {},
 ) {
   if (looksLikePastedMetricsTable(text)) {
     return buildPastedMetricsTableReply(text);

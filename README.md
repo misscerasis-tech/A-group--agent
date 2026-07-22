@@ -55,7 +55,7 @@ http://localhost:3001/agent
 
 样例数据用于演示 Agent 工作流，不代表真实经营结果。拿到真实数据后优先替换样例数据，同时保留样例作为现场演示降级。
 
-首页已经提供“真实数据导入工作台”，可以直接粘贴或上传 CSV/TSV，也可以从 Excel、飞书表格或 Google Sheets 复制表格粘贴进来。工作台会显示 Agent 接手步骤、下一句要追问什么、字段识别结果和飞书回写预览。飞书 worker 也可以通过 `.env` 的 `ECOMMERCE_WEEKLY_METRICS_CSV` 和 `ECOMMERCE_COMPETITORS_CSV` 指向本地 CSV/TSV 文件。
+首页已经提供“真实数据导入工作台”，可以直接粘贴或上传 CSV/TSV/Markdown 表格，也可以从 Excel、飞书表格或 Google Sheets 复制表格粘贴进来。工作台会显示 Agent 接手步骤、下一句要追问什么、字段识别结果和飞书回写预览。飞书 worker 也可以通过 `.env` 的 `ECOMMERCE_WEEKLY_METRICS_CSV` 和 `ECOMMERCE_COMPETITORS_CSV` 指向本地经营表文件。
 
 ## 本地开发
 

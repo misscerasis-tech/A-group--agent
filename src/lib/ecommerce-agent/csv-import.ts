@@ -155,24 +155,101 @@ const metricAliases: Record<MetricField, string[]> = {
     "标题",
   ],
   sku: ["sku", "skuid", "seller_sku", "商家编码", "商品编码", "货号", "规格编码"],
-  visitors: ["visitors", "visitor", "sessions", "traffic", "uv", "page_views", "访客", "访客数", "流量", "进店人数"],
-  orders: ["orders", "order_count", "paid_orders", "订单", "订单数", "成交订单", "成交订单数", "支付订单数"],
-  revenue: ["revenue", "sales", "gmv", "amount", "sales_amount", "销售额", "成交额", "营业额", "销售金额", "支付金额"],
-  unitsSold: ["units_sold", "quantity", "qty", "items_sold", "销量", "件数", "售出件数", "销售件数", "支付件数"],
-  adSpend: ["ad_spend", "ad_cost", "adcost", "cost", "spend", "广告费", "广告花费", "广告消耗", "投放花费"],
+  visitors: [
+    "visitors",
+    "visitor",
+    "sessions",
+    "traffic",
+    "uv",
+    "page_views",
+    "访客",
+    "访客数",
+    "访客人数",
+    "商品访客数",
+    "商品访客",
+    "页面访客数",
+    "浏览人数",
+    "流量",
+    "进店人数",
+  ],
+  orders: [
+    "orders",
+    "order_count",
+    "paid_orders",
+    "paid_buyers",
+    "buyers",
+    "订单",
+    "订单数",
+    "成交订单",
+    "成交订单数",
+    "支付订单数",
+    "付款订单数",
+    "支付买家数",
+    "成交买家数",
+    "下单买家数",
+  ],
+  revenue: [
+    "revenue",
+    "sales",
+    "gmv",
+    "amount",
+    "sales_amount",
+    "paid_amount",
+    "order_amount",
+    "销售额",
+    "成交额",
+    "营业额",
+    "销售金额",
+    "支付金额",
+    "付款金额",
+    "订单金额",
+    "商品支付金额",
+  ],
+  unitsSold: [
+    "units_sold",
+    "quantity",
+    "qty",
+    "items_sold",
+    "paid_quantity",
+    "销量",
+    "件数",
+    "售出件数",
+    "销售件数",
+    "支付件数",
+    "支付商品件数",
+    "成交件数",
+    "销售数量",
+  ],
+  adSpend: [
+    "ad_spend",
+    "ad_cost",
+    "adcost",
+    "cost",
+    "spend",
+    "广告费",
+    "广告花费",
+    "广告消耗",
+    "投放花费",
+    "消耗",
+    "花费",
+    "广告成本",
+  ],
   adRevenue: [
     "ad_revenue",
     "ad_sales",
     "attributed_sales",
     "ads_sales",
+    "attributed_revenue",
     "广告成交额",
     "广告销售额",
     "广告带来销售",
     "投放成交额",
+    "直接成交金额",
+    "投产金额",
   ],
-  inventory: ["inventory", "stock", "available_stock", "库存", "当前库存", "可售库存", "库存数"],
-  productCost: ["product_cost", "cogs", "cost_of_goods", "商品成本", "采购成本"],
-  grossProfit: ["gross_profit", "grossprofit", "profit", "margin_amount", "毛利", "毛利润", "利润"],
+  inventory: ["inventory", "stock", "available_stock", "sellable_stock", "库存", "当前库存", "可售库存", "库存数", "可售件数"],
+  productCost: ["product_cost", "cogs", "cost_of_goods", "cost_amount", "商品成本", "采购成本", "成本金额"],
+  grossProfit: ["gross_profit", "grossprofit", "profit", "margin_amount", "毛利", "毛利润", "利润", "毛利额"],
   refundOrders: [
     "refund_orders",
     "refundorders",
@@ -185,6 +262,7 @@ const metricAliases: Record<MetricField, string[]> = {
     "退款单数",
     "退款订单数",
     "退款数",
+    "退款成功单数",
     "退货单数",
     "退货订单数",
     "退货数",
@@ -200,6 +278,8 @@ const metricAliases: Record<MetricField, string[]> = {
     "return_amount",
     "退款金额",
     "退款额",
+    "退款成功金额",
+    "售后退款金额",
     "退货金额",
     "售后金额",
   ],
@@ -342,12 +422,14 @@ function buildHeaderMap<TField extends string>(
       mapping.set(field, sourceHeader);
     }
 
-    fieldMappings.push({
-      canonicalField: field,
-      label: labels[field],
-      sourceHeader,
-      required: requiredFields.has(field),
-    });
+    if (sourceHeader || requiredFields.has(field)) {
+      fieldMappings.push({
+        canonicalField: field,
+        label: labels[field],
+        sourceHeader,
+        required: requiredFields.has(field),
+      });
+    }
   }
 
   return { mapping, fieldMappings };
@@ -649,7 +731,7 @@ function buildCompetitors(
   if (!text?.trim()) {
     issues.push({
       severity: "warning",
-      message: "还没有竞品 CSV/TSV。Agent 可以先做店铺复盘，但竞品价格和促销判断会弱一些。",
+      message: "还没有竞品数据表。Agent 可以先做店铺复盘，但竞品价格和促销判断会弱一些。",
     });
     return { competitors: [], rows: 0 };
   }
@@ -738,7 +820,7 @@ export function buildEcommerceInputFromCsv({
   if (metricsTable.rows.length === 0) {
     issues.push({
       severity: "error",
-      message: "经营数据 CSV/TSV 里没有可读取的数据行。",
+      message: "经营数据表里没有可读取的数据行。",
     });
   }
 
