@@ -11,6 +11,7 @@ describe("ecommerce agent analysis", () => {
     expect(analysis.productFindings.some((finding) => finding.priority === "high")).toBe(true);
     expect(analysis.nextActions.length).toBeGreaterThanOrEqual(3);
     expect(analysis.feishuReply).toContain("飞书");
+    expect(analysis.dataHealth.some((item) => item.includes("已有成本或毛利数据"))).toBe(true);
   });
 
   it("asks for missing data instead of guessing", () => {
@@ -22,6 +23,16 @@ describe("ecommerce agent analysis", () => {
         products: sampleEcommerceAgentInput.currentWeek.products.map((product) => ({
           ...product,
           visitors: null,
+          grossProfit: undefined,
+          productCost: undefined,
+        })),
+      },
+      previousWeek: {
+        ...sampleEcommerceAgentInput.previousWeek,
+        products: sampleEcommerceAgentInput.previousWeek.products.map((product) => ({
+          ...product,
+          grossProfit: undefined,
+          productCost: undefined,
         })),
       },
     });
