@@ -8,6 +8,12 @@
 
 - 暂无。
 
+## [v0.1.45-copy-workbench-output] - 2026-07-22
+
+### Added
+
+- 真实数据导入工作台生成复盘后，可一键复制飞书回复和飞书文档 Markdown，方便真实测试时直接回写。
+
 ## [v0.1.44-period-aliases] - 2026-07-22
 
 ### Added

@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   ClipboardList,
+  Copy,
   Database,
   FileUp,
   PlayCircle,
@@ -85,6 +86,7 @@ export function DataImportPanel() {
   const [competitorCsv, setCompetitorCsv] = useState(starterCompetitorCsv);
   const [hasRun, setHasRun] = useState(false);
   const [hasLoadedDraft, setHasLoadedDraft] = useState(false);
+  const [copiedTarget, setCopiedTarget] = useState<"feishu" | "markdown" | null>(null);
 
   function loadStarterSample() {
     setStoreName("Aurora Cup 独立站");
@@ -113,6 +115,16 @@ export function DataImportPanel() {
     setCompetitorCsv("");
     setHasRun(false);
     window.localStorage.removeItem(importDraftStorageKey);
+  }
+
+  async function copyOutput(target: "feishu" | "markdown", text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedTarget(target);
+      window.setTimeout(() => setCopiedTarget(null), 1600);
+    } catch {
+      setCopiedTarget(null);
+    }
   }
 
   useEffect(() => {
@@ -173,6 +185,7 @@ export function DataImportPanel() {
   const analysis = importResult.input ? analyzeEcommerceStore(importResult.input) : null;
   const markdownReport =
     importResult.input && analysis ? buildWeeklyMarkdownReport(importResult.input, analysis) : "";
+  const feishuReplyText = analysis ? formatEcommerceAnalysisForFeishu(analysis, "当前导入数据") : "";
   const requiredMappings = importResult.report.fieldMappings.filter((field) => field.required);
   const workSession = buildBeginnerWorkSession(importResult.report, analysis?.questionsForUser ?? []);
 
@@ -371,11 +384,37 @@ export function DataImportPanel() {
                   <p key={line}>{line}</p>
                 ))}
               </div>
+              <div className="button-row">
+                <button
+                  className="button secondary"
+                  type="button"
+                  onClick={() => void copyOutput("feishu", feishuReplyText)}
+                >
+                  {copiedTarget === "feishu" ? (
+                    <CheckCircle2 size={16} aria-hidden="true" />
+                  ) : (
+                    <Copy size={16} aria-hidden="true" />
+                  )}
+                  {copiedTarget === "feishu" ? "已复制飞书回复" : "复制飞书回复"}
+                </button>
+                <button
+                  className="button secondary"
+                  type="button"
+                  onClick={() => void copyOutput("markdown", markdownReport)}
+                >
+                  {copiedTarget === "markdown" ? (
+                    <CheckCircle2 size={16} aria-hidden="true" />
+                  ) : (
+                    <Copy size={16} aria-hidden="true" />
+                  )}
+                  {copiedTarget === "markdown" ? "已复制 Markdown" : "复制 Markdown"}
+                </button>
+              </div>
               <details className="report-details">
                 <summary>飞书文档 Markdown</summary>
                 <pre>{markdownReport}</pre>
               </details>
-              <pre>{formatEcommerceAnalysisForFeishu(analysis, "当前导入数据")}</pre>
+              <pre>{feishuReplyText}</pre>
             </div>
           ) : (
             <div className="state-box error compact">
