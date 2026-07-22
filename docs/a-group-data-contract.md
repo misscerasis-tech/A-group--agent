@@ -22,23 +22,28 @@
 | productName | 商品名称 | 必需 | Aurora Cup |
 | sku | SKU | 推荐 | CUP-BLACK-500 |
 | visitors | 访客数 | 推荐 | 1200 |
+| conversionRate | 转化率 | 可选 | 8% |
 | orders | 订单数 | 必需 | 58 |
 | revenue | 销售额 | 必需 | 3480 |
 | unitsSold | 销售件数 | 必需 | 62 |
 | adSpend | 广告花费 | 可选 | 820 |
 | adRevenue | 广告成交额 | 可选 | 2100 |
+| adReturn | 广告回本/ROAS | 可选 | 2.5 / 250% |
 | inventory | 当前库存 | 可选 | 180 |
 | productCost | 商品成本 | 可选 | 2100 |
 | grossProfit | 毛利 | 可选 | 1380 |
+| grossMarginRate | 毛利率 | 可选 | 38% |
 | refundOrders | 退款或退货单数 | 可选 | 3 |
 | refundAmount | 退款金额 | 可选 | 120 |
+| refundOrderRate | 退款或退货单率 | 可选 | 5% |
+| refundAmountRate | 退款金额占比 | 可选 | 3.4% |
 | refundReason | 退款、退货或售后原因 | 可选 | 杯盖漏水 / 物流慢 |
 
 当前导入器已经支持 CSV/TSV/Markdown 表格，不要求字段名完全一致。从 Excel、飞书表格或 Google Sheets 直接复制出来的制表符表格也能识别。常见别名会自动识别：
 
 `week` 可以直接写 `previous/current`、`上周/本周`，也可以写真实日期或周，例如 `2026-07-08`、`2026-W29`。如果没有 `week` 列，但有 `date/start_date/开始日期`，Agent 会把日期当成周期来源。如果导出的表里超过两个周期，Agent 会自动选择最近两期做对比，并在导入报告里说明它选了哪两期。
 
-数字不用手动清洗成纯数字。常见平台写法例如 `1.2万元`、`2.6千元`、`90单`、`100件`、`80元` 都能识别。
+数字不用手动清洗成纯数字。常见平台写法例如 `1.2万元`、`2.6千元`、`90单`、`100件`、`80元` 都能识别。平台如果只导出 `转化率`、`ROAS/投产比`、`毛利率`、`退款率` 或 `退款金额占比`，Agent 会在不覆盖原始字段的前提下反推访客数、广告成交额、毛利、退款/退货单数或退款金额，用来继续做复盘。
 
 | 标准字段 | 可识别别名示例 |
 | --- | --- |
@@ -46,16 +51,21 @@
 | productName | product_name、product、商品名称、商品、品名 |
 | sku | sku、商家编码、商品编码、货号 |
 | visitors | visitors、sessions、uv、访客数、商品访客数、流量 |
+| conversionRate | conversion_rate、cvr、转化率、支付转化率、成交转化率 |
 | orders | orders、order_count、订单数、支付订单数、支付买家数 |
 | revenue | revenue、sales、gmv、销售额、成交额、支付金额、商品支付金额 |
 | unitsSold | units_sold、quantity、qty、销量、支付件数、支付商品件数 |
 | adSpend | ad_spend、cost、广告花费、广告消耗、消耗 |
 | adRevenue | ad_revenue、attributed_sales、广告成交额、广告销售额、直接成交金额 |
+| adReturn | roas、roi、投产比、广告投产比、广告回本、投入产出比 |
 | inventory | inventory、stock、库存、可售库存、可售件数 |
 | productCost | product_cost、cogs、cost_of_goods、商品成本、采购成本、成本金额 |
 | grossProfit | gross_profit、profit、毛利、毛利润、利润、毛利额 |
+| grossMarginRate | gross_margin、profit_margin、margin_rate、毛利率、利润率 |
 | refundOrders | refund_orders、refunds、returns、return_count、退款单数、退款成功单数、售后单数 |
 | refundAmount | refund_amount、refunded_amount、return_amount、退款金额、退款成功金额、售后金额 |
+| refundOrderRate | refund_rate、return_rate、退款率、退货率、退款单率、售后率 |
+| refundAmountRate | refund_amount_rate、refund_revenue_rate、退款金额占比、售后金额占比 |
 | refundReason | refund_reason、return_reason、售后原因、退款原因、退货原因、差评原因 |
 
 ## 竞品数据

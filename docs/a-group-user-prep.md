@@ -36,9 +36,10 @@
 - 支付转化率
 - 广告花费
 - 广告成交额
+- ROAS、ROI 或投产比
 - 库存数量
-- 商品成本、毛利或利润
-- 退款单数、退货数、退款金额或退款原因
+- 商品成本、毛利、毛利率或利润
+- 退款单数、退货数、退款金额、退款率或退款原因
 
 不需要一次全有。第一版 Agent 会先判断数据完整度，再告诉用户缺什么。
 
@@ -119,4 +120,4 @@ previous,Aurora Cup 黑色 500ml,CUP-BLACK-500,4200,168,6048,176,1320,3960,320,2
 current,Aurora Cup 黑色 500ml,CUP-BLACK-500,4380,122,4392,128,1510,2920,118,878,4,160,杯盖漏水 / 物流慢
 ```
 
-字段名不用完全照抄。比如“销售额/GMV/revenue”“订单数/orders”“销量/quantity”“退款单数/returns/refund_orders”“退款原因/refund_reason”都能识别；识别不了时，Agent 会告诉用户具体缺哪一列。
+字段名不用完全照抄。比如“销售额/GMV/revenue”“订单数/orders”“销量/quantity”“转化率/CVR”“ROAS/投产比”“毛利率”“退款单数/returns/refund_orders”“退款率/refund_rate”“退款原因/refund_reason”都能识别；识别不了时，Agent 会告诉用户具体缺哪一列。

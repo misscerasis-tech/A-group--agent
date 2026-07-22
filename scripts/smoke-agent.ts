@@ -62,6 +62,20 @@ function main() {
 
   assert(tsvImport.report.ok, "从 Excel/飞书表格复制的 TSV 应该可以导入。");
 
+  const rateFieldImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "周期,商品名称,订单数,销售额,销量,转化率,广告消耗,ROAS,毛利率,退款率,退款金额占比",
+      "上周,黑杯,10,500,12,10%,80,300%,40%,10%,6%",
+      "本周,黑杯,8,420,9,8%,90,2.5,30%,25%,19.05%",
+    ].join("\n"),
+  });
+
+  assert(rateFieldImport.report.ok, "平台比率字段应该可以导入。");
+  assert(rateFieldImport.input?.currentWeek.products[0].visitors === 100, "转化率应该能反推出访客数。");
+  assert(rateFieldImport.input?.currentWeek.products[0].adRevenue === 225, "ROAS 应该能反推出广告成交额。");
+  assert(rateFieldImport.input?.currentWeek.products[0].grossProfit === 126, "毛利率应该能反推出毛利。");
+  assert(rateFieldImport.input?.currentWeek.products[0].refundOrders === 2, "退款率应该能反推出退款单数。");
+
   const workPlanReply = buildFeishuAgentReply("我现在做什么");
   const pastedTableReply = buildFeishuAgentReply(
     [

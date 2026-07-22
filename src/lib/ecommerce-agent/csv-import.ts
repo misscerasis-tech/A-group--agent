@@ -53,16 +53,21 @@ type MetricField =
   | "productName"
   | "sku"
   | "visitors"
+  | "conversionRate"
   | "orders"
   | "revenue"
   | "unitsSold"
   | "adSpend"
   | "adRevenue"
+  | "adReturn"
   | "inventory"
   | "productCost"
   | "grossProfit"
+  | "grossMarginRate"
   | "refundOrders"
   | "refundAmount"
+  | "refundOrderRate"
+  | "refundAmountRate"
   | "refundReason";
 
 type CompetitorField =
@@ -101,16 +106,21 @@ const metricFieldLabels: Record<MetricField, string> = {
   productName: "商品名称",
   sku: "SKU",
   visitors: "访客数",
+  conversionRate: "转化率",
   orders: "订单数",
   revenue: "销售额",
   unitsSold: "销量",
   adSpend: "广告花费",
   adRevenue: "广告成交额",
+  adReturn: "广告回本/ROAS",
   inventory: "库存",
   productCost: "商品成本",
   grossProfit: "毛利",
+  grossMarginRate: "毛利率",
   refundOrders: "退款/退货单数",
   refundAmount: "退款金额",
+  refundOrderRate: "退款/退货单率",
+  refundAmountRate: "退款金额占比",
   refundReason: "退款/退货原因",
 };
 
@@ -173,6 +183,17 @@ const metricAliases: Record<MetricField, string[]> = {
     "浏览人数",
     "流量",
     "进店人数",
+  ],
+  conversionRate: [
+    "conversion_rate",
+    "conversionrate",
+    "cvr",
+    "转化率",
+    "支付转化率",
+    "成交转化率",
+    "下单转化率",
+    "商品转化率",
+    "进店转化率",
   ],
   orders: [
     "orders",
@@ -249,9 +270,33 @@ const metricAliases: Record<MetricField, string[]> = {
     "直接成交金额",
     "投产金额",
   ],
+  adReturn: [
+    "roas",
+    "roi",
+    "ad_return",
+    "adreturn",
+    "ad_roas",
+    "acos_inverse",
+    "投产比",
+    "广告投产比",
+    "广告回本",
+    "广告roi",
+    "广告roas",
+    "投入产出比",
+  ],
   inventory: ["inventory", "stock", "available_stock", "sellable_stock", "库存", "当前库存", "可售库存", "库存数", "可售件数"],
   productCost: ["product_cost", "cogs", "cost_of_goods", "cost_amount", "商品成本", "采购成本", "成本金额"],
   grossProfit: ["gross_profit", "grossprofit", "profit", "margin_amount", "毛利", "毛利润", "利润", "毛利额"],
+  grossMarginRate: [
+    "gross_margin",
+    "gross_margin_rate",
+    "grossmargin",
+    "grossmarginrate",
+    "profit_margin",
+    "margin_rate",
+    "毛利率",
+    "利润率",
+  ],
   refundOrders: [
     "refund_orders",
     "refundorders",
@@ -284,6 +329,29 @@ const metricAliases: Record<MetricField, string[]> = {
     "售后退款金额",
     "退货金额",
     "售后金额",
+  ],
+  refundOrderRate: [
+    "refund_rate",
+    "refundrate",
+    "return_rate",
+    "returnrate",
+    "refund_order_rate",
+    "return_order_rate",
+    "退款率",
+    "退货率",
+    "退款单率",
+    "退货单率",
+    "售后率",
+  ],
+  refundAmountRate: [
+    "refund_amount_rate",
+    "refundamountrate",
+    "refund_revenue_rate",
+    "return_amount_rate",
+    "退款金额占比",
+    "退款额占比",
+    "退款金额率",
+    "售后金额占比",
   ],
   refundReason: [
     "refund_reason",
@@ -492,6 +560,47 @@ function parseNumber(value: string) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function parseRatio(value: string, options: { percentageWhenAboveOne: boolean }) {
+  const trimmed = value.trim();
+
+  if (!trimmed || ["-", "--", "—", "暂无", "无"].includes(trimmed)) {
+    return null;
+  }
+
+  const hasPercentSign = /[%％]/.test(trimmed);
+  const cleaned = trimmed
+    .replace(/,/g, "")
+    .replace(/[％%\s]/g, "")
+    .replace(/[倍xX]/g, "");
+  const parsed = Number(cleaned);
+
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  if (hasPercentSign) {
+    return parsed / 100;
+  }
+
+  if (options.percentageWhenAboveOne && parsed > 1 && parsed <= 100) {
+    return parsed / 100;
+  }
+
+  return parsed;
+}
+
+function optionalPercentRate(value: string) {
+  return parseRatio(value, { percentageWhenAboveOne: true });
+}
+
+function optionalMultiplier(value: string) {
+  return parseRatio(value, { percentageWhenAboveOne: false });
+}
+
+function roundMetric(value: number) {
+  return Number(value.toFixed(2));
+}
+
 function requiredNumber(value: string, fieldLabel: string, issues: ImportIssue[], rowNumber: number) {
   const parsed = parseNumber(value);
 
@@ -685,18 +794,62 @@ function buildMetricRow(
     return null;
   }
 
-  const refundOrders = optionalNumber(
+  let visitors = optionalNumber(readField(row, mapping, "visitors"), metricFieldLabels.visitors, issues, rowNumber);
+  const conversionRate = optionalPercentRate(readField(row, mapping, "conversionRate"));
+
+  if (visitors === null && conversionRate !== null && conversionRate > 0) {
+    visitors = roundMetric(orders / conversionRate);
+  }
+
+  let adSpend = optionalNumber(readField(row, mapping, "adSpend"), metricFieldLabels.adSpend, issues, rowNumber);
+  let adRevenue = optionalNumber(readField(row, mapping, "adRevenue"), metricFieldLabels.adRevenue, issues, rowNumber);
+  const adReturn = optionalMultiplier(readField(row, mapping, "adReturn"));
+
+  if (adReturn !== null && adReturn > 0) {
+    if (adRevenue === null && adSpend !== null) {
+      adRevenue = roundMetric(adSpend * adReturn);
+    } else if (adSpend === null && adRevenue !== null) {
+      adSpend = roundMetric(adRevenue / adReturn);
+    }
+  }
+
+  const productCost = optionalNumber(
+    readField(row, mapping, "productCost"),
+    metricFieldLabels.productCost,
+    issues,
+    rowNumber,
+  );
+  let grossProfit = optionalNumber(readField(row, mapping, "grossProfit"), undefined, undefined, undefined, {
+    allowNegative: true,
+  });
+  const grossMarginRate = optionalPercentRate(readField(row, mapping, "grossMarginRate"));
+
+  if (grossProfit === null && grossMarginRate !== null) {
+    grossProfit = roundMetric(revenue * grossMarginRate);
+  }
+
+  let refundOrders = optionalNumber(
     readField(row, mapping, "refundOrders"),
     metricFieldLabels.refundOrders,
     issues,
     rowNumber,
   );
-  const refundAmount = optionalNumber(
+  let refundAmount = optionalNumber(
     readField(row, mapping, "refundAmount"),
     metricFieldLabels.refundAmount,
     issues,
     rowNumber,
   );
+  const refundOrderRate = optionalPercentRate(readField(row, mapping, "refundOrderRate"));
+  const refundAmountRate = optionalPercentRate(readField(row, mapping, "refundAmountRate"));
+
+  if (refundOrders === null && refundOrderRate !== null && refundOrderRate >= 0) {
+    refundOrders = roundMetric(orders * refundOrderRate);
+  }
+
+  if (refundAmount === null && refundAmountRate !== null && refundAmountRate >= 0) {
+    refundAmount = roundMetric(revenue * refundAmountRate);
+  }
 
   if (refundOrders !== null && refundOrders > orders) {
     issues.push({
@@ -717,22 +870,15 @@ function buildMetricRow(
   return {
     productName: productName || sku,
     sku: sku || productName,
-    visitors: optionalNumber(readField(row, mapping, "visitors"), metricFieldLabels.visitors, issues, rowNumber),
+    visitors,
     orders,
     revenue,
     unitsSold,
-    adSpend: optionalNumber(readField(row, mapping, "adSpend"), metricFieldLabels.adSpend, issues, rowNumber),
-    adRevenue: optionalNumber(readField(row, mapping, "adRevenue"), metricFieldLabels.adRevenue, issues, rowNumber),
+    adSpend,
+    adRevenue,
     inventory: optionalNumber(readField(row, mapping, "inventory"), metricFieldLabels.inventory, issues, rowNumber),
-    productCost: optionalNumber(
-      readField(row, mapping, "productCost"),
-      metricFieldLabels.productCost,
-      issues,
-      rowNumber,
-    ),
-    grossProfit: optionalNumber(readField(row, mapping, "grossProfit"), undefined, undefined, undefined, {
-      allowNegative: true,
-    }),
+    productCost,
+    grossProfit,
     refundOrders,
     refundAmount,
     refundReason: readField(row, mapping, "refundReason") || null,

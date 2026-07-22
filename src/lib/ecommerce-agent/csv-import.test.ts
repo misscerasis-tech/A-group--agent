@@ -131,6 +131,31 @@ describe("ecommerce csv import", () => {
     });
   });
 
+  it("derives analyzable metrics from platform rate fields", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,订单数,销售额,销量,转化率,广告消耗,ROAS,毛利率,退款率,退款金额占比",
+        "上周,黑杯,10,500,12,10%,80,300%,40%,10%,6%",
+        "本周,黑杯,8,420,9,8%,90,2.5,30%,25%,19.05%",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      visitors: 100,
+      adSpend: 90,
+      adRevenue: 225,
+      grossProfit: 126,
+      refundOrders: 2,
+      refundAmount: 80.01,
+    });
+    expect(
+      result.report.fieldMappings.some(
+        (mapping) => mapping.canonicalField === "adReturn" && mapping.sourceHeader === "ROAS",
+      ),
+    ).toBe(true);
+  });
+
   it("asks for missing required fields instead of guessing", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: ["周期,商品名称,销售额", "本周,黑杯,450"].join("\n"),

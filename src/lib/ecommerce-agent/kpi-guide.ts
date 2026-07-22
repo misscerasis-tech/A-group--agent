@@ -39,7 +39,7 @@ export const ecommerceKpiGuide: EcommerceKpiGuideItem[] = [
     whyItMatters: "判断问题是不是出在没人来。如果没人来，先看渠道和广告。",
     homepageSignal: "放进 Agent 追问和数据健康检查，缺失时优先向用户要。",
     priority: "原因",
-    csvFields: ["visitors", "sessions", "uv", "traffic", "访客数", "曝光量"],
+    csvFields: ["visitors", "sessions", "uv", "traffic", "访客数", "曝光量", "转化率"],
     beginnerQuestion: "平台能导出访客数、曝光量或 sessions 吗？",
   },
   {
@@ -69,7 +69,7 @@ export const ecommerceKpiGuide: EcommerceKpiGuideItem[] = [
     whyItMatters: "判断增长是不是靠烧钱换来的，避免越投越亏。",
     homepageSignal: "首页展示“广告回本”，并用人话解释每花 1 美元带回多少成交。",
     priority: "风险",
-    csvFields: ["ad_spend", "ad_revenue", "广告花费", "广告成交额"],
+    csvFields: ["ad_spend", "ad_revenue", "roas", "roi", "广告花费", "广告成交额", "投产比"],
     beginnerQuestion: "广告后台能导出花费和广告成交额吗？",
   },
   {
@@ -89,7 +89,7 @@ export const ecommerceKpiGuide: EcommerceKpiGuideItem[] = [
     whyItMatters: "判断商品质量、物流、描述不符和售后风险。",
     homepageSignal: "首页会在数据完整度、商品问题和周报里提示售后是否把成交吃回去。",
     priority: "风险",
-    csvFields: ["refund_orders", "refund_amount", "returns", "退款单数", "退款金额"],
+    csvFields: ["refund_orders", "refund_amount", "refund_reason", "refund_rate", "returns", "退款单数", "退款金额", "退款原因", "退款率"],
     beginnerQuestion: "平台能导出退款金额、退款单数或退货原因吗？",
   },
   {
