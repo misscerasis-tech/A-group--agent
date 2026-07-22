@@ -71,9 +71,9 @@ http://localhost:3001/agent
 - `data/templates/inventory-cost-template.csv`
 - `data/templates/customer-voices-template.csv`
 
-模板用于真实测试前快速填数：保留第一行表头，把示例商品、SKU、金额和日期替换成真实数据后，粘贴或上传到 `/agent` 工作台。
+模板用于真实测试前快速填数：保留第一行表头，把示例商品、SKU、金额和日期替换成真实数据后，粘贴或上传到 `/agent` 工作台。`/agent` 每张表右上角也有“复制模板”，可以直接把模板复制到 Excel、飞书表格或聊天里改。
 
-首页已经提供“真实数据导入工作台”，可以直接粘贴或上传 CSV/TSV/Markdown/Excel 表格，也可以从 Excel、飞书表格或 Google Sheets 复制表格粘贴进来。上传 `.xlsx/.xls` 时会读取第一张有数据的工作表并转成表格文本。经营数据既可以是按上周/本周汇总好的 SKU 表，也可以是覆盖最近两周的订单明细；Shopify Orders 导出的 `Name / Paid at / Lineitem name / Lineitem sku / Lineitem quantity / Lineitem price`、Amazon Seller Central 订单 TSV 导出的 `amazon-order-id / purchase-date / sku / quantity-purchased / item-price` 这类明细表也能直接聚合。工作台会显示 Agent 接手步骤、下一句要追问什么、下一份要补的数据、字段识别结果和飞书回写预览；补数清单可以复制成 TSV，方便贴到飞书表格或多维表格。飞书 worker 也可以通过 `.env` 的 `ECOMMERCE_WEEKLY_METRICS_CSV`、`ECOMMERCE_COMPETITORS_CSV`、`ECOMMERCE_ADS_CSV`、`ECOMMERCE_INVENTORY_CSV` 和 `ECOMMERCE_CUSTOMER_VOICES_CSV` 指向本地经营表、竞品表、广告表、库存/成本快照表和用户声音表文件。
+首页已经提供“真实数据导入工作台”，可以直接粘贴或上传 CSV/TSV/Markdown/Excel 表格，也可以从 Excel、飞书表格或 Google Sheets 复制表格粘贴进来。上传 `.xlsx/.xls` 时会读取第一张有数据的工作表并转成表格文本。经营数据既可以是按上周/本周汇总好的 SKU 表，也可以是覆盖最近两周的订单明细；Shopify Orders 导出的 `Name / Paid at / Lineitem name / Lineitem sku / Lineitem quantity / Lineitem price`、Amazon Seller Central 订单 TSV 导出的 `amazon-order-id / purchase-date / sku / quantity-purchased / item-price` 这类明细表也能直接聚合。工作台会显示 Agent 接手步骤、下一句要追问什么、下一份要补的数据、字段识别结果和飞书回写预览；补数清单可以复制成 TSV，方便贴到飞书表格或多维表格。API 也会返回 `tableTemplates`，外部入口可以直接把模板发给用户。金额展示按原表金额单位理解，不默认加 `$` 或 `¥`，也不自动换算币种。飞书 worker 也可以通过 `.env` 的 `ECOMMERCE_WEEKLY_METRICS_CSV`、`ECOMMERCE_COMPETITORS_CSV`、`ECOMMERCE_ADS_CSV`、`ECOMMERCE_INVENTORY_CSV` 和 `ECOMMERCE_CUSTOMER_VOICES_CSV` 指向本地经营表、竞品表、广告表、库存/成本快照表和用户声音表文件。
 
 ## 本地开发
 
@@ -113,7 +113,7 @@ npx pnpm@10.13.1 run feishu:worker
 ```
 
 第一轮飞书测试使用长连接，不需要公网回调地址。运行前在本机 `.env` 填 `FEISHU_APP_ID` 和 `FEISHU_APP_SECRET`，不要提交真实密钥。如果 `.env` 指向的经营表不完整，worker 也会继续启动；机器人会在飞书里按当前导入报告追问缺失字段，不会回落成样例店铺复盘。
-在同一个飞书单聊或群聊里，用户直接粘贴经营表后，本地 worker 会记住这个 chat 最近一次导入的数据；后续再问“帮我复盘”“给我待办清单”“我还缺什么数据”，会优先使用刚粘贴的表。默认缓存文件是 `.agent-state/feishu-chat-contexts.json`，只在本机、已被 Git 忽略；重启 worker 后仍会恢复。发“清空这份数据”“忘记当前数据”或“重新开始”可以清除当前 chat 缓存。若不想保存聊天导入数据，可在 `.env` 设置 `FEISHU_CHAT_CONTEXT_PERSISTENCE=off`。
+在同一个飞书单聊或群聊里，用户直接粘贴经营表后，本地 worker 会记住这个 chat 最近一次导入的数据；后续再问“帮我复盘”“给我待办清单”“我还缺什么数据”，会优先使用刚粘贴的表。之后继续粘贴广告、库存/成本、用户声音或竞品补充表，worker 会合并到当前会话数据。`.env` 预配置的经营表也保留原始表格上下文，所以同样支持在飞书里继续补表。默认缓存文件是 `.agent-state/feishu-chat-contexts.json`，只在本机、已被 Git 忽略；重启 worker 后仍会恢复。发“清空这份数据”“忘记当前数据”或“重新开始”可以清除当前 chat 缓存。若不想保存聊天导入数据，可在 `.env` 设置 `FEISHU_CHAT_CONTEXT_PERSISTENCE=off`。
 
 质量检查：
 

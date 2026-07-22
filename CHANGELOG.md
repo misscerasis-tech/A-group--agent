@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.90-readme-latest-capabilities] - 2026-07-23
+
+### Changed
+
+- README 同步最新能力：网页复制模板、API `tableTemplates`、币种中立金额展示、飞书会话补充表合并和 `.env` 数据补表合并。
+
 ## [v0.1.89-currency-neutral-display] - 2026-07-23
 
 ### Changed
