@@ -176,6 +176,7 @@ FEISHU_EVENT_SUBSCRIPTION_MODE="long_connection"
 - `退款退货怎么看`
 - `这周先降低退款/退货`
 - `竞品怎么看`
+- `给我待办清单`
 - `怎么用`
 
 也可以直接在飞书里粘贴一小段经营 CSV/TSV/Markdown 表格：

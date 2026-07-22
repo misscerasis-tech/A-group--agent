@@ -181,6 +181,7 @@ function main() {
   );
   const testingReply = buildFeishuAgentReply("怎么真正测试，接入飞书吗");
   const returnsReply = buildFeishuAgentReply("退款退货怎么看");
+  const taskReply = buildFeishuAgentReply("给我待办清单");
 
   assert(workPlanReply.includes("经营数据表"), "飞书工作计划回复应该提示经营数据表。");
   assert(workPlanReply.includes("Markdown"), "飞书工作计划回复应该提示支持 Markdown 表格。");
@@ -192,6 +193,7 @@ function main() {
   assert(pastedOrderDetailReply.includes("验收"), "飞书分析回复应该包含待办验收标准。");
   assert(testingReply.includes("App Secret"), "飞书测试回复应该提示 App Secret。");
   assert(returnsReply.includes("售后把成交吃回去"), "飞书应该能单独回答退款/退货问题。");
+  assert(taskReply.includes("优先级\t截止\t负责人"), "飞书应该能返回可复制的待办表格。");
 
   const invalidImport = buildEcommerceInputFromCsv({
     metricsCsv: [

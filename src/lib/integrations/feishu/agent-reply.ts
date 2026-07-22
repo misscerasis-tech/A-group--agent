@@ -1,6 +1,7 @@
 import { analyzeEcommerceStore } from "../../ecommerce-agent/analysis";
 import { buildEcommerceInputFromCsv } from "../../ecommerce-agent/csv-import";
 import { buildKpiGuideReply } from "../../ecommerce-agent/kpi-guide";
+import { buildOperationalTasksTsv } from "../../ecommerce-agent/report";
 import { sampleEcommerceAgentInput } from "../../ecommerce-agent/sample-data";
 import { buildTestingChecklistReply } from "../../ecommerce-agent/testing-checklist";
 import type { EcommerceAgentAnalysis, EcommerceAgentInput } from "../../ecommerce-agent/types";
@@ -13,6 +14,7 @@ export type FeishuReplyIntent =
   | "store_review"
   | "data_checklist"
   | "work_plan"
+  | "tasks"
   | "testing"
   | "usage"
   | "inventory"
@@ -49,6 +51,10 @@ export function detectFeishuReplyIntent(text: string): FeishuReplyIntent {
     )
   ) {
     return "testing";
+  }
+
+  if (["待办", "任务清单", "行动清单", "分工", "负责人", "验收标准"].some((keyword) => normalized.includes(keyword))) {
+    return "tasks";
   }
 
   if (["退款", "退货", "售后", "退单", "差评"].some((keyword) => normalized.includes(keyword))) {
@@ -159,6 +165,7 @@ export function buildFeishuUsageReply() {
     "- “退款/退货风险怎么看？”",
     "- “这周先降低退款/退货”",
     "- “这周目标是保销量/保利润”",
+    "- “给我待办清单”",
     "- “我现在做什么？”",
     "",
     "也可以直接粘贴一小段 CSV/TSV/Markdown 表格，或从 Excel/飞书表格复制几行。我会先检查字段，缺什么就问你，不会把缺失项说成确定结论。",
@@ -171,6 +178,14 @@ export function buildWorkPlanReply() {
 
 export function buildFeishuTestingReply() {
   return buildTestingChecklistReply();
+}
+
+export function buildTasksReply(analysis: EcommerceAgentAnalysis) {
+  return [
+    "这是我整理好的待办表，可以直接复制到飞书表格或多维表格：",
+    "",
+    buildOperationalTasksTsv(analysis),
+  ].join("\n");
 }
 
 export function buildInventoryReply(analysis: EcommerceAgentAnalysis) {
@@ -388,6 +403,10 @@ export function buildFeishuAgentReply(
 
   if (intent === "work_plan") {
     return buildWorkPlanReply();
+  }
+
+  if (intent === "tasks") {
+    return buildTasksReply(analysis);
   }
 
   if (intent === "testing") {

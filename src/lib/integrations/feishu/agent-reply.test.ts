@@ -35,6 +35,15 @@ describe("feishu agent reply", () => {
     expect(reply).toContain("Agent 动作");
   });
 
+  it("returns a copyable task table for task-list requests", () => {
+    expect(detectFeishuReplyIntent("给我待办清单")).toBe("tasks");
+
+    const reply = buildFeishuAgentReply("给我待办清单");
+
+    expect(reply).toContain("优先级\t截止\t负责人");
+    expect(reply).toContain("验收标准");
+  });
+
   it("answers real testing and Feishu connection questions", () => {
     expect(detectFeishuReplyIntent("怎么真正测试，接入飞书吗")).toBe("testing");
 
