@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.132-feishu-migration-env-template] - 2026-07-23
+
+### Added
+
+- `.env.example` 补充飞书迁移草案所需的非敏感变量模板，包括当前连接、目标连接、迁移原因和执行人。
+- 模板仍保持 App Secret、chat ID、文档 ID、多维表格 ID 等真实值为空，避免误提交敏感信息。
+
 ## [v0.1.131-feishu-migration-plan-script] - 2026-07-23
 
 ### Added
