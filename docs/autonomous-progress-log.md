@@ -7,7 +7,7 @@
 ## 当前最新稳定点
 
 - 最新代码：`main`
-- 最新标签：`v0.1.117-refresh-autonomous-progress`
+- 最新标签：`v0.1.120-docs-order-revenue-warning`
 - 本地测试入口：`http://localhost:3001/agent`
 - 远端仓库：`misscerasis-tech/A-group--agent.git`
 
@@ -19,6 +19,7 @@
    - 支持 Shopify Analytics 等汇总报表里的 `net_sales`、`total_sales`、`gross_sales` 和 `net_quantity` 字段。
    - Shopify Orders 和 Amazon Seller Central 订单表可直接聚合。
    - 订单明细支持折扣、商品成本、平台佣金、支付手续费、履约费和退款金额。
+   - 订单明细同一订单号多行且收入列可能是整单金额时，会提醒用户复核，避免重复计算销售额。
 
 2. 小白工作流更明确。
    - `workSession` 会告诉用户下一句该问什么。

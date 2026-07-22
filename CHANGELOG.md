@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.120-docs-order-revenue-warning] - 2026-07-23
+
+### Changed
+
+- 数据契约、测试路径和自主进展记录补充订单明细整单金额重复风险提醒，说明同一订单号多行时需要确认收入列是否为 line item 行金额。
+
 ## [v0.1.119-duplicate-order-revenue-warning] - 2026-07-23
 
 ### Added
