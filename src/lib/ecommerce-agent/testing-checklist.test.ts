@@ -10,5 +10,9 @@ describe("ecommerce testing checklist", () => {
 
     expect(reply).toContain("App Secret");
     expect(reply).toContain("飞书要接");
+    expect(reply).toContain("可直接发的测试消息");
+    expect(reply).toContain("通过标准");
+    expect(reply).toContain("我现在做什么");
+    expect(reply).toContain("清空这份数据");
   });
 });
