@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.80-latest-tag-docs] - 2026-07-23
+
+### Changed
+
+- 用户返回清单和 GitHub 回滚文档不再写死最新 tag，改为用 `git tag --sort=-creatordate | head -1` 查询。
+
 ## [v0.1.79-data-entry-templates] - 2026-07-23
 
 ### Added
@@ -14,7 +20,7 @@
 ### Added
 
 - 刷新用户回来后的必要确认清单，补充最新稳定 tag、Web/API smoke 顺序、飞书 chat 缓存路径、清空缓存测试和 Shopify/Amazon/代码块粘贴说明。
-- GitHub 回滚文档记录当前最新稳定 tag：`v0.1.78-user-return-checklist`。
+- GitHub 回滚文档补充稳定 tag 检查和回滚入口。
 
 ## [v0.1.77-import-issue-groups] - 2026-07-23
 

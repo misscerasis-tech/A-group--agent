@@ -2,10 +2,10 @@
 
 这份清单只放需要用户亲自做或确认的动作。其他能本地完成的研发、测试、文档和 Git 版本管理由 Codex 先完成。
 
-当前最新稳定点：
+查看当前最新稳定点：
 
 ```bash
-v0.1.78-user-return-checklist
+git tag --sort=-creatordate | head -1
 ```
 
 ## 飞书

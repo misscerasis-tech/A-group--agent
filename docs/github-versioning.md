@@ -14,10 +14,10 @@ https://github.com/misscerasis-tech/A-group--agent.git
 main
 ```
 
-当前最新稳定 tag：
+查看当前最新稳定 tag：
 
 ```bash
-v0.1.78-user-return-checklist
+git tag --sort=-creatordate | head -1
 ```
 
 ## 分支策略
@@ -51,14 +51,14 @@ git commit -m "feat: build a-group ecommerce ops agent prototype"
 4. 打 Tag：
 
 ```bash
-git tag v0.1.78-user-return-checklist
+git tag <tag>
 ```
 
 5. 推送到 GitHub：
 
 ```bash
 git push -u origin main
-git push origin v0.1.78-user-return-checklist
+git push origin <tag>
 ```
 
 ## 回滚到稳定版本
@@ -66,13 +66,13 @@ git push origin v0.1.78-user-return-checklist
 只查看旧版本：
 
 ```bash
-git checkout v0.1.78-user-return-checklist
+git checkout <tag>
 ```
 
 从旧版本开修复分支：
 
 ```bash
-git checkout -b hotfix/from-a-group-demo v0.1.78-user-return-checklist
+git checkout -b hotfix/from-a-group-demo <tag>
 ```
 
 回滚线上部署时，优先选择重新部署某个 GitHub commit 或 tag，不直接在生产机器上手工改文件。
