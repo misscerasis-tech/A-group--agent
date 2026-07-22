@@ -73,6 +73,20 @@ const starterCustomerVoiceCsv = [
 
 const importDraftStorageKey = "a-group-ecommerce-agent-import-draft-v1";
 const defaultStoreGoal = "同时看销量、利润、广告回本、库存风险、退款/退货和竞品压力";
+const tableFileAccept = [
+  ".csv",
+  ".tsv",
+  ".md",
+  ".markdown",
+  ".xlsx",
+  ".xls",
+  "text/csv",
+  "text/tab-separated-values",
+  "text/markdown",
+  "text/plain",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-excel",
+].join(",");
 
 type ImportDraft = {
   storeName?: string;
@@ -119,6 +133,14 @@ async function readFileIntoState(
   const file = event.target.files?.[0];
 
   if (!file) {
+    return;
+  }
+
+  if (/\.(xlsx|xls)$/i.test(file.name)) {
+    const { workbookArrayBufferToCsv } = await import("../../lib/ecommerce-agent/workbook-import");
+
+    setValue(workbookArrayBufferToCsv(await file.arrayBuffer()));
+    event.target.value = "";
     return;
   }
 
@@ -351,7 +373,7 @@ export function DataImportPanel() {
                 <FileUp size={16} aria-hidden="true" />
                 上传
                 <input
-                  accept=".csv,.tsv,.md,.markdown,text/csv,text/tab-separated-values,text/markdown,text/plain"
+                  accept={tableFileAccept}
                   type="file"
                   onChange={(event) => void readFileIntoState(event, setMetricsCsv)}
                 />
@@ -375,7 +397,7 @@ export function DataImportPanel() {
                 <FileUp size={16} aria-hidden="true" />
                 上传
                 <input
-                  accept=".csv,.tsv,.md,.markdown,text/csv,text/tab-separated-values,text/markdown,text/plain"
+                  accept={tableFileAccept}
                   type="file"
                   onChange={(event) => void readFileIntoState(event, setCompetitorCsv)}
                 />
@@ -399,7 +421,7 @@ export function DataImportPanel() {
                 <FileUp size={16} aria-hidden="true" />
                 上传
                 <input
-                  accept=".csv,.tsv,.md,.markdown,text/csv,text/tab-separated-values,text/markdown,text/plain"
+                  accept={tableFileAccept}
                   type="file"
                   onChange={(event) => void readFileIntoState(event, setAdsCsv)}
                 />
@@ -423,7 +445,7 @@ export function DataImportPanel() {
                 <FileUp size={16} aria-hidden="true" />
                 上传
                 <input
-                  accept=".csv,.tsv,.md,.markdown,text/csv,text/tab-separated-values,text/markdown,text/plain"
+                  accept={tableFileAccept}
                   type="file"
                   onChange={(event) => void readFileIntoState(event, setInventoryCsv)}
                 />
@@ -447,7 +469,7 @@ export function DataImportPanel() {
                 <FileUp size={16} aria-hidden="true" />
                 上传
                 <input
-                  accept=".csv,.tsv,.md,.markdown,text/csv,text/tab-separated-values,text/markdown,text/plain"
+                  accept={tableFileAccept}
                   type="file"
                   onChange={(event) => void readFileIntoState(event, setCustomerVoicesCsv)}
                 />

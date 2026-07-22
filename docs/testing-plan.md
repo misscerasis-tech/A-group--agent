@@ -36,8 +36,8 @@ npx pnpm@10.13.1 run agent:smoke
 
 当前已经可以在 `/agent` 首页的“真实数据导入工作台”测试：
 
-- 上传或粘贴经营数据 CSV/TSV/Markdown 表格。
-- 上传或粘贴竞品数据 CSV/TSV/Markdown 表格。
+- 上传或粘贴经营数据 CSV/TSV/Markdown/Excel 表格。
+- 上传或粘贴竞品数据 CSV/TSV/Markdown/Excel 表格。
 - 上传或粘贴广告数据表，例如周期、SKU、广告花费、广告成交额或 ROAS。
 - 上传或粘贴库存/成本快照表，例如 SKU、当前库存、单位成本、盘点日期。
 - 上传或粘贴用户声音/售后评价表，例如客服备注、差评关键词、退款备注。
@@ -87,6 +87,7 @@ SMOKE_BASE_URL=http://localhost:3000 npx pnpm@10.13.1 run smoke:web
 - 退款字段也能映射，例如“refund_orders/returns/退款单数”“refund_amount/退款金额”和“refund_reason/退款原因”都能识别。
 - 比率字段也能映射和反推，例如“转化率/CVR”“ROAS/投产比”“毛利率”“退款率/退货率”“退款金额占比”。
 - CSV、TSV、Markdown 表格，以及从 Excel/飞书表格直接复制出来的制表符数据都能识别。
+- 上传 `.xlsx/.xls` 时，网页工作台会读取第一张工作表并转成表格文本。
 - 没有 `week` 列但有 `date/start_date/开始日期` 时，Agent 会用日期判断最近两期。
 - 没有周汇总表时，可以给订单明细；Agent 会按订单日期聚合最近两个自然周。
 - 如果表里有三周或更多周期，Agent 会自动选择最近两期作为上周和本周。
