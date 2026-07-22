@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.71-feishu-platform-order-paste] - 2026-07-23
+
+### Added
+
+- 飞书粘贴表格检测支持 Shopify Orders 的 `Paid at / Lineitem price` 和 Amazon 订单 TSV 的 `amazon-order-id / purchase-date / item-price` 等平台原始表头。
+- Agent smoke 和飞书回复单测覆盖直接在飞书粘贴 Shopify/Amazon 订单导出表的路径。
+
 ## [v0.1.70-api-kpi-guide] - 2026-07-23
 
 ### Added

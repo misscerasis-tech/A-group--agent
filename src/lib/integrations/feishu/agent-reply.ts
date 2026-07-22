@@ -398,33 +398,39 @@ export function buildCompetitorsReply(analysis: EcommerceAgentAnalysis) {
 
 function looksLikePastedMetricsTable(text: string) {
   const normalized = text.toLowerCase();
+  const compact = normalized.replace(/[\s_\-./:：]+/g, "");
   const hasTableDelimiter = [",", "\t", ";", "|"].some((delimiter) => text.includes(delimiter));
   const hasPeriodSignal =
     normalized.includes("week") ||
     normalized.includes("period") ||
+    compact.includes("startdate") ||
+    compact.includes("statdate") ||
     text.includes("周期") ||
     text.includes("上周") ||
     text.includes("本周");
   const hasOrderDetailDateSignal =
-    normalized.includes("order_date") ||
-    normalized.includes("paid_at") ||
-    normalized.includes("pay_time") ||
+    compact.includes("orderdate") ||
+    compact.includes("paidat") ||
+    compact.includes("paytime") ||
+    compact.includes("purchasedate") ||
     text.includes("支付时间") ||
     text.includes("下单时间") ||
     text.includes("订单日期");
   const hasProductSignal =
     normalized.includes("product") ||
+    compact.includes("lineitemname") ||
     normalized.includes("sku") ||
-    normalized.includes("seller_sku") ||
+    compact.includes("sellersku") ||
     text.includes("商品") ||
     text.includes("产品") ||
     text.includes("商家编码") ||
     text.includes("货号");
   const hasOrderSignal =
     normalized.includes("orders") ||
-    normalized.includes("paid_buyers") ||
+    compact.includes("paidbuyers") ||
     normalized.includes("buyers") ||
-    normalized.includes("order_id") ||
+    compact.includes("orderid") ||
+    compact.includes("amazonorderid") ||
     text.includes("订单") ||
     text.includes("订单号") ||
     text.includes("买家数") ||
@@ -433,6 +439,9 @@ function looksLikePastedMetricsTable(text: string) {
     normalized.includes("revenue") ||
     normalized.includes("gmv") ||
     normalized.includes("sales") ||
+    compact.includes("lineitemprice") ||
+    compact.includes("itemprice") ||
+    compact.includes("itemtotal") ||
     text.includes("销售额") ||
     text.includes("成交额") ||
     text.includes("实付金额") ||
@@ -440,7 +449,9 @@ function looksLikePastedMetricsTable(text: string) {
     text.includes("支付金额") ||
     text.includes("商品支付金额");
   const hasUnitsSignal =
-    normalized.includes("units_sold") ||
+    compact.includes("unitssold") ||
+    compact.includes("quantitypurchased") ||
+    compact.includes("lineitemquantity") ||
     normalized.includes("quantity") ||
     normalized.includes("qty") ||
     text.includes("销量") ||

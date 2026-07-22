@@ -250,6 +250,24 @@ function main() {
       "O-1004\t2026-07-16 19:45:00\t白杯\tCUP-WHITE\t3\t119.7\t\t已完成",
     ].join("\n"),
   );
+  const pastedShopifyOrderReply = buildFeishuAgentReply(
+    [
+      "Name,Paid at,Lineitem name,Lineitem sku,Lineitem quantity,Lineitem price,Refunded Amount,Financial Status",
+      "#1001,2026-07-08 10:11:00,黑杯,CUP-BLACK,2,39.9,,paid",
+      "#1002,2026-07-09 12:30:00,黑杯,CUP-BLACK,1,39.9,0,paid",
+      "#1003,2026-07-15 09:20:00,黑杯,CUP-BLACK,1,39.9,39.9,refunded",
+      "#1004,2026-07-16 19:45:00,白杯,CUP-WHITE,3,29.9,,paid",
+    ].join("\n"),
+  );
+  const pastedAmazonOrderReply = buildFeishuAgentReply(
+    [
+      "amazon-order-id\tpurchase-date\tproduct-name\tsku\tquantity-purchased\titem-price\titem-status",
+      "112-0001\t2026-07-08T10:11:00Z\t黑杯\tCUP-BLACK\t2\t79.8\tShipped",
+      "112-0002\t2026-07-09T12:30:00Z\t黑杯\tCUP-BLACK\t1\t39.9\tShipped",
+      "112-0003\t2026-07-15T09:20:00Z\t黑杯\tCUP-BLACK\t1\t39.9\tRefunded",
+      "112-0004\t2026-07-16T19:45:00Z\t白杯\tCUP-WHITE\t3\t89.7\tShipped",
+    ].join("\n"),
+  );
   const testingReply = buildFeishuAgentReply("怎么真正测试，接入飞书吗");
   const returnsReply = buildFeishuAgentReply("退款退货怎么看");
   const taskReply = buildFeishuAgentReply("给我待办清单");
@@ -264,6 +282,10 @@ function main() {
   assert(pastedOrderDetailReply.includes("刚粘贴的表格"), "飞书应该能分析订单明细粘贴数据。");
   assert(pastedOrderDetailReply.includes("已退款"), "飞书订单明细回复应该引用售后状态。");
   assert(pastedOrderDetailReply.includes("验收"), "飞书分析回复应该包含待办验收标准。");
+  assert(pastedShopifyOrderReply.includes("刚粘贴的表格"), "飞书应该能分析 Shopify Orders 粘贴数据。");
+  assert(pastedShopifyOrderReply.includes("refunded"), "飞书 Shopify Orders 回复应该引用退款状态。");
+  assert(pastedAmazonOrderReply.includes("刚粘贴的表格"), "飞书应该能分析 Amazon 订单 TSV 粘贴数据。");
+  assert(pastedAmazonOrderReply.includes("Refunded"), "飞书 Amazon 订单 TSV 回复应该引用退款状态。");
   assert(testingReply.includes("App Secret"), "飞书测试回复应该提示 App Secret。");
   assert(returnsReply.includes("售后把成交吃回去"), "飞书应该能单独回答退款/退货问题。");
   assert(taskReply.includes("优先级\t截止\t负责人"), "飞书应该能返回可复制的待办表格。");
