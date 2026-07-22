@@ -94,6 +94,16 @@ function formatWorkStepStatus(status: string) {
   return labels[status] ?? status;
 }
 
+function formatPriority(priority: string) {
+  const labels: Record<string, string> = {
+    high: "高优先级",
+    medium: "中优先级",
+    low: "低优先级",
+  };
+
+  return labels[priority] ?? priority;
+}
+
 async function readFileIntoState(
   event: React.ChangeEvent<HTMLInputElement>,
   setValue: (value: string) => void,
@@ -121,7 +131,7 @@ export function DataImportPanel() {
   const [customerVoicesCsv, setCustomerVoicesCsv] = useState(starterCustomerVoiceCsv);
   const [hasRun, setHasRun] = useState(false);
   const [hasLoadedDraft, setHasLoadedDraft] = useState(false);
-  const [copiedTarget, setCopiedTarget] = useState<"feishu" | "markdown" | null>(null);
+  const [copiedTarget, setCopiedTarget] = useState<"feishu" | "markdown" | "tasks" | null>(null);
 
   function loadStarterSample() {
     setStoreName("Aurora Cup 独立站");
@@ -175,7 +185,7 @@ export function DataImportPanel() {
     window.localStorage.removeItem(importDraftStorageKey);
   }
 
-  async function copyOutput(target: "feishu" | "markdown", text: string) {
+  async function copyOutput(target: "feishu" | "markdown" | "tasks", text: string) {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedTarget(target);
@@ -265,6 +275,14 @@ export function DataImportPanel() {
   const markdownReport =
     importResult.input && analysis ? buildWeeklyMarkdownReport(importResult.input, analysis) : "";
   const feishuReplyText = analysis ? formatEcommerceAnalysisForFeishu(analysis, "当前导入数据") : "";
+  const taskListText = analysis
+    ? analysis.operationalTasks
+        .map(
+          (task, index) =>
+            `${index + 1}. [${formatPriority(task.priority)}][${task.dueLabel}][${task.owner}] ${task.title}\n第一步：${task.firstStep}\n验收：${task.acceptanceCriteria}`,
+        )
+        .join("\n\n")
+    : "";
   const requiredMappings = importResult.report.fieldMappings.filter((field) => field.required);
   const workSession = buildBeginnerWorkSession(importResult.report, analysis?.questionsForUser ?? []);
 
@@ -539,6 +557,21 @@ export function DataImportPanel() {
                   <p key={line}>{line}</p>
                 ))}
               </div>
+              <div className="action-list">
+                {analysis.operationalTasks.map((task, index) => (
+                  <article className="action-row" key={task.id}>
+                    <span>{index + 1}</span>
+                    <div>
+                      <h4>{task.title}</h4>
+                      <small>
+                        {formatPriority(task.priority)} · {task.owner} · {task.dueLabel}
+                      </small>
+                      <p>{task.firstStep}</p>
+                      <small>验收：{task.acceptanceCriteria}</small>
+                    </div>
+                  </article>
+                ))}
+              </div>
               <div className="button-row">
                 <button
                   className="button secondary"
@@ -551,6 +584,18 @@ export function DataImportPanel() {
                     <Copy size={16} aria-hidden="true" />
                   )}
                   {copiedTarget === "feishu" ? "已复制飞书回复" : "复制飞书回复"}
+                </button>
+                <button
+                  className="button secondary"
+                  type="button"
+                  onClick={() => void copyOutput("tasks", taskListText)}
+                >
+                  {copiedTarget === "tasks" ? (
+                    <CheckCircle2 size={16} aria-hidden="true" />
+                  ) : (
+                    <Copy size={16} aria-hidden="true" />
+                  )}
+                  {copiedTarget === "tasks" ? "已复制待办" : "复制待办"}
                 </button>
                 <button
                   className="button secondary"

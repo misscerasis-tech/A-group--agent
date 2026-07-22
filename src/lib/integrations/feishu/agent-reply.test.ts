@@ -82,6 +82,7 @@ describe("feishu agent reply", () => {
 
     expect(reply).toContain("样例店铺");
     expect(reply).toContain("建议你先做");
+    expect(reply).toContain("验收");
     expect(reply).toContain("真实订单");
   });
 

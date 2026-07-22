@@ -92,6 +92,17 @@ export type NextAction = {
   firstStep: string;
 };
 
+export type OperationalTask = {
+  id: string;
+  title: string;
+  owner: string;
+  priority: "high" | "medium" | "low";
+  dueLabel: string;
+  reason: string;
+  firstStep: string;
+  acceptanceCriteria: string;
+};
+
 export type AgentQuestion = {
   question: string;
   whyItMatters: string;
@@ -118,5 +129,6 @@ export type EcommerceAgentAnalysis = {
   competitorInsights: string[];
   questionsForUser: AgentQuestion[];
   nextActions: NextAction[];
+  operationalTasks: OperationalTask[];
   feishuReply: string;
 };

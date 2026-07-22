@@ -46,6 +46,8 @@ function main() {
 
   assert(analysis.headline.includes("Smoke Test Aurora Cup"), "分析标题应该包含店铺名。");
   assert(analysis.nextActions.length > 0, "分析应该生成下一步行动。");
+  assert(analysis.operationalTasks.length === analysis.nextActions.length, "分析应该生成结构化运营待办。");
+  assert(analysis.operationalTasks[0].acceptanceCriteria.includes("已"), "运营待办应该包含验收标准。");
   assert(analysis.nextActions[0].title === "先核对利润口径", "保利润目标应该优先核对利润口径。");
   assert(input.currentWeek.products[0].refundAmount === 160, "样例 CSV 应该导入退款金额。");
   assert(input.currentWeek.products[0].refundReason?.includes("杯盖漏水"), "样例 CSV 应该导入退款原因。");
@@ -187,6 +189,7 @@ function main() {
   assert(pastedPlatformTableReply.includes("杯盖漏水"), "飞书平台表头回复应该引用退款原因。");
   assert(pastedOrderDetailReply.includes("刚粘贴的表格"), "飞书应该能分析订单明细粘贴数据。");
   assert(pastedOrderDetailReply.includes("已退款"), "飞书订单明细回复应该引用售后状态。");
+  assert(pastedOrderDetailReply.includes("验收"), "飞书分析回复应该包含待办验收标准。");
   assert(testingReply.includes("App Secret"), "飞书测试回复应该提示 App Secret。");
   assert(returnsReply.includes("售后把成交吃回去"), "飞书应该能单独回答退款/退货问题。");
 

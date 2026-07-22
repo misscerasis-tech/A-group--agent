@@ -5,6 +5,7 @@ import type {
   EcommerceAgentInput,
   MetricTotals,
   NextAction,
+  OperationalTask,
   ProductFinding,
   ProductMetric,
   WeeklyMetricSet,
@@ -727,6 +728,87 @@ function buildNextActions(
   return actions.slice(0, 4);
 }
 
+function taskPriority(action: NextAction): OperationalTask["priority"] {
+  if (
+    [
+      "先确认退款/退货口径",
+      "先处理主推款购买理由",
+      "先查退款/退货原因",
+      "暂停最弱广告，保留能成交的投放",
+      "检查礼盒套装补货或控量",
+    ].includes(action.title)
+  ) {
+    return "high";
+  }
+
+  if (action.title === "建立下周复盘节奏") {
+    return "low";
+  }
+
+  return "medium";
+}
+
+function taskDueLabel(priority: OperationalTask["priority"]) {
+  if (priority === "high") {
+    return "24 小时内";
+  }
+
+  if (priority === "medium") {
+    return "3 天内";
+  }
+
+  return "下周一前";
+}
+
+function taskAcceptanceCriteria(action: NextAction) {
+  if (action.title.includes("退款/退货")) {
+    return "已按 SKU 排出退款/退货占比最高的商品，并确认第一条要处理的售后原因。";
+  }
+
+  if (action.title.includes("广告")) {
+    return "已列出花费高但成交弱的广告组，并标记保留、暂停或继续观察。";
+  }
+
+  if (action.title.includes("库存") || action.title.includes("补货") || action.title.includes("控量")) {
+    return "已确认补货周期；对 7 天内可能断货的 SKU 给出补货或控量动作。";
+  }
+
+  if (action.title.includes("利润") || action.title.includes("毛利") || action.title.includes("成本")) {
+    return "已补齐主推 SKU 的成本、折扣、广告花费和毛利口径，并标出低利润 SKU。";
+  }
+
+  if (action.title.includes("折扣") || action.title.includes("套装")) {
+    return "已对比上周和本周优惠、套装、包邮门槛，并决定先恢复或调整的组合。";
+  }
+
+  if (action.title.includes("购买理由") || action.title.includes("主推款")) {
+    return "已完成主推 SKU 的首图、价格、优惠和前三条卖点检查，并确定一处首屏改动。";
+  }
+
+  if (action.title.includes("复盘节奏")) {
+    return "已确定每周复盘时间、负责人和结果接收位置。";
+  }
+
+  return "负责人已完成第一步，并把结果发回飞书或周报。";
+}
+
+function buildOperationalTasks(actions: NextAction[]): OperationalTask[] {
+  return actions.map((action, index) => {
+    const priority = taskPriority(action);
+
+    return {
+      id: `task-${index + 1}`,
+      title: action.title,
+      owner: action.owner,
+      priority,
+      dueLabel: taskDueLabel(priority),
+      reason: action.reason,
+      firstStep: action.firstStep,
+      acceptanceCriteria: taskAcceptanceCriteria(action),
+    };
+  });
+}
+
 export function analyzeEcommerceStore(input: EcommerceAgentInput): EcommerceAgentAnalysis {
   const previous = toTotals(input.previousWeek);
   const current = toTotals(input.currentWeek);
@@ -775,6 +857,7 @@ export function analyzeEcommerceStore(input: EcommerceAgentInput): EcommerceAgen
   const productFindings = buildProductFindings(input);
   const competitorInsights = buildCompetitorInsights(input);
   const nextActions = buildNextActions(productFindings, competitorInsights, input.store.goal);
+  const operationalTasks = buildOperationalTasks(nextActions);
   const direction = revenueChangeRate >= 0 ? "变好了" : "变差了";
   const headline = `${input.store.storeName} 本周整体${direction}：销售额${revenueChangeRate >= 0 ? "增长" : "下降"} ${formatPercent(revenueChangeRate)}`;
   const currentRefundParts = [
@@ -841,9 +924,10 @@ export function analyzeEcommerceStore(input: EcommerceAgentInput): EcommerceAgen
     competitorInsights,
     questionsForUser: buildQuestions(input),
     nextActions,
+    operationalTasks,
     feishuReply: [
       headline,
-      `我建议下周先做 ${nextActions.length} 件事：${nextActions.map((action) => action.title).join("、")}。`,
+      `我建议下周先做 ${operationalTasks.length} 件事：${operationalTasks.map((task) => `${task.title}（${task.owner}，${task.dueLabel}）`).join("、")}。`,
       "我已经把完整复盘、风险商品和待办清单整理好，可以同步到飞书文档并创建负责人待办。",
     ].join("\n"),
   };

@@ -59,6 +59,31 @@ function customerVoiceLines(input: EcommerceAgentInput) {
     );
 }
 
+function priorityLabel(priority: "high" | "medium" | "low") {
+  const labels = {
+    high: "高",
+    medium: "中",
+    low: "低",
+  };
+
+  return labels[priority];
+}
+
+function taskTable(analysis: EcommerceAgentAnalysis) {
+  if (analysis.operationalTasks.length === 0) {
+    return "暂时没有需要创建的运营待办。";
+  }
+
+  return [
+    "| 优先级 | 截止 | 负责人 | 任务 | 验收标准 |",
+    "| --- | --- | --- | --- | --- |",
+    ...analysis.operationalTasks.map(
+      (task) =>
+        `| ${priorityLabel(task.priority)} | ${task.dueLabel} | ${task.owner} | ${task.title}：${task.firstStep} | ${task.acceptanceCriteria} |`,
+    ),
+  ].join("\n");
+}
+
 export function buildWeeklyMarkdownReport(
   input: EcommerceAgentInput,
   analysis: EcommerceAgentAnalysis,
@@ -101,10 +126,7 @@ export function buildWeeklyMarkdownReport(
     ...analysis.competitorInsights.map((item) => `- ${item}`),
     "",
     "## 7. 下周行动",
-    ...analysis.nextActions.map(
-      (action, index) =>
-        `${index + 1}. **${action.title}**  \n负责人：${action.owner}  \n原因：${action.reason}  \n第一步：${action.firstStep}`,
-    ),
+    taskTable(analysis),
     "",
     "## 8. Agent 还需要追问",
     ...analysis.questionsForUser.map(

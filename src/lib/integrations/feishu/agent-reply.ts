@@ -108,9 +108,12 @@ export function formatEcommerceAnalysisForFeishu(
       (finding, index) =>
         `${index + 1}. ${finding.productName}：${finding.issue}。${finding.plainReason} 下一步：${finding.suggestedAction}`,
     );
-  const actions = analysis.nextActions
+  const tasks = analysis.operationalTasks
     .slice(0, 3)
-    .map((action, index) => `${index + 1}. ${action.title}：${action.firstStep}`);
+    .map(
+      (task, index) =>
+        `${index + 1}. ${task.title}｜${task.owner}｜${task.dueLabel}：${task.firstStep} 验收：${task.acceptanceCriteria}`,
+    );
   const questions = analysis.questionsForUser
     .slice(0, 2)
     .map((question, index) => `${index + 1}. ${question.question} ${question.whyItMatters}`);
@@ -124,8 +127,8 @@ export function formatEcommerceAnalysisForFeishu(
     "最该关注的问题：",
     ...(findings.length > 0 ? findings : ["暂时没有明显高风险商品。"]),
     "",
-    "建议你先做：",
-    ...actions,
+    "建议你先做这些待办：",
+    ...tasks,
     "",
     "我还会追问你：",
     ...questions,

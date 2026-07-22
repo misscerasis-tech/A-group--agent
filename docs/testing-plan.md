@@ -48,6 +48,7 @@ npx pnpm@10.13.1 run agent:smoke
 - 查看字段识别结果。
 - 查看缺失字段追问。
 - 生成基于导入数据的复盘和飞书回写文本。
+- 检查“下周行动”是否包含负责人、优先级、截止时间和验收标准。
 - 展开“飞书文档 Markdown”，检查是否能直接沉淀成周报。
 - 检查周报里是否出现“用户声音”章节。
 
@@ -59,7 +60,7 @@ curl -X POST http://localhost:3001/api/agent/analyze \
   -d '{"metricsCsv":"week,product_name,orders,revenue,units_sold,refund_orders,refund_amount\nprevious,黑杯,10,500,12,1,30\ncurrent,黑杯,8,420,9,2,80","store":{"storeName":"测试店铺"}}'
 ```
 
-API 会返回 `analysis`、`feishuReply` 和 `markdownReport`。
+API 会返回 `analysis`、`feishuReply` 和 `markdownReport`。其中 `analysis.operationalTasks` 是结构化运营待办，可迁移到飞书待办或多维表格。
 其中 `workSession` 会告诉前端或飞书：当前还缺什么、下一句应该问用户什么、Agent 接下来能不能继续跑。
 
 页面健康检查也可以自动跑一遍，专门确认导航页面不会再把原始 Prisma/DATABASE_URL 错误露给用户：

@@ -10,6 +10,12 @@ describe("ecommerce agent analysis", () => {
     expect(analysis.plainSummary.length).toBeGreaterThan(0);
     expect(analysis.productFindings.some((finding) => finding.priority === "high")).toBe(true);
     expect(analysis.nextActions.length).toBeGreaterThanOrEqual(3);
+    expect(analysis.operationalTasks.length).toBe(analysis.nextActions.length);
+    expect(analysis.operationalTasks[0]).toMatchObject({
+      owner: expect.any(String),
+      dueLabel: expect.any(String),
+      acceptanceCriteria: expect.any(String),
+    });
     expect(analysis.feishuReply).toContain("飞书");
     expect(analysis.dataHealth.some((item) => item.includes("已有成本或毛利数据"))).toBe(true);
     expect(analysis.dataHealth.some((item) => item.includes("已有退款/退货原因"))).toBe(true);
@@ -279,6 +285,11 @@ describe("ecommerce agent analysis", () => {
     });
 
     expect(analysis.nextActions[0].title).toBe("先核对利润口径");
+    expect(analysis.operationalTasks[0]).toMatchObject({
+      title: "先核对利润口径",
+      owner: "店铺负责人",
+      priority: "medium",
+    });
   });
 
   it("does not ask for goal priority when the user already gave a specific goal", () => {
