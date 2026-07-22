@@ -110,6 +110,7 @@ type OrderDetailField =
   | "sku"
   | "quantity"
   | "revenue"
+  | "discountAmount"
   | "refundAmount"
   | "status"
   | "productCost"
@@ -594,6 +595,7 @@ const orderDetailFieldLabels: Record<OrderDetailField, string> = {
   sku: "SKU",
   quantity: "购买件数",
   revenue: "订单实收金额",
+  discountAmount: "折扣金额",
   refundAmount: "退款金额",
   status: "订单/售后状态",
   productCost: "商品成本",
@@ -725,6 +727,29 @@ const orderDetailAliases: Record<OrderDetailField, string[]> = {
     "商品金额",
     "商品支付金额",
     "销售额",
+  ],
+  discountAmount: [
+    "discount",
+    "discounts",
+    "discount_amount",
+    "discountamount",
+    "discount_total",
+    "discounttotal",
+    "lineitem_discount",
+    "lineitemdiscount",
+    "line_item_discount",
+    "line item discount",
+    "lineitem_discount_amount",
+    "lineitemdiscountamount",
+    "line_item_discount_amount",
+    "line item discount amount",
+    "优惠",
+    "优惠金额",
+    "折扣",
+    "折扣金额",
+    "订单优惠",
+    "商品优惠",
+    "商品优惠金额",
   ],
   refundAmount: metricAliases.refundAmount,
   status: [
@@ -1881,6 +1906,18 @@ function parseOrderDetailRows(
         issues,
         rowNumber,
       );
+      const discountAmountValue = readField(row, mapping, "discountAmount");
+      const rawDiscountAmount =
+        mapping.has("discountAmount") && !discountAmountValue
+          ? 0
+          : optionalNumber(
+              discountAmountValue,
+              orderDetailFieldLabels.discountAmount,
+              issues,
+              rowNumber,
+              { allowNegative: true },
+            );
+      const discountAmount = rawDiscountAmount === null ? 0 : Math.abs(rawDiscountAmount);
       const refundAmountValue = readField(row, mapping, "refundAmount");
       const refundAmount =
         mapping.has("refundAmount") && !refundAmountValue
@@ -1926,9 +1963,10 @@ function parseOrderDetailRows(
         return null;
       }
 
-      const revenue = isOrderDetailUnitPriceHeader(mapping.get("revenue"))
+      const grossRevenue = isOrderDetailUnitPriceHeader(mapping.get("revenue"))
         ? roundMetric(rawRevenue * (quantity ?? 1))
         : rawRevenue;
+      const revenue = roundMetric(Math.max(grossRevenue - discountAmount, 0));
 
       if (productCost === null && unitCost !== null) {
         productCost = roundMetric(unitCost * (quantity ?? 1));
@@ -2664,6 +2702,11 @@ export function buildEcommerceInputFromCsv({
         });
       }
     }
+  } else if (orderDetailMapping.has("discountAmount")) {
+    issues.push({
+      severity: "info",
+      message: "已识别订单明细折扣字段，行收入会先扣除折扣后再汇总到销售额。",
+    });
   }
 
   if (metricsTable.rows.length === 0) {

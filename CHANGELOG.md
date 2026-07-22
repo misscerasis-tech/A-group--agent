@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.98-order-detail-discounts] - 2026-07-23
+
+### Added
+
+- 订单明细导入支持 `discount_amount` / `Discount Amount` / `折扣金额` 等折扣列，并在汇总销售额前扣除折扣。
+- 订单明细模板、数据契约和模板说明同步折扣字段，便于 Shopify 等导出更接近真实收入。
+
 ## [v0.1.97-risk-table-owner-status] - 2026-07-23
 
 ### Changed

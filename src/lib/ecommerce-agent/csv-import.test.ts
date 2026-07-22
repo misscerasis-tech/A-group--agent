@@ -706,6 +706,27 @@ describe("ecommerce csv import", () => {
     expect(result.input?.currentWeek.products.find((product) => product.sku === "CUP-WHITE")?.revenue).toBe(89.7);
   });
 
+  it("subtracts order detail discount columns before aggregating revenue", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "Name,Paid at,Lineitem name,Lineitem sku,Lineitem quantity,Lineitem price,Discount Amount,Unit Cost,Financial Status",
+        "#1001,2026-07-08 10:11:00,黑杯,CUP-BLACK,2,50,10,20,paid",
+        "#1002,2026-07-15 09:20:00,黑杯,CUP-BLACK,1,50,5,20,paid",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.previousWeek.products[0]).toMatchObject({
+      revenue: 90,
+      grossProfit: 50,
+    });
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      revenue: 45,
+      grossProfit: 25,
+    });
+    expect(result.report.issues.some((issue) => issue.message.includes("折扣字段"))).toBe(true);
+  });
+
   it("imports Amazon order report TSV exports", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [
