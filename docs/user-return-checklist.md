@@ -4,34 +4,50 @@
 
 ## 飞书
 
-1. 在飞书开放平台确认应用：`A 组电商运营 Agent`。
-2. 在“凭证与基础信息”复制 App Secret。
-3. 只在本机 `.env` 填：
+1. 先确认本地代码和基础能力：
+
+```bash
+git pull
+npx pnpm@10.13.1 install
+npx pnpm@10.13.1 run agent:smoke
+```
+
+2. 打开本地页面：
+
+```bash
+npx pnpm@10.13.1 exec next dev -p 3001
+```
+
+然后访问 `http://localhost:3001/agent`。
+
+3. 在飞书开放平台确认应用：`A 组电商运营 Agent`。
+4. 在“凭证与基础信息”复制 App Secret。
+5. 只在本机 `.env` 填：
 
 ```bash
 FEISHU_APP_ID="cli_aaea1dbb6ee1dd10"
 FEISHU_APP_SECRET="不要提交，只放本机"
 ```
 
-4. 启动本地长连接：
+6. 先做飞书配置体检：
 
 ```bash
 npx pnpm@10.13.1 run feishu:doctor
 ```
 
-确认 App Secret 和本地 CSV 配置没问题后，再启动 worker：
+7. 确认 App Secret 和本地 CSV 配置没问题后，再启动 worker：
 
 ```bash
 npx pnpm@10.13.1 run feishu:worker
 ```
 
-5. 在飞书给机器人发单聊：
+8. 在飞书给机器人发单聊：
 
 ```text
 帮我看本周经营情况
 ```
 
-6. 如果 worker 已连接但机器人没有回复，在飞书后台创建版本并发布。页面提示“应用发布后，当前配置方可生效”，这一步需要用户确认。
+9. 如果 worker 已连接但机器人没有回复，在飞书后台创建版本并发布。页面提示“应用发布后，当前配置方可生效”，这一步需要用户确认。
 
 ## 真实数据
 
@@ -44,6 +60,8 @@ current,黑杯,CUP-BLACK,8,420,9,90
 ```
 
 回到 `/agent` 页，把 CSV 粘贴进“真实数据导入工作台”并点击“生成复盘”。
+
+如果手里是平台导出的多周期表，不需要手工裁成两周。Agent 会自动选择最近两期，并在导入报告里说明。
 
 ## 需要决策
 
