@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [v0.1.4-goal-aware-feishu-replies] - 2026-07-22
+
+### Added
+
+- 飞书回复增加保利润、保销量、广告、竞品四类目标型运营问答。
+
 ## [v0.1.3-weekly-report-output] - 2026-07-22
 
 ### Added

@@ -8,6 +8,10 @@ export type FeishuReplyIntent =
   | "data_checklist"
   | "usage"
   | "inventory"
+  | "profit"
+  | "sales"
+  | "ads"
+  | "competitors"
   | "unknown";
 
 export function parseFeishuTextContent(content: string) {
@@ -36,6 +40,22 @@ export function detectFeishuReplyIntent(text: string): FeishuReplyIntent {
 
   if (["库存", "断货", "补货"].some((keyword) => normalized.includes(keyword))) {
     return "inventory";
+  }
+
+  if (["利润", "毛利", "赚钱", "保利润"].some((keyword) => normalized.includes(keyword))) {
+    return "profit";
+  }
+
+  if (["保销量", "销量", "订单", "销售额"].some((keyword) => normalized.includes(keyword))) {
+    return "sales";
+  }
+
+  if (["广告", "投放", "回本", "roas"].some((keyword) => normalized.includes(keyword))) {
+    return "ads";
+  }
+
+  if (["竞品", "对手", "比价", "价格"].some((keyword) => normalized.includes(keyword))) {
+    return "competitors";
   }
 
   if (["复盘", "经营", "本周", "周报", "分析", "看看", "店铺", "测试"].some((keyword) => normalized.includes(keyword))) {
@@ -129,6 +149,68 @@ export function buildInventoryReply(analysis: EcommerceAgentAnalysis) {
   ].join("\n");
 }
 
+export function buildProfitReply(analysis: EcommerceAgentAnalysis) {
+  const profitFindings = analysis.productFindings.filter((finding) =>
+    ["利润空间偏低", "广告回本偏弱"].includes(finding.issue),
+  );
+
+  return [
+    "如果这周目标是保利润，我会先这样带你看：",
+    analysis.totals.grossProfitChangeRate === null
+      ? "1. 先补商品成本、毛利或利润列。没有这列时，我不会把销售增长误判成利润增长。"
+      : `1. 毛利变化是 ${(analysis.totals.grossProfitChangeRate * 100).toFixed(1)}%，先确认是不是低利润订单变多了。`,
+    analysis.totals.adReturnChange === null
+      ? "2. 再补广告花费和广告成交额，确认投放有没有吞掉利润。"
+      : `2. 广告回本变化是 ${(analysis.totals.adReturnChange * 100).toFixed(1)}%，低回本广告先别加预算。`,
+    profitFindings.length > 0
+      ? `3. 优先处理：${profitFindings.map((finding) => `${finding.productName}（${finding.issue}）`).join("、")}。`
+      : "3. 当前没有明显低毛利/低广告回本商品，但仍建议按 SKU 看成本结构。",
+    "第一步：把商品成本、运费、折扣和广告花费放到同一张表，我来帮你排出先停、先改、先保留的 SKU。",
+  ].join("\n");
+}
+
+export function buildSalesReply(analysis: EcommerceAgentAnalysis) {
+  const salesFindings = analysis.productFindings.filter((finding) =>
+    ["销售明显下滑", "卖得变快但库存偏紧"].includes(finding.issue),
+  );
+
+  return [
+    "如果这周目标是保销量，我会先这样看：",
+    `1. 本周销售额变化 ${analysis.totals.revenueChangeRate >= 0 ? "+" : ""}${(analysis.totals.revenueChangeRate * 100).toFixed(1)}%，订单变化 ${analysis.totals.orderChangeRate >= 0 ? "+" : ""}${(analysis.totals.orderChangeRate * 100).toFixed(1)}%。`,
+    analysis.totals.conversionRateChange === null
+      ? "2. 现在缺流量数据，先补访客数/曝光数，才能判断是没人进店还是进店后不买。"
+      : `2. 进店后下单变化 ${analysis.totals.conversionRateChange >= 0 ? "+" : ""}${(analysis.totals.conversionRateChange * 100).toFixed(1)}%，先判断商品页和价格有没有拖后腿。`,
+    salesFindings.length > 0
+      ? `3. 优先处理：${salesFindings.map((finding) => `${finding.productName}（${finding.issue}）`).join("、")}。`
+      : "3. 当前没有明显销量异常商品，可以先保持复盘节奏。",
+    "第一步：把主推 SKU 的访客数、订单数、价格和优惠截图给我，我先排查购买理由够不够强。",
+  ].join("\n");
+}
+
+export function buildAdsReply(analysis: EcommerceAgentAnalysis) {
+  const weakAds = analysis.productFindings.filter((finding) => finding.issue === "广告回本偏弱");
+
+  return [
+    "我会把广告当成“花钱买订单”来看，不只看点击：",
+    analysis.totals.adReturnChange === null
+      ? "1. 先补广告花费和广告成交额。不完整时，我不会判断广告好坏。"
+      : `1. 本周广告回本变化 ${analysis.totals.adReturnChange >= 0 ? "+" : ""}${(analysis.totals.adReturnChange * 100).toFixed(1)}%。`,
+    weakAds.length > 0
+      ? `2. 先查这些低回本商品：${weakAds.map((finding) => finding.productName).join("、")}。`
+      : "2. 当前没有明显低回本商品，但还需要广告组/关键词层级数据才能继续细拆。",
+    "3. 不建议平均加预算。先保留能成交的广告组，暂停花费高但成交弱的广告组。",
+    "第一步：导出广告组明细，至少给我广告组名、SKU、花费、成交额、订单数。",
+  ].join("\n");
+}
+
+export function buildCompetitorsReply(analysis: EcommerceAgentAnalysis) {
+  return [
+    "竞品我会先看三件事：价格、促销、卖点。",
+    ...analysis.competitorInsights.map((insight, index) => `${index + 1}. ${insight}`),
+    "第一步：给我 1 到 3 个你最在意的竞品链接；如果已经有竞品 CSV，就补价格、促销、评分、评论数和核心卖点。",
+  ].join("\n");
+}
+
 function looksLikePastedMetricsCsv(text: string) {
   const normalized = text.toLowerCase();
 
@@ -194,6 +276,22 @@ export function buildFeishuAgentReply(
 
   if (intent === "inventory") {
     return buildInventoryReply(analysis);
+  }
+
+  if (intent === "profit") {
+    return buildProfitReply(analysis);
+  }
+
+  if (intent === "sales") {
+    return buildSalesReply(analysis);
+  }
+
+  if (intent === "ads") {
+    return buildAdsReply(analysis);
+  }
+
+  if (intent === "competitors") {
+    return buildCompetitorsReply(analysis);
   }
 
   if (intent === "store_review") {
