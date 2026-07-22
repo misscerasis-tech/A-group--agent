@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.101-return-checklist-secret-wording] - 2026-07-23
+
+### Changed
+
+- 用户返回清单和飞书状态文档明确 `FEISHU_APP_SECRET` 要填写飞书后台真实值，占位文案会被 doctor 当成未配置。
+- 真实测试路径补充订单明细折扣扣减验收点。
+
 ## [v0.1.100-feishu-unknown-next-step] - 2026-07-23
 
 ### Changed

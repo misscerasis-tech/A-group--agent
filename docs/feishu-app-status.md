@@ -35,7 +35,7 @@
 ```bash
 cp .env.example .env
 FEISHU_APP_ID="cli_aaea1dbb6ee1dd10"
-FEISHU_APP_SECRET="只放本机，不提交 Git"
+FEISHU_APP_SECRET="从飞书开放平台复制的真实 App Secret"
 FEISHU_EVENT_SUBSCRIPTION_MODE="long_connection"
 ```
 

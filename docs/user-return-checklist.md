@@ -47,7 +47,7 @@ cp .env.example .env
 
 ```bash
 FEISHU_APP_ID="cli_aaea1dbb6ee1dd10"
-FEISHU_APP_SECRET="不要提交，只放本机"
+FEISHU_APP_SECRET="从飞书开放平台复制的真实 App Secret"
 ECOMMERCE_ADS_CSV="data/samples/aurora-cup-ads.csv"
 ECOMMERCE_INVENTORY_CSV="data/samples/aurora-cup-inventory.csv"
 ECOMMERCE_CUSTOMER_VOICES_CSV="data/samples/aurora-cup-customer-voices.csv"
@@ -61,6 +61,7 @@ npx pnpm@10.13.1 run feishu:doctor
 ```
 
 即使 App Secret 还没填，doctor 也会先检查本地经营表路径和字段是否可分析。
+如果 `.env` 里仍然写着“只放本机”“不要提交”这类占位文案，doctor 会继续当成缺 App Secret，需要替换成飞书后台真实值。
 
 9. 确认 App Secret 和本地经营表配置没问题后，再启动 worker：
 
@@ -100,7 +101,7 @@ current,黑杯,CUP-BLACK,8,420,9,310,42,6,18,44,2,80,杯盖漏水 / 物流慢
 
 如果粘贴内容前面带“这是导出的经营数据”“导出时间”这类说明行，或者用 `csv` / `text` 代码块包着，Agent 会跳过这些内容自己找表头。若数据异常，它会提示原始粘贴内容里的真实行号。
 
-如果手里只有订单明细，也可以直接粘贴订单号、支付时间、商品名称/SKU、购买数量、实付金额和退款金额；如果有单位成本、平台佣金、支付手续费、物流/履约费，也一起给。订单明细需要覆盖最近两个自然周，Agent 会先自动聚合成 SKU 周报再复盘。Shopify Orders 的 `Paid at / Lineitem price` 和 Amazon 订单 TSV 的 `amazon-order-id / purchase-date / item-price` 也可以直接粘贴。
+如果手里只有订单明细，也可以直接粘贴订单号、支付时间、商品名称/SKU、购买数量、实付金额和退款金额；如果有折扣金额、单位成本、平台佣金、支付手续费、物流/履约费，也一起给。订单明细需要覆盖最近两个自然周，Agent 会先自动聚合成 SKU 周报再复盘。Shopify Orders 的 `Paid at / Lineitem price / Discount Amount` 和 Amazon 订单 TSV 的 `amazon-order-id / purchase-date / item-price` 也可以直接粘贴；折扣金额会先从收入中扣除。
 
 如果广告数据是单独导出的，就粘贴到“广告数据表”。最少需要 SKU 或商品名称，再给广告花费、广告成交额、ROAS 或 ACOS。Agent 会按上周/本周匹配广告口径，判断投放是否回本。
 

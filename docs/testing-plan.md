@@ -98,6 +98,7 @@ SMOKE_BASE_URL=http://localhost:3000 npx pnpm@10.13.1 run smoke:web
 - 没有 `week` 列但有 `date/start_date/开始日期` 时，Agent 会用日期判断最近两期。
 - 没有周汇总表时，可以给订单明细；Agent 会按订单日期聚合最近两个自然周。
 - Shopify Orders 的 `Lineitem price` 会按单价处理，乘以 `Lineitem quantity` 后才进入销售额汇总。
+- 订单明细里的 `discount_amount` / `Discount Amount` / `折扣金额` 会先从行收入中扣除，再汇总到销售额。
 - Amazon 订单 TSV 的 `item-price` 会按订单行金额处理，`item-status` 里出现 refund/return 会进入退款/退货单数。
 - 订单明细里出现买家姓名、电话、邮箱、地址、身份证或税号等个人信息列时，Agent 会提示删除或隐藏，并继续分析可用经营字段。
 - 订单明细只覆盖一个自然周时，Agent 会说明当前识别到的周范围，并要求补相邻一周的订单号、支付时间、商品/SKU、件数和实收金额。
