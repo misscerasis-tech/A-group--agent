@@ -129,6 +129,23 @@ describe("ecommerce csv import", () => {
     expect(result.input?.competitors[0].keySellingPoints).toEqual(["低价", "大容量"]);
   });
 
+  it("maps net and total sales headers used by analytics exports", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "period,product_title,sku,orders,net_sales,net_quantity,total_sales",
+        "previous,黑杯,CUP-BLACK,10,500,12,520",
+        "current,黑杯,CUP-BLACK,9,450,10,470",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      productName: "黑杯",
+      revenue: 450,
+      unitsSold: 10,
+    });
+  });
+
   it("maps platform-style Chinese export headers into agent input", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

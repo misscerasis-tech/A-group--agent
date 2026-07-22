@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.112-analytics-sales-header-aliases] - 2026-07-23
+
+### Added
+
+- 经营表和订单明细导入支持 `net_sales`、`gross_sales`、`total_sales`、`net_quantity`、`净销售额`、`总销售额` 等分析报表常见字段别名。
+- CSV 导入单测覆盖 Shopify/分析报表风格的 Net sales 与 Net quantity 字段。
+
 ## [v0.1.111-feishu-file-table-intents] - 2026-07-23
 
 ### Changed
