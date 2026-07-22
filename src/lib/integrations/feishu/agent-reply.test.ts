@@ -108,6 +108,20 @@ describe("feishu agent reply", () => {
     expect(reply).toContain("飞书粘贴数据店铺");
   });
 
+  it("analyzes pasted platform-style Chinese tables directly", () => {
+    const reply = buildFeishuAgentReply(
+      [
+        "周期\t商品名称\t支付买家数\t商品支付金额\t支付商品件数\t退款率\t退款原因",
+        "上周\t黑杯\t10\t500\t12\t10%\t杯盖漏水",
+        "本周\t黑杯\t8\t420\t9\t25%\t杯盖漏水 / 物流慢",
+      ].join("\n"),
+    );
+
+    expect(reply).toContain("刚粘贴的表格");
+    expect(reply).toContain("飞书粘贴数据店铺");
+    expect(reply).toContain("杯盖漏水");
+  });
+
   it("analyzes pasted markdown-style tables directly", () => {
     const reply = buildFeishuAgentReply(
       [

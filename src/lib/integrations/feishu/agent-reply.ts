@@ -279,14 +279,36 @@ export function buildCompetitorsReply(analysis: EcommerceAgentAnalysis) {
 function looksLikePastedMetricsTable(text: string) {
   const normalized = text.toLowerCase();
   const hasTableDelimiter = [",", "\t", ";", "|"].some((delimiter) => text.includes(delimiter));
+  const hasPeriodSignal =
+    normalized.includes("week") ||
+    normalized.includes("period") ||
+    text.includes("周期") ||
+    text.includes("上周") ||
+    text.includes("本周");
+  const hasOrderSignal =
+    normalized.includes("orders") ||
+    normalized.includes("paid_buyers") ||
+    normalized.includes("buyers") ||
+    text.includes("订单") ||
+    text.includes("买家数") ||
+    text.includes("支付买家数");
+  const hasRevenueSignal =
+    normalized.includes("revenue") ||
+    normalized.includes("gmv") ||
+    normalized.includes("sales") ||
+    text.includes("销售额") ||
+    text.includes("成交额") ||
+    text.includes("支付金额") ||
+    text.includes("商品支付金额");
+  const hasUnitsSignal =
+    normalized.includes("units_sold") ||
+    normalized.includes("quantity") ||
+    normalized.includes("qty") ||
+    text.includes("销量") ||
+    text.includes("件数") ||
+    text.includes("支付商品件数");
 
-  return (
-    hasTableDelimiter &&
-    text.includes("\n") &&
-    (normalized.includes("week") || text.includes("周期")) &&
-    (normalized.includes("orders") || text.includes("订单")) &&
-    (normalized.includes("revenue") || normalized.includes("gmv") || text.includes("销售额"))
-  );
+  return hasTableDelimiter && text.includes("\n") && hasPeriodSignal && hasOrderSignal && hasRevenueSignal && hasUnitsSignal;
 }
 
 function buildPastedMetricsTableReply(text: string) {
