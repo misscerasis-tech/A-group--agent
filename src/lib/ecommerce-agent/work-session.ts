@@ -1,4 +1,5 @@
 import type { EcommerceCsvImportReport } from "./csv-import";
+import type { AgentQuestion } from "./types";
 
 export type BeginnerWorkStepStatus = "done" | "agent_can_run" | "needs_user" | "later";
 
@@ -40,7 +41,10 @@ export function formatBeginnerWorkSessionForFeishu(session: BeginnerWorkSession)
   ].join("\n");
 }
 
-export function buildBeginnerWorkSession(report?: EcommerceCsvImportReport): BeginnerWorkSession {
+export function buildBeginnerWorkSession(
+  report?: EcommerceCsvImportReport,
+  analysisQuestions: AgentQuestion[] = [],
+): BeginnerWorkSession {
   const missingRequired =
     report?.fieldMappings
       .filter((field) => field.required && !field.sourceHeader)
@@ -48,13 +52,21 @@ export function buildBeginnerWorkSession(report?: EcommerceCsvImportReport): Beg
   const hasMetrics = (report?.metricsRows ?? 0) > 0;
   const hasCompetitors = (report?.competitorRows ?? 0) > 0;
   const canAnalyze = Boolean(report?.ok);
-  const warningQuestions = report?.questionsForUser ?? [];
+  const analysisQuestionTexts = analysisQuestions.map(
+    (question) => `${question.question} ${question.whyItMatters}`,
+  );
+  const warningQuestions = canAnalyze && analysisQuestionTexts.length > 0
+    ? analysisQuestionTexts
+    : report?.questionsForUser ?? [];
+  const nextAnalysisQuestion = analysisQuestions[0]
+    ? `${analysisQuestions[0].question} ${analysisQuestions[0].whyItMatters}`
+    : undefined;
 
   const nextQuestion = !hasMetrics
     ? "你能先给我一份经营数据表吗？CSV、TSV、Markdown 或直接复制表格都可以，最少要有周期、商品名称、订单数、销售额和销量。"
     : missingRequired.length > 0
       ? `我先需要你补这几个字段：${missingRequired.join("、")}。`
-      : warningQuestions[0] ?? "这周你更想保销量、保利润，还是先看退款/退货和售后风险？";
+      : nextAnalysisQuestion ?? warningQuestions[0] ?? "这周你更想保销量、保利润，还是先看退款/退货和售后风险？";
 
   return {
     title: "我会这样带你把电商运营复盘做完：",

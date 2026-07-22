@@ -44,6 +44,10 @@ async function main() {
   assert((success.body.feishuReply as string).includes("退款/退货"), "飞书回复应该包含售后风险口径。");
   assert((success.body.feishuReply as string).includes("杯盖漏水"), "飞书回复应该引用退款/退货原因。");
   assert(typeof success.body.markdownReport === "string", "接口应该返回 Markdown 周报。");
+  assert(
+    String((success.body.workSession as { nextQuestion?: string } | undefined)?.nextQuestion ?? "").includes("竞品"),
+    "成功分析后，workSession 应该继续追问分析发现的缺口。",
+  );
 
   const missingBody = await postAnalyze({});
   assert(missingBody.response.status === 400, `缺 metricsCsv 应该返回 400，实际 ${missingBody.response.status}`);

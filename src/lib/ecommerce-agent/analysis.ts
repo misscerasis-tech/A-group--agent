@@ -208,6 +208,39 @@ function describeRefundReason(product: ProductMetric) {
   return reasons.join("、");
 }
 
+function shouldAskForGoalPriority(goal: string) {
+  const normalizedGoal = goal.trim().toLowerCase();
+
+  if (!normalizedGoal || ["不知道", "待确认", "不确定"].some((keyword) => normalizedGoal.includes(keyword))) {
+    return true;
+  }
+
+  if (["同时看", "都要看", "全部", "所有", "综合"].some((keyword) => normalizedGoal.includes(keyword))) {
+    return true;
+  }
+
+  return ![
+    "销量",
+    "销售",
+    "订单",
+    "利润",
+    "毛利",
+    "赚钱",
+    "广告",
+    "投放",
+    "库存",
+    "断货",
+    "退款",
+    "退货",
+    "售后",
+    "差评",
+    "竞品",
+    "价格",
+    "转化",
+    "客单",
+  ].some((keyword) => normalizedGoal.includes(keyword));
+}
+
 function buildDataHealth(input: EcommerceAgentInput) {
   const health: string[] = [];
   const allProducts = [...input.previousWeek.products, ...input.currentWeek.products];
@@ -496,10 +529,12 @@ function buildQuestions(input: EcommerceAgentInput): AgentQuestion[] {
     });
   }
 
-  questions.push({
-    question: "这周你更想保销量，还是更想保利润？",
-    whyItMatters: "如果目标不同，我给出的降价、广告和补货建议会不一样。",
-  });
+  if (shouldAskForGoalPriority(input.store.goal)) {
+    questions.push({
+      question: "这周你更想保销量，还是更想保利润？",
+      whyItMatters: "如果目标不同，我给出的降价、广告和补货建议会不一样。",
+    });
+  }
 
   return questions;
 }

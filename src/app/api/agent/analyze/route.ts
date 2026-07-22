@@ -57,7 +57,7 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     report: importResult.report,
-    workSession: buildBeginnerWorkSession(importResult.report),
+    workSession: buildBeginnerWorkSession(importResult.report, analysis.questionsForUser),
     analysis,
     feishuReply: formatEcommerceAnalysisForFeishu(analysis, "当前导入数据"),
     markdownReport: buildWeeklyMarkdownReport(importResult.input, analysis),

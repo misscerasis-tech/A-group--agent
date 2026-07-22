@@ -8,6 +8,13 @@
 
 - 暂无。
 
+## [v0.1.41-analysis-driven-work-session] - 2026-07-22
+
+### Changed
+
+- 网页和 `/api/agent/analyze` 的 `workSession` 会接入分析后的追问，让“下一句我会问你”指向真实缺口，例如竞品、流量、广告、库存、毛利或退款原因。
+- 用户已经给出保利润、保销量、广告、库存、退款、竞品等具体目标时，Agent 不再重复追问目标优先级。
+
 ## [v0.1.40-feishu-platform-paste] - 2026-07-22
 
 ### Added

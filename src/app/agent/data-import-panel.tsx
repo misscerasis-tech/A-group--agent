@@ -174,10 +174,7 @@ export function DataImportPanel() {
   const markdownReport =
     importResult.input && analysis ? buildWeeklyMarkdownReport(importResult.input, analysis) : "";
   const requiredMappings = importResult.report.fieldMappings.filter((field) => field.required);
-  const workSession = useMemo(
-    () => buildBeginnerWorkSession(importResult.report),
-    [importResult.report],
-  );
+  const workSession = buildBeginnerWorkSession(importResult.report, analysis?.questionsForUser ?? []);
 
   return (
     <section className="panel import-workbench">

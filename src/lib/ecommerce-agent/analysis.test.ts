@@ -244,6 +244,18 @@ describe("ecommerce agent analysis", () => {
     expect(analysis.nextActions[0].title).toBe("先核对利润口径");
   });
 
+  it("does not ask for goal priority when the user already gave a specific goal", () => {
+    const analysis = analyzeEcommerceStore({
+      ...sampleEcommerceAgentInput,
+      store: {
+        ...sampleEcommerceAgentInput.store,
+        goal: "这周先保利润",
+      },
+    });
+
+    expect(analysis.questionsForUser.some((item) => item.question.includes("保销量"))).toBe(false);
+  });
+
   it("prioritizes return reduction goals", () => {
     const analysis = analyzeEcommerceStore({
       ...sampleEcommerceAgentInput,
