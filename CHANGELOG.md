@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.99-readme-output-contract-refresh] - 2026-07-23
+
+### Changed
+
+- README 同步风险商品表、待办表状态列、订单折扣扣减和费用口径等最新能力。
+
 ## [v0.1.98-order-detail-discounts] - 2026-07-23
 
 ### Added

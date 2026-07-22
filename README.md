@@ -12,8 +12,8 @@
 - 分析销量、订单、转化、广告回本、库存、退款/退货和竞品压力。
 - 用自然语言解释“发生了什么、为什么、先做什么”。
 - 输出下周行动清单。
-- 把风险商品整理成 SKU、问题、人话原因和建议动作表。
-- 把行动清单整理成负责人、优先级、截止时间和验收标准，并支持复制成待办表格，方便迁移到飞书待办或多维表格。
+- 把风险商品整理成排查状态、建议负责人、SKU、问题、人话原因和建议动作表。
+- 把行动清单整理成状态、负责人、优先级、截止时间和验收标准，并支持复制成待办表格，方便迁移到飞书待办或多维表格。
 - 结果回写飞书群、文档或待办。
 
 ## 当前原型
@@ -73,7 +73,7 @@ http://localhost:3001/agent
 
 模板用于真实测试前快速填数：保留第一行表头，把示例商品、SKU、金额和日期替换成真实数据后，粘贴或上传到 `/agent` 工作台。`/agent` 每张表右上角也有“复制模板”，可以直接把模板复制到 Excel、飞书表格或聊天里改。
 
-首页已经提供“真实数据导入工作台”，可以直接粘贴或上传 CSV/TSV/Markdown/Excel 表格，也可以从 Excel、飞书表格或 Google Sheets 复制表格粘贴进来。上传 `.xlsx/.xls` 时会读取第一张有数据的工作表并转成表格文本。经营数据既可以是按上周/本周汇总好的 SKU 表，也可以是覆盖最近两周的订单明细；Shopify Orders 导出的 `Name / Paid at / Lineitem name / Lineitem sku / Lineitem quantity / Lineitem price`、Amazon Seller Central 订单 TSV 导出的 `amazon-order-id / purchase-date / sku / quantity-purchased / item-price` 这类明细表也能直接聚合。工作台会显示 Agent 接手步骤、下一句要追问什么、下一份要补的数据、字段识别结果和飞书回写预览；当用户还没有经营表或缺关键字段时，接手步骤会直接给出可复制的最小经营表。补数清单可以复制成 TSV，方便贴到飞书表格或多维表格。API 也会返回 `tableTemplates`，外部入口可以直接把模板发给用户。金额展示按原表金额单位理解，不默认加 `$` 或 `¥`，也不自动换算币种。飞书 worker 也可以通过 `.env` 的 `ECOMMERCE_WEEKLY_METRICS_CSV`、`ECOMMERCE_COMPETITORS_CSV`、`ECOMMERCE_ADS_CSV`、`ECOMMERCE_INVENTORY_CSV` 和 `ECOMMERCE_CUSTOMER_VOICES_CSV` 指向本地经营表、竞品表、广告表、库存/成本快照表和用户声音表文件。
+首页已经提供“真实数据导入工作台”，可以直接粘贴或上传 CSV/TSV/Markdown/Excel 表格，也可以从 Excel、飞书表格或 Google Sheets 复制表格粘贴进来。上传 `.xlsx/.xls` 时会读取第一张有数据的工作表并转成表格文本。经营数据既可以是按上周/本周汇总好的 SKU 表，也可以是覆盖最近两周的订单明细；Shopify Orders 导出的 `Name / Paid at / Lineitem name / Lineitem sku / Lineitem quantity / Lineitem price / Discount Amount`、Amazon Seller Central 订单 TSV 导出的 `amazon-order-id / purchase-date / sku / quantity-purchased / item-price` 这类明细表也能直接聚合。订单明细里的 `discount_amount` 会先从收入中扣除，平台佣金、支付手续费和履约费会进入利润口径。工作台会显示 Agent 接手步骤、下一句要追问什么、下一份要补的数据、字段识别结果和飞书回写预览；当用户还没有经营表或缺关键字段时，接手步骤会直接给出可复制的最小经营表。补数清单可以复制成 TSV，方便贴到飞书表格或多维表格。API 也会返回 `tableTemplates`，外部入口可以直接把模板发给用户。金额展示按原表金额单位理解，不默认加 `$` 或 `¥`，也不自动换算币种。飞书 worker 也可以通过 `.env` 的 `ECOMMERCE_WEEKLY_METRICS_CSV`、`ECOMMERCE_COMPETITORS_CSV`、`ECOMMERCE_ADS_CSV`、`ECOMMERCE_INVENTORY_CSV` 和 `ECOMMERCE_CUSTOMER_VOICES_CSV` 指向本地经营表、竞品表、广告表、库存/成本快照表和用户声音表文件。
 
 ## 本地开发
 
