@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.102-autonomous-progress-log] - 2026-07-23
+
+### Added
+
+- 新增 `docs/autonomous-progress-log.md`，汇总离开期间已完成的真实导入、飞书、竞品、协作表和测试能力。
+- README 增加自主打磨进展记录入口。
+
 ## [v0.1.101-return-checklist-secret-wording] - 2026-07-23
 
 ### Changed

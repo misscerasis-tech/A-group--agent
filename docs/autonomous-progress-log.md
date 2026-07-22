@@ -1,0 +1,61 @@
+# Codex 自主打磨进展
+
+更新时间：2026-07-23
+
+这份记录汇总 Codex 在用户离开期间已经完成并推送到 GitHub 的能力。它不是替代 `CHANGELOG.md`，而是给用户回来后快速判断“现在能测什么、还需要我做什么”。
+
+## 当前最新稳定点
+
+- 最新代码：`main`
+- 最新标签：`v0.1.102-autonomous-progress-log`
+- 本地测试入口：`http://localhost:3001/agent`
+- 远端仓库：`misscerasis-tech/A-group--agent.git`
+
+## 已强化的真实可用能力
+
+1. 数据导入更接近真实平台导出。
+   - 支持 CSV、TSV、Markdown、Excel 和从表格直接复制的内容。
+   - 支持周汇总表和最近两周订单明细。
+   - Shopify Orders 和 Amazon Seller Central 订单表可直接聚合。
+   - 订单明细支持折扣、商品成本、平台佣金、支付手续费、履约费和退款金额。
+
+2. 小白工作流更明确。
+   - `workSession` 会告诉用户下一句该问什么。
+   - 如果没有经营表或表还不能分析，会直接给可复制的最小经营表。
+   - 飞书里发 `我现在做什么` 会进入 Agent 接手步骤。
+
+3. 输出更适合团队协作。
+   - 待办表带 `状态=待开始`、优先级、负责人、截止、第一步和验收标准。
+   - 风险商品表带 `排查状态=待排查`、建议负责人、SKU、问题、人话原因和建议动作。
+   - 补数清单、风险表、待办表和 Markdown 周报都能复制到飞书表格、文档或多维表格。
+
+4. 飞书接入更稳。
+   - 本地长连接 worker 支持飞书会话级数据缓存。
+   - 同一飞书会话可先贴经营表，再继续合并广告、库存/成本、用户声音或竞品表。
+   - 发送回复失败时，同一事件重试不会被去重吞掉。
+   - `feishu:doctor` 会给出飞书开放平台入口、App Secret 复制位置和长连接配置步骤。
+
+5. 真实竞品和隐私边界更清楚。
+   - 演示竞品优先使用 Ember、Nextmug 和 VSITOO 官方商品页，Amazon 低价替代品明确标注价格边界。
+   - 竞品价格会标成观察快照，不当成实时价格承诺。
+   - 订单、经营表和用户声音表里的姓名、电话、邮箱、地址、身份证或税号会触发隐私提醒。
+
+## 已跑过的核心检查
+
+- `npx pnpm@10.13.1 tsc --noEmit`
+- `npx pnpm@10.13.1 eslint .`
+- `npx pnpm@10.13.1 vitest run`
+- `npx pnpm@10.13.1 run agent:smoke`
+- `SMOKE_BASE_URL=http://localhost:3001 npx pnpm@10.13.1 run smoke:api`
+- `SMOKE_BASE_URL=http://localhost:3001 npx pnpm@10.13.1 run smoke:web`
+- `npx pnpm@10.13.1 run build`
+
+## 用户回来后还必须亲自做
+
+1. 从飞书开放平台复制真实 App Secret 到本机 `.env`。
+2. 运行 `npx pnpm@10.13.1 run feishu:doctor`。
+3. doctor 通过后运行 `npx pnpm@10.13.1 run feishu:worker`。
+4. 在飞书里给机器人发 `我现在做什么` 和 `帮我看本周经营情况`。
+5. 如果 worker 已连接但机器人不回复，到飞书后台创建版本并发布。
+
+详细步骤见 `docs/user-return-checklist.md`。

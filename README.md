@@ -50,6 +50,7 @@ http://localhost:3001/agent
 - `docs/github-versioning.md`：GitHub、Tag 和回滚流程。
 - `docs/testing-plan.md`：真实测试路径。
 - `docs/user-return-checklist.md`：用户回来后需要亲自确认的事项。
+- `docs/autonomous-progress-log.md`：Codex 自主打磨期间完成的能力总览。
 
 ## 样例数据
 
