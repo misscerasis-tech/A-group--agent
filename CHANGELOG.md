@@ -10,6 +10,7 @@
 - 增加小白工作步骤 `workSession`，用于提示用户下一步要补什么、Agent 接下来会做什么。
 - `/api/agent/analyze` 增加 `workSession` 返回值。
 - 增加真实测试路径回复，飞书里可直接回答“怎么测、要不要接飞书”。
+- CSV 导入支持从多周期平台导出中自动选择最近两期做对比。
 
 ## [v0.1.4-goal-aware-feishu-replies] - 2026-07-22
 

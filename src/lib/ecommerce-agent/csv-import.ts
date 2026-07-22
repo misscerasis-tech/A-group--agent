@@ -302,7 +302,47 @@ function normalizeWeek(value: string) {
   return value.trim();
 }
 
-function inferTwoPeriods(rows: Array<Record<string, string>>, mapping: Map<MetricField, string>) {
+function periodSortValue(value: string) {
+  const trimmed = value.trim();
+  const normalized = trimmed.toLowerCase();
+  const isoWeek = normalized.match(/^(\d{4})[-_/]?(?:w|week)[-_/]?(\d{1,2})$/);
+
+  if (isoWeek) {
+    return Number(isoWeek[1]) * 100 + Number(isoWeek[2]);
+  }
+
+  const dateLike = normalized.match(/\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/);
+
+  if (dateLike) {
+    const parsed = Date.parse(dateLike[0].replace(/[/.]/g, "-"));
+
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  return trimmed;
+}
+
+function comparePeriods(a: string, b: string) {
+  const aValue = periodSortValue(a);
+  const bValue = periodSortValue(b);
+
+  if (typeof aValue === "number" && typeof bValue === "number") {
+    return aValue - bValue;
+  }
+
+  return String(aValue).localeCompare(String(bValue), "zh-Hans-CN", {
+    numeric: true,
+    sensitivity: "base",
+  });
+}
+
+function inferTwoPeriods(
+  rows: Array<Record<string, string>>,
+  mapping: Map<MetricField, string>,
+  issues: ImportIssue[],
+) {
   const weekHeader = mapping.get("week");
 
   if (!weekHeader) {
@@ -311,15 +351,23 @@ function inferTwoPeriods(rows: Array<Record<string, string>>, mapping: Map<Metri
 
   const uniqueWeeks = [...new Set(rows.map((row) => readField(row, mapping, "week")).filter(Boolean))];
 
-  if (uniqueWeeks.length !== 2) {
+  if (uniqueWeeks.length < 2) {
     return null;
   }
 
-  const sortedWeeks = uniqueWeeks.sort();
+  const sortedWeeks = uniqueWeeks.sort(comparePeriods);
+  const [previous, current] = sortedWeeks.slice(-2);
+
+  if (uniqueWeeks.length > 2) {
+    issues.push({
+      severity: "info",
+      message: `识别到 ${uniqueWeeks.length} 个周期，已自动选择最近两期：${previous} 作为上周，${current} 作为本周。`,
+    });
+  }
 
   return {
-    previous: sortedWeeks[0],
-    current: sortedWeeks[1],
+    previous,
+    current,
   };
 }
 
@@ -502,7 +550,7 @@ export function buildEcommerceInputFromCsv({
 
   const explicitPreviousRows: Array<Record<string, string>> = [];
   const explicitCurrentRows: Array<Record<string, string>> = [];
-  const inferredPeriods = inferTwoPeriods(metricsTable.rows, mapping);
+  const inferredPeriods = inferTwoPeriods(metricsTable.rows, mapping, issues);
 
   for (const row of metricsTable.rows) {
     const week = normalizeWeek(readField(row, mapping, "week"));

@@ -66,4 +66,20 @@ describe("ecommerce csv import", () => {
     expect(result.input?.currentWeek.products[0].productCost).toBe(330);
     expect(result.input?.currentWeek.products[0].grossProfit).toBe(120);
   });
+
+  it("uses the latest two periods when a platform export contains more than two weeks", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "week,product_name,orders,revenue,units_sold",
+        "2026-07-01,黑杯,8,400,9",
+        "2026-07-08,黑杯,10,500,12",
+        "2026-07-15,黑杯,9,450,10",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.previousWeek.products[0].revenue).toBe(500);
+    expect(result.input?.currentWeek.products[0].revenue).toBe(450);
+    expect(result.report.issues.some((issue) => issue.message.includes("最近两期"))).toBe(true);
+  });
 });
