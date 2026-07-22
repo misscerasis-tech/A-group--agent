@@ -144,12 +144,16 @@ const metricAliases: Record<MetricField, string[]> = {
     "time_period",
     "数据周期",
     "周期",
+    "统计周期",
+    "报表周期",
     "周",
     "日期",
     "开始日期",
     "起始日期",
     "统计开始日期",
+    "统计日期",
     "时间段",
+    "时间",
   ],
   startDate: ["start_date", "startdate", "start", "开始日期", "起始日期", "统计开始日期"],
   endDate: ["end_date", "enddate", "end", "结束日期", "统计结束日期"],
@@ -665,11 +669,41 @@ function optionalNumber(
 function normalizeWeek(value: string) {
   const normalized = value.trim().toLowerCase();
 
-  if (["previous", "last", "last_week", "past", "before", "上周", "上一周", "前一周"].includes(normalized)) {
+  if (
+    [
+      "previous",
+      "last",
+      "last_week",
+      "past",
+      "before",
+      "上周",
+      "上一周",
+      "前一周",
+      "上期",
+      "上一期",
+      "前期",
+      "对比期",
+      "对照期",
+    ].includes(normalized)
+  ) {
     return "previous" as const;
   }
 
-  if (["current", "this", "this_week", "now", "本周", "这周", "当前"].includes(normalized)) {
+  if (
+    [
+      "current",
+      "this",
+      "this_week",
+      "now",
+      "本周",
+      "这周",
+      "当前",
+      "本期",
+      "当前期",
+      "分析期",
+      "本周期",
+    ].includes(normalized)
+  ) {
     return "current" as const;
   }
 

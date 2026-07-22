@@ -99,6 +99,20 @@ describe("ecommerce csv import", () => {
     });
   });
 
+  it("recognizes previous and current period aliases used by platform exports", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "统计周期,商品名称,订单数,销售额,销量",
+        "上期,黑杯,10,500,12",
+        "本期,黑杯,9,450,10",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.previousWeek.products[0].orders).toBe(10);
+    expect(result.input?.currentWeek.products[0].orders).toBe(9);
+  });
+
   it("parses platform numbers with Chinese units", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [
