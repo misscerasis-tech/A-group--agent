@@ -88,6 +88,7 @@ git checkout -b hotfix/from-a-group-demo v0.1.0-a-group-ecommerce-agent
 禁止提交：
 
 - `.env`
+- `.agent-state/`
 - Feishu App Secret
 - Feishu Encrypt Key
 - Feishu Verification Token

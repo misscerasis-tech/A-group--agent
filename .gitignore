@@ -33,6 +33,7 @@ uploads/
 exports/
 generated/
 backups/
+.agent-state/
 
 # Secrets and certificates
 *.pem

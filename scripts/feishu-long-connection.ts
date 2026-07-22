@@ -6,8 +6,12 @@ import { requireFeishuRuntimeConfig } from "../src/lib/integrations/feishu/confi
 import {
   buildFeishuAgentReply,
   buildFeishuImportContextFromText,
-  type FeishuEcommerceImportContext,
 } from "../src/lib/integrations/feishu/agent-reply";
+import {
+  createFileFeishuChatContextStore,
+  createInMemoryFeishuChatContextStore,
+  resolveFeishuChatContextFile,
+} from "../src/lib/integrations/feishu/chat-context-store";
 import { createFeishuEventHandlers } from "../src/lib/integrations/feishu/event-handlers";
 
 function loadLocalEnvFile(fileName: string) {
@@ -108,7 +112,19 @@ async function main() {
     appId: config.appId,
     appSecret: config.appSecret,
   });
-  const chatContexts = new Map<string, FeishuEcommerceImportContext>();
+  const chatContextFile = resolveFeishuChatContextFile();
+  const chatContexts = chatContextFile
+    ? createFileFeishuChatContextStore(chatContextFile, {
+        onWarning: (message) => console.warn(`[feishu] ${message}`),
+      })
+    : createInMemoryFeishuChatContextStore();
+
+  if (chatContextFile) {
+    console.info(`[feishu] 会话上下文会保存在本机：${chatContextFile}`);
+    console.info(`[feishu] 已恢复 ${chatContexts.size()} 个飞书会话的最近导入数据。`);
+  } else {
+    console.info("[feishu] 已关闭飞书会话上下文持久化；worker 重启后需要重新粘贴经营表。");
+  }
 
   const wsClient = new Lark.WSClient({
     appId: config.appId,

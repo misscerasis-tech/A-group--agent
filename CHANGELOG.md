@@ -2,6 +2,14 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.74-feishu-context-cache] - 2026-07-23
+
+### Added
+
+- 飞书长连接 worker 会把每个 chat 最近一次粘贴的经营表上下文保存在本机 `.agent-state/feishu-chat-contexts.json`，重启后继续用刚粘贴的数据回答待办、补数和复盘问题。
+- 新增 `FEISHU_CHAT_CONTEXT_PERSISTENCE=off` 和 `FEISHU_CHAT_CONTEXT_FILE`，方便关闭本地缓存或迁移缓存文件。
+- `feishu:doctor` 会提示当前会话上下文缓存路径，`.agent-state/` 已加入 Git 忽略列表。
+
 ## [v0.1.73-pasted-header-detection] - 2026-07-23
 
 ### Added

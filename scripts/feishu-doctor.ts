@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { buildEcommerceInputFromCsv } from "../src/lib/ecommerce-agent/csv-import";
 import { buildDataRequestPlan } from "../src/lib/ecommerce-agent/data-request";
+import { resolveFeishuChatContextFile } from "../src/lib/integrations/feishu/chat-context-store";
 import { getFeishuEnvStatus } from "../src/lib/integrations/feishu/config";
 
 const knownAGroupFeishuAppId = "cli_aaea1dbb6ee1dd10";
@@ -78,6 +79,15 @@ function main() {
     console.info("[feishu:doctor] 事件订阅模式：long_connection，适合本地测试。");
   } else {
     console.info(`[feishu:doctor] 事件订阅模式：${subscriptionMode}，请确认本地测试是否有公网 HTTPS 回调。`);
+  }
+
+  const chatContextFile = resolveFeishuChatContextFile();
+
+  if (chatContextFile) {
+    console.info(`[feishu:doctor] 飞书会话上下文会保存在本机：${chatContextFile}`);
+    console.info("[feishu:doctor] 如果不想保存聊天导入数据，可设置 FEISHU_CHAT_CONTEXT_PERSISTENCE=off。");
+  } else {
+    console.info("[feishu:doctor] 飞书会话上下文持久化已关闭，worker 重启后需要重新粘贴经营表。");
   }
 
   let metricsCsv: ReturnType<typeof readConfiguredCsv>;
