@@ -6,6 +6,15 @@ import { resolveFeishuChatContextFile } from "../src/lib/integrations/feishu/cha
 import { getFeishuEnvStatus } from "../src/lib/integrations/feishu/config";
 
 const knownAGroupFeishuAppId = "cli_aaea1dbb6ee1dd10";
+const feishuOpenPlatformAppUrl = "https://open.feishu.cn/app";
+
+function printFeishuSetupNextSteps() {
+  console.info(`[feishu:doctor] 飞书开放平台入口：${feishuOpenPlatformAppUrl}`);
+  console.info("[feishu:doctor] 进入 A 组电商运营 Agent 后，在“凭证与基础信息”复制 App Secret。");
+  console.info("[feishu:doctor] 本地配置建议：cp .env.example .env，然后只在本机 .env 写入 FEISHU_APP_SECRET。");
+  console.info("[feishu:doctor] 本地测试优先使用长连接：FEISHU_EVENT_SUBSCRIPTION_MODE=long_connection，不需要公网 HTTPS 回调。");
+  console.info("[feishu:doctor] 事件订阅需要接收消息事件：im.message.receive_v1；如后台提示需发布，去版本管理创建版本并发布。");
+}
 
 function loadLocalEnvFile(fileName: string) {
   const envPath = resolve(process.cwd(), fileName);
@@ -54,6 +63,8 @@ function main() {
   if (loadedEnvFiles.length === 0) {
     console.info("[feishu:doctor] 没有发现 .env 或 .env.local；可以先复制 .env.example 到 .env。");
   }
+
+  printFeishuSetupNextSteps();
 
   const envStatus = getFeishuEnvStatus();
   let hasError = false;

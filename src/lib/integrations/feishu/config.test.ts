@@ -13,6 +13,16 @@ describe("feishu runtime config", () => {
     expect(status.missing).toEqual(["FEISHU_APP_ID", "FEISHU_APP_SECRET"]);
   });
 
+  it("treats copied placeholder values as missing secrets", () => {
+    const status = getFeishuEnvStatus(env({
+      FEISHU_APP_ID: "cli_test",
+      FEISHU_APP_SECRET: "只放本机，不提交 Git",
+    }));
+
+    expect(status.configured).toBe(false);
+    expect(status.missing).toEqual(["FEISHU_APP_SECRET"]);
+  });
+
   it("returns configured Feishu runtime values without requiring optional ids", () => {
     const config = requireFeishuRuntimeConfig(env({
       FEISHU_APP_ID: "cli_test",

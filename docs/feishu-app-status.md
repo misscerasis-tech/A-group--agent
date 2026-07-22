@@ -28,7 +28,7 @@
 
 ## 用户回来后先做什么
 
-1. 在飞书开放平台进入 `A 组电商运营 Agent`。
+1. 打开飞书开放平台：[https://open.feishu.cn/app](https://open.feishu.cn/app)，进入 `A 组电商运营 Agent`。
 2. 在“凭证与基础信息”复制 App Secret。
 3. 如果本地还没有 `.env`，先复制示例，再在本机 `.env` 写入或确认：
 
@@ -44,6 +44,8 @@ FEISHU_EVENT_SUBSCRIPTION_MODE="long_connection"
 ```bash
 npx pnpm@10.13.1 run feishu:doctor
 ```
+
+doctor 会提示飞书开放平台入口、App Secret 复制位置、长连接模式、`im.message.receive_v1` 事件和发布提醒；如果 `.env` 里误填占位文案，也会继续当成缺密钥处理。
 
 5. doctor 通过后启动长连接：
 

@@ -11,10 +11,17 @@ export type FeishuEnvStatus = {
 };
 
 const requiredKeys = ["FEISHU_APP_ID", "FEISHU_APP_SECRET"] as const;
+const placeholderFragments = ["replace-with", "your-", "your_", "changeme", "todo", "只放本机", "不要提交"];
+
+function isPlaceholderEnvValue(value: string) {
+  const normalized = value.trim().toLowerCase();
+
+  return placeholderFragments.some((fragment) => normalized.includes(fragment.toLowerCase()));
+}
 
 function readOptionalEnv(env: NodeJS.ProcessEnv, key: string) {
   const value = env[key]?.trim();
-  return value ? value : undefined;
+  return value && !isPlaceholderEnvValue(value) ? value : undefined;
 }
 
 export function getFeishuEnvStatus(env: NodeJS.ProcessEnv = process.env): FeishuEnvStatus {

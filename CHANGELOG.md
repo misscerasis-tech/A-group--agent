@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.94-feishu-doctor-next-steps] - 2026-07-23
+
+### Added
+
+- `feishu:doctor` 增加飞书开放平台入口、凭证复制位置、`.env` 配置方式、长连接模式和事件发布提醒。
+- 飞书配置读取会把明显占位文案当成未配置，避免把“只放本机，不提交 Git”误判成真实 App Secret。
+
 ## [v0.1.93-feishu-send-retry-dedupe] - 2026-07-23
 
 ### Fixed
