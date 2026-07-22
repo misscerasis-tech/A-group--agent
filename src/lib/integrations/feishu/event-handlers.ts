@@ -36,10 +36,20 @@ export function createFeishuEventHandlers(
   const maxProcessedMessageIds = Math.max(options.maxProcessedMessageIds ?? 500, 1);
   const processedMessageIds = new Set<string>();
   const processedMessageQueue: string[] = [];
+  const processingMessageIds = new Set<string>();
 
-  function rememberMessage(messageId: string) {
-    if (processedMessageIds.has(messageId)) {
+  function startProcessingMessage(messageId: string) {
+    if (processedMessageIds.has(messageId) || processingMessageIds.has(messageId)) {
       return false;
+    }
+
+    processingMessageIds.add(messageId);
+    return true;
+  }
+
+  function rememberProcessedMessage(messageId: string) {
+    if (processedMessageIds.has(messageId)) {
+      return;
     }
 
     processedMessageIds.add(messageId);
@@ -52,8 +62,6 @@ export function createFeishuEventHandlers(
         processedMessageIds.delete(expiredMessageId);
       }
     }
-
-    return true;
   }
 
   return {
@@ -62,34 +70,40 @@ export function createFeishuEventHandlers(
         return;
       }
 
-      if (!rememberMessage(event.message.message_id)) {
+      if (!startProcessingMessage(event.message.message_id)) {
         return;
       }
 
-      if (event.message.message_type !== "text") {
+      try {
+        if (event.message.message_type !== "text") {
+          await sendTextMessage({
+            chatId: event.message.chat_id,
+            replyToMessageId: event.message.message_id,
+            text: buildUnsupportedFeishuMessageReply(event.message.message_type),
+          });
+          rememberProcessedMessage(event.message.message_id);
+          return;
+        }
+
+        const text = parseFeishuTextContent(event.message.content);
+        let reply: string;
+
+        try {
+          reply = buildReply(text, event);
+        } catch (error) {
+          console.error("[feishu] 生成 Agent 回复失败：", error instanceof Error ? error.message : error);
+          reply = "我收到消息了，但这次生成复盘时出错。你可以先发“我需要准备什么数据”，或把经营表格再贴一次。";
+        }
+
         await sendTextMessage({
           chatId: event.message.chat_id,
           replyToMessageId: event.message.message_id,
-          text: buildUnsupportedFeishuMessageReply(event.message.message_type),
+          text: reply,
         });
-        return;
+        rememberProcessedMessage(event.message.message_id);
+      } finally {
+        processingMessageIds.delete(event.message.message_id);
       }
-
-      const text = parseFeishuTextContent(event.message.content);
-      let reply: string;
-
-      try {
-        reply = buildReply(text, event);
-      } catch (error) {
-        console.error("[feishu] 生成 Agent 回复失败：", error instanceof Error ? error.message : error);
-        reply = "我收到消息了，但这次生成复盘时出错。你可以先发“我需要准备什么数据”，或把经营表格再贴一次。";
-      }
-
-      await sendTextMessage({
-        chatId: event.message.chat_id,
-        replyToMessageId: event.message.message_id,
-        text: reply,
-      });
     },
   };
 }

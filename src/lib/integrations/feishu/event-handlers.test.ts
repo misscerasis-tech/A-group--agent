@@ -71,6 +71,19 @@ describe("feishu event handlers", () => {
     expect(sendTextMessage).toHaveBeenCalledTimes(1);
   });
 
+  it("allows Feishu to retry the same event when sending fails", async () => {
+    const sendTextMessage = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("temporary network error"))
+      .mockResolvedValueOnce(undefined);
+    const handlers = createFeishuEventHandlers(sendTextMessage, () => "复盘结果");
+
+    await expect(handlers["im.message.receive_v1"](textEvent)).rejects.toThrow("temporary network error");
+    await handlers["im.message.receive_v1"](textEvent);
+
+    expect(sendTextMessage).toHaveBeenCalledTimes(2);
+  });
+
   it("keeps dedupe memory bounded", async () => {
     const sendTextMessage = vi.fn().mockResolvedValue(undefined);
     const handlers = createFeishuEventHandlers(sendTextMessage, () => "复盘结果", {
