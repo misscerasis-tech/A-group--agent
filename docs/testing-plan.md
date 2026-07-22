@@ -113,6 +113,8 @@ SMOKE_BASE_URL=http://localhost:3000 npx pnpm@10.13.1 run smoke:web
 - 返回的 `dataRequestPlan.nextQuestion` 能直接告诉小白下一份数据要补什么，并解释补了首页哪部分判断会更准。
 - `smoke:api` 能通过平台中文表头、缺参数和缺必填字段三类接口检查。
 - `smoke:web` 里所有导航页面返回 200，并且不出现原始数据库配置错误。
+- 竞品 `price_note` 如果写了“无 featured offer”“无库存”“历史价”“仅用于价格带”或“不作为主动调价依据”，这条价格只能作为观察线索，不能触发主动降价建议。
+- 竞品 `promotion` 如果只是“高端”“便携”“AI 控温”这类定位卖点，不能被写成“正在做促销”；只有折扣、券、满减、赠品或 sale price 这类真实促销才触发促销提醒。
 
 本地飞书 worker 也可以读取 CSV/TSV/Markdown 表格文件。`.env` 示例：
 

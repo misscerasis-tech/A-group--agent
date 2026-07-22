@@ -260,6 +260,97 @@ describe("ecommerce agent analysis", () => {
     );
   });
 
+  it("does not use stale or unavailable competitor prices for active discount decisions", () => {
+    const baseProduct = {
+      productName: "黑杯",
+      sku: "CUP-BLACK",
+      visitors: null,
+      orders: 10,
+      revenue: 1000,
+      unitsSold: 10,
+      adSpend: null,
+      adRevenue: null,
+      inventory: null,
+    };
+
+    const analysis = analyzeEcommerceStore({
+      ...sampleEcommerceAgentInput,
+      competitors: [
+        {
+          ...sampleEcommerceAgentInput.competitors[0],
+          name: "历史低价竞品",
+          price: 20,
+          priceNote: "历史价，仅用于价格带分析；当前无 featured offer",
+          promotion: "低价替代品",
+        },
+        {
+          ...sampleEcommerceAgentInput.competitors[0],
+          name: "定位文案竞品",
+          price: 120,
+          priceNote: "页面价快照",
+          promotion: "高端温控旅行杯",
+        },
+      ],
+      previousWeek: {
+        ...sampleEcommerceAgentInput.previousWeek,
+        products: [baseProduct],
+      },
+      currentWeek: {
+        ...sampleEcommerceAgentInput.currentWeek,
+        products: [baseProduct],
+      },
+    });
+
+    expect(analysis.competitorInsights[0]).toContain("竞品价格没有明显压过我们");
+    expect(analysis.competitorInsights.some((item) => item.includes("历史低价竞品 的价格比我们低"))).toBe(
+      false,
+    );
+    expect(analysis.competitorInsights.some((item) => item.includes("不是当前可购买价"))).toBe(true);
+    expect(analysis.competitorInsights.some((item) => item.includes("正在做促销"))).toBe(false);
+  });
+
+  it("still recognizes active competitor sale prices", () => {
+    const baseProduct = {
+      productName: "黑杯",
+      sku: "CUP-BLACK",
+      visitors: null,
+      orders: 10,
+      revenue: 1000,
+      unitsSold: 10,
+      adSpend: null,
+      adRevenue: null,
+      inventory: null,
+    };
+
+    const analysis = analyzeEcommerceStore({
+      ...sampleEcommerceAgentInput,
+      competitors: [
+        {
+          ...sampleEcommerceAgentInput.competitors[0],
+          name: "真实促销竞品",
+          price: 80,
+          priceNote: "页面价快照",
+          promotion: "summer sale price",
+        },
+      ],
+      previousWeek: {
+        ...sampleEcommerceAgentInput.previousWeek,
+        products: [baseProduct],
+      },
+      currentWeek: {
+        ...sampleEcommerceAgentInput.currentWeek,
+        products: [baseProduct],
+      },
+    });
+
+    expect(analysis.competitorInsights.some((item) => item.includes("真实促销竞品 的价格比我们低"))).toBe(
+      true,
+    );
+    expect(analysis.competitorInsights.some((item) => item.includes("真实促销竞品 正在做促销"))).toBe(
+      true,
+    );
+  });
+
   it("changes next actions when the user goal is profit", () => {
     const analysis = analyzeEcommerceStore({
       ...sampleEcommerceAgentInput,

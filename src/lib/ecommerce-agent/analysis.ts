@@ -518,10 +518,13 @@ function buildCompetitorInsights(input: EcommerceAgentInput) {
   const averageOwnPrice =
     currentPrices.reduce((sum, price) => sum + price, 0) / Math.max(currentPrices.length, 1);
   const cheaperCompetitors = input.competitors.filter(
-    (competitor) => competitor.price < averageOwnPrice * 0.95,
+    (competitor) => hasActionableCompetitorPrice(competitor) && competitor.price < averageOwnPrice * 0.95,
   );
   const promotedCompetitors = input.competitors.filter(
-    (competitor) => competitor.promotion !== "无明显促销",
+    (competitor) => hasActionableCompetitorPrice(competitor) && hasActiveCompetitorPromotion(competitor),
+  );
+  const priceLimitedCompetitors = input.competitors.filter(
+    (competitor) => competitor.price > 0 && !hasActionableCompetitorPrice(competitor),
   );
 
   const insights: string[] = [];
@@ -532,6 +535,12 @@ function buildCompetitorInsights(input: EcommerceAgentInput) {
     );
   } else {
     insights.push("竞品价格没有明显压过我们，本周不需要急着全面降价。");
+  }
+
+  if (priceLimitedCompetitors.length > 0) {
+    insights.push(
+      `${priceLimitedCompetitors.map((competitor) => competitor.name).join("、")} 的价格备注提示可能不是当前可购买价，我只把它当观察线索，不作为主动降价依据。`,
+    );
   }
 
   if (promotedCompetitors.length > 0) {
@@ -561,6 +570,62 @@ function buildCompetitorInsights(input: EcommerceAgentInput) {
   insights.push(buildCompetitorEvidenceInsight(input));
 
   return insights;
+}
+
+function hasActionableCompetitorPrice(competitor: EcommerceAgentInput["competitors"][number]) {
+  if (!Number.isFinite(competitor.price) || competitor.price <= 0) {
+    return false;
+  }
+
+  const note = `${competitor.priceNote} ${competitor.promotion}`.toLowerCase();
+  const nonActionableSignals = [
+    "无 featured offer",
+    "没有 featured offer",
+    "no featured offer",
+    "currently unavailable",
+    "unavailable",
+    "out of stock",
+    "无库存",
+    "缺货",
+    "售罄",
+    "下架",
+    "历史价",
+    "仅用于价格带",
+    "不作为主动调价",
+    "低价替代演示价",
+  ];
+
+  return !nonActionableSignals.some((signal) => note.includes(signal));
+}
+
+function hasActiveCompetitorPromotion(competitor: EcommerceAgentInput["competitors"][number]) {
+  const promotion = competitor.promotion.trim().toLowerCase();
+
+  if (
+    promotion.length === 0 ||
+    ["无", "none", "n/a", "na", "-", "无明显促销", "无促销", "未发现明显促销"].includes(promotion)
+  ) {
+    return false;
+  }
+
+  const promotionSignals = [
+    "促销",
+    "折扣",
+    "优惠",
+    "券",
+    "满减",
+    "立减",
+    "赠品",
+    "买一",
+    "sale",
+    "discount",
+    "coupon",
+    "offer",
+    "code",
+    "deal",
+  ];
+
+  return promotionSignals.some((signal) => promotion.includes(signal));
 }
 
 function buildCompetitorEvidenceInsight(input: EcommerceAgentInput) {
