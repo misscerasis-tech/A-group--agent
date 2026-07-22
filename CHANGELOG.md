@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.107-bare-competitor-link-intake] - 2026-07-23
+
+### Changed
+
+- 飞书里只发送 URL 时，也会进入竞品链接补数流程，避免用户粘贴裸竞品链接后被当作未知消息或样例复盘。
+
 ## [v0.1.106-actionable-feishu-testing-reply] - 2026-07-23
 
 ### Changed

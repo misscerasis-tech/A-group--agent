@@ -772,6 +772,7 @@ export function buildFeishuAgentReply(
   const sourceLabel = options.sourceLabel ?? "样例店铺";
   const hasImportedContext = Boolean(options.input);
   const intent = detectFeishuReplyIntent(text);
+  const urls = extractUrls(text);
 
   if (options.mergedTableLabel) {
     if (options.input) {
@@ -863,9 +864,7 @@ export function buildFeishuAgentReply(
     return buildReturnsReply(analysis);
   }
 
-  if (intent === "competitors") {
-    const urls = extractUrls(text);
-
+  if (intent === "competitors" || urls.length > 0) {
     if (urls.length > 0) {
       return buildCompetitorLinksReply(urls);
     }

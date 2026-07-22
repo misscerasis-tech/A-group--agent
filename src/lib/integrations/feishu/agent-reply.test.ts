@@ -145,6 +145,15 @@ describe("feishu agent reply", () => {
     expect(reply).not.toContain("正在做促销");
   });
 
+  it("treats bare URLs as competitor link intake", () => {
+    const reply = buildFeishuAgentReply("https://ember.com/products/ember-travel-mug-2");
+
+    expect(reply).toContain("我收到了 1 个竞品链接");
+    expect(reply).toContain("不会假装已经实时读取页面价格");
+    expect(reply).toContain("observed_at");
+    expect(reply).not.toContain("帮我看本周经营情况");
+  });
+
   it("mentions refund reasons in direct returns replies when provided", () => {
     const reply = buildFeishuAgentReply("退款退货怎么看", {
       input: {
