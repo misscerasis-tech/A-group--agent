@@ -66,6 +66,7 @@ type MetricField =
   | "adSpend"
   | "adRevenue"
   | "adReturn"
+  | "adCostRate"
   | "inventory"
   | "productCost"
   | "grossProfit"
@@ -112,7 +113,15 @@ type OrderDetailField =
 
 type InventoryField = "productName" | "sku" | "inventory" | "unitCost" | "grossMarginRate" | "observedAt";
 
-type AdField = "week" | "productName" | "sku" | "campaignName" | "adSpend" | "adRevenue" | "adReturn";
+type AdField =
+  | "week"
+  | "productName"
+  | "sku"
+  | "campaignName"
+  | "adSpend"
+  | "adRevenue"
+  | "adReturn"
+  | "adCostRate";
 
 const defaultStore: StoreProfile = {
   storeName: "待导入店铺",
@@ -145,6 +154,7 @@ const metricFieldLabels: Record<MetricField, string> = {
   adSpend: "广告花费",
   adRevenue: "广告成交额",
   adReturn: "广告回本/ROAS",
+  adCostRate: "ACOS/广告成本占比",
   inventory: "库存",
   productCost: "商品成本",
   grossProfit: "毛利",
@@ -319,6 +329,21 @@ const metricAliases: Record<MetricField, string[]> = {
     "广告roi",
     "广告roas",
     "投入产出比",
+  ],
+  adCostRate: [
+    "acos",
+    "ad_cost_rate",
+    "adcostrate",
+    "ad_cost_sales_ratio",
+    "adcostsalesratio",
+    "advertising_cost_of_sales",
+    "advertisingcostofsales",
+    "广告成本销售比",
+    "广告成本占比",
+    "广告花费占比",
+    "广告费占比",
+    "广告销售成本比",
+    "广告销售成本占比",
   ],
   inventory: ["inventory", "stock", "available_stock", "sellable_stock", "库存", "当前库存", "可售库存", "库存数", "可售件数"],
   productCost: ["product_cost", "cogs", "cost_of_goods", "cost_amount", "商品成本", "采购成本", "成本金额"],
@@ -680,6 +705,7 @@ const adFieldLabels: Record<AdField, string> = {
   adSpend: "广告花费",
   adRevenue: "广告成交额",
   adReturn: "广告回本/ROAS",
+  adCostRate: "ACOS/广告成本占比",
 };
 
 const adAliases: Record<AdField, string[]> = {
@@ -704,6 +730,7 @@ const adAliases: Record<AdField, string[]> = {
   adSpend: metricAliases.adSpend,
   adRevenue: metricAliases.adRevenue,
   adReturn: metricAliases.adReturn,
+  adCostRate: metricAliases.adCostRate,
 };
 
 function normalizeHeader(header: string) {
@@ -1372,12 +1399,21 @@ function buildMetricRow(
   let adSpend = optionalNumber(readField(row, mapping, "adSpend"), metricFieldLabels.adSpend, issues, rowNumber);
   let adRevenue = optionalNumber(readField(row, mapping, "adRevenue"), metricFieldLabels.adRevenue, issues, rowNumber);
   const adReturn = optionalMultiplier(readField(row, mapping, "adReturn"));
+  const adCostRate = optionalPercentRate(readField(row, mapping, "adCostRate"));
 
   if (adReturn !== null && adReturn > 0) {
     if (adRevenue === null && adSpend !== null) {
       adRevenue = roundMetric(adSpend * adReturn);
     } else if (adSpend === null && adRevenue !== null) {
       adSpend = roundMetric(adRevenue / adReturn);
+    }
+  }
+
+  if (adCostRate !== null && adCostRate > 0) {
+    if (adRevenue === null && adSpend !== null) {
+      adRevenue = roundMetric(adSpend / adCostRate);
+    } else if (adSpend === null && adRevenue !== null) {
+      adSpend = roundMetric(adRevenue * adCostRate);
     }
   }
 
@@ -2241,6 +2277,7 @@ function buildAdSnapshots(
     let adSpend = optionalNumber(readField(row, mapping, "adSpend"), adFieldLabels.adSpend, issues, rowNumber);
     let adRevenue = optionalNumber(readField(row, mapping, "adRevenue"), adFieldLabels.adRevenue, issues, rowNumber);
     const adReturn = optionalMultiplier(readField(row, mapping, "adReturn"));
+    const adCostRate = optionalPercentRate(readField(row, mapping, "adCostRate"));
 
     if (adReturn !== null && adReturn > 0) {
       if (adRevenue === null && adSpend !== null) {
@@ -2250,11 +2287,19 @@ function buildAdSnapshots(
       }
     }
 
+    if (adCostRate !== null && adCostRate > 0) {
+      if (adRevenue === null && adSpend !== null) {
+        adRevenue = roundMetric(adSpend / adCostRate);
+      } else if (adSpend === null && adRevenue !== null) {
+        adSpend = roundMetric(adRevenue * adCostRate);
+      }
+    }
+
     if (adSpend === null && adRevenue === null) {
       issues.push({
         severity: "warning",
         rowNumber,
-        message: "有一行广告数据缺少广告花费、广告成交额或可反推的 ROAS，已跳过。",
+        message: "有一行广告数据缺少广告花费、广告成交额或可反推的 ROAS/ACOS，已跳过。",
       });
       return [];
     }

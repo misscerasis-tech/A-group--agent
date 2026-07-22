@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.81-ad-acos-import] - 2026-07-23
+
+### Added
+
+- 周度经营表和独立广告表支持 ACOS/广告成本占比字段，并按 `广告成交额 = 广告花费 ÷ ACOS` 正确反推广告成交额。
+- API smoke、Agent smoke、CSV 导入单测和广告模板覆盖 ACOS 路径。
+
 ## [v0.1.80-latest-tag-docs] - 2026-07-23
 
 ### Changed

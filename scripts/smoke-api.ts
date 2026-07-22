@@ -16,9 +16,9 @@ const inventoryTable = [
   "黑杯,CUP-BLACK,18,18,2026-07-19",
 ].join("\n");
 const adsTable = [
-  "周期,商品名称,商家编码,广告花费,ROAS",
-  "上周,黑杯,CUP-BLACK,80,300%",
-  "本周,黑杯,CUP-BLACK,90,2",
+  "周期,商品名称,商家编码,广告花费,ACOS",
+  "上周,黑杯,CUP-BLACK,80,25%",
+  "本周,黑杯,CUP-BLACK,90,50%",
 ].join("\n");
 
 const orderDetailMetricsTable = [

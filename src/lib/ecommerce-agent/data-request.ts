@@ -178,10 +178,10 @@ export function buildDataRequestPlan(
       owner: "投放负责人",
       priority: "should",
       status: (report?.adRows ?? 0) > 0 ? "partial" : "missing",
-      ask: "请补广告组或 SKU 维度的广告花费、广告成交额或 ROAS。",
+      ask: "请补广告组或 SKU 维度的广告花费、广告成交额、ROAS 或 ACOS。",
       whyItMatters: "这样才能判断增长是不是靠烧钱换来的，避免越投越亏。",
       whereToFind: "广告后台、站内推广、巨量千川、Amazon Ads、Meta Ads 或 Google Ads。",
-      fields: ["周期", "SKU/商品", "广告组", "广告花费", "广告成交额/ROAS"],
+      fields: ["周期", "SKU/商品", "广告组", "广告花费", "广告成交额/ROAS/ACOS"],
       homepageImpact: guideHomepageImpact("ads", "首页会把广告回本解释成“每花 1 元带回多少成交”。"),
     });
   }

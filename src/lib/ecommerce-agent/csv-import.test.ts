@@ -251,6 +251,31 @@ describe("ecommerce csv import", () => {
     ).toBe(true);
   });
 
+  it("derives ad revenue from ACOS in weekly metric exports", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,订单数,销售额,销量,广告花费,ACOS",
+        "上周,黑杯,10,500,12,80,25%",
+        "本周,黑杯,8,420,9,90,50%",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.previousWeek.products[0]).toMatchObject({
+      adSpend: 80,
+      adRevenue: 320,
+    });
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      adSpend: 90,
+      adRevenue: 180,
+    });
+    expect(
+      result.report.fieldMappings.some(
+        (mapping) => mapping.canonicalField === "adCostRate" && mapping.sourceHeader === "ACOS",
+      ),
+    ).toBe(true);
+  });
+
   it("merges duplicate sku rows within the same period before analysis", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [
@@ -467,6 +492,32 @@ describe("ecommerce csv import", () => {
       adRevenue: 180,
     });
     expect(result.report.issues.some((issue) => issue.message.includes("广告数据"))).toBe(true);
+  });
+
+  it("matches standalone ad exports with ACOS into weekly products", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,SKU,订单数,销售额,销量",
+        "上周,黑杯,CUP-BLACK,10,500,12",
+        "本周,黑杯,CUP-BLACK,9,450,10",
+      ].join("\n"),
+      adsCsv: [
+        "周期,商品名称,商家编码,广告组,广告花费,ACOS",
+        "上周,黑杯,CUP-BLACK,品牌词,80,25%",
+        "本周,黑杯,CUP-BLACK,品牌词,90,50%",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.report.adRows).toBe(2);
+    expect(result.input?.previousWeek.products[0]).toMatchObject({
+      adSpend: 80,
+      adRevenue: 320,
+    });
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      adSpend: 90,
+      adRevenue: 180,
+    });
   });
 
   it("treats single-period ad exports with a date column as current week", () => {

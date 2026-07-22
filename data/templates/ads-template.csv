@@ -1,3 +1,3 @@
-week,product_name,sku,campaign_name,ad_spend,ad_revenue,roas
-previous,黑杯,CUP-BLACK,品牌词,80,240,3
-current,黑杯,CUP-BLACK,品牌词,90,180,2
+week,product_name,sku,campaign_name,ad_spend,acos
+previous,黑杯,CUP-BLACK,品牌词,80,25%
+current,黑杯,CUP-BLACK,品牌词,90,50%

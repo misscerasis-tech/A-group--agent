@@ -127,6 +127,21 @@ function main() {
   assert(adsImport.report.adRows === 2, "广告数据表应该可以导入。");
   assert(adsImport.input?.currentWeek.products[0].adRevenue === 180, "广告 ROAS 应该能反推广告成交额。");
 
+  const adsAcosImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "周期,商品名称,SKU,订单数,销售额,销量",
+      "上周,黑杯,CUP-BLACK,10,500,12",
+      "本周,黑杯,CUP-BLACK,9,450,10",
+    ].join("\n"),
+    adsCsv: [
+      "周期,商品名称,商家编码,广告花费,ACOS",
+      "上周,黑杯,CUP-BLACK,80,25%",
+      "本周,黑杯,CUP-BLACK,90,50%",
+    ].join("\n"),
+  });
+
+  assert(adsAcosImport.input?.currentWeek.products[0].adRevenue === 180, "广告 ACOS 应该能反推广告成交额。");
+
   const orderDetailImport = buildEcommerceInputFromCsv({
     metricsCsv: readSample("data/samples/aurora-cup-order-details.csv"),
   });
