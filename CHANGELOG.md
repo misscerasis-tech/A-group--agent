@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.113-api-smoke-analytics-headers] - 2026-07-23
+
+### Added
+
+- API smoke 增加 Analytics 表头场景，验证 `net_sales` 会识别为销售额、`net_quantity` 会识别为销量。
+
 ## [v0.1.112-analytics-sales-header-aliases] - 2026-07-23
 
 ### Added

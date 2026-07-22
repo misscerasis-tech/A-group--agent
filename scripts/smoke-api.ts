@@ -6,6 +6,12 @@ const platformHeaderMetricsTable = [
   "本周,黑杯,CUP-BLACK,120,9,450,10,90,180,40,330,120,2,80,杯盖漏水 / 物流慢",
 ].join("\n");
 
+const analyticsHeaderMetricsTable = [
+  "period,product_title,sku,orders,net_sales,net_quantity,total_sales",
+  "previous,黑杯,CUP-BLACK,10,500,12,520",
+  "current,黑杯,CUP-BLACK,9,450,10,470",
+].join("\n");
+
 const customerVoiceTable = [
   "商品名称,商家编码,反馈来源,评价日期,正负向,问题类型,评价内容,出现次数",
   "黑杯,CUP-BLACK,商品评价,2026-07-19,负向,杯盖漏水,用户说杯盖渗水,4",
@@ -133,6 +139,27 @@ async function main() {
     "成功分析后，workSession 应该继续追问分析发现的缺口。",
   );
 
+  const analyticsHeaders = await postAnalyze({
+    store: {
+      storeName: "A组 Analytics 表头测试店",
+      platform: "Shopify Analytics",
+    },
+    metricsCsv: analyticsHeaderMetricsTable,
+  });
+  const analyticsHeadersAnalysis = analyticsHeaders.body.analysis as
+    | { totals?: { current?: { revenue?: number; unitsSold?: number } } }
+    | undefined;
+  assert(
+    analyticsHeaders.response.status === 200,
+    `Analytics 表头数据应该返回 200，实际 ${analyticsHeaders.response.status}`,
+  );
+  assert(
+    (analyticsHeaders.body.report as { metricsInputKind?: string } | undefined)?.metricsInputKind === "weekly_metrics",
+    "Analytics 表头数据应该被识别为周汇总表。",
+  );
+  assert(analyticsHeadersAnalysis?.totals?.current?.revenue === 450, "net_sales 应该被识别为销售额。");
+  assert(analyticsHeadersAnalysis?.totals?.current?.unitsSold === 10, "net_quantity 应该被识别为销量。");
+
   const orderDetail = await postAnalyze({
     store: {
       storeName: "A组订单明细测试店",
@@ -245,7 +272,7 @@ async function main() {
   );
 
   console.info(
-    `[smoke:api] /api/agent/analyze 平台表头、订单明细、Shopify Orders、Shopify 折扣、Amazon 订单 TSV、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
+    `[smoke:api] /api/agent/analyze 平台表头、Analytics 表头、订单明细、Shopify Orders、Shopify 折扣、Amazon 订单 TSV、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
   );
 }
 
