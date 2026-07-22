@@ -8,6 +8,14 @@
 
 - 暂无。
 
+## [v0.1.42-feishu-doctor-handoff] - 2026-07-22
+
+### Changed
+
+- `.env.example` 预填 A 组当前非敏感 App ID，用户回来后只需要补 App Secret。
+- `feishu:doctor` 在没有 `.env` 或缺少飞书变量时给出更直接的下一步提示。
+- 飞书状态快照和用户回来清单补充复制 `.env.example` 的操作。
+
 ## [v0.1.41-analysis-driven-work-session] - 2026-07-22
 
 ### Changed

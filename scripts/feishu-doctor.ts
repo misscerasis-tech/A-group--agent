@@ -3,11 +3,13 @@ import { resolve } from "node:path";
 import { buildEcommerceInputFromCsv } from "../src/lib/ecommerce-agent/csv-import";
 import { getFeishuEnvStatus } from "../src/lib/integrations/feishu/config";
 
+const knownAGroupFeishuAppId = "cli_aaea1dbb6ee1dd10";
+
 function loadLocalEnvFile(fileName: string) {
   const envPath = resolve(process.cwd(), fileName);
 
   if (!existsSync(envPath)) {
-    return;
+    return false;
   }
 
   for (const line of readFileSync(envPath, "utf8").split(/\r?\n/)) {
@@ -23,6 +25,8 @@ function loadLocalEnvFile(fileName: string) {
 
     process.env[key.trim()] ??= value;
   }
+
+  return true;
 }
 
 function readConfiguredCsv(pathValue: string | undefined) {
@@ -43,8 +47,11 @@ function readConfiguredCsv(pathValue: string | undefined) {
 }
 
 function main() {
-  loadLocalEnvFile(".env");
-  loadLocalEnvFile(".env.local");
+  const loadedEnvFiles = [".env", ".env.local"].filter(loadLocalEnvFile);
+
+  if (loadedEnvFiles.length === 0) {
+    console.info("[feishu:doctor] 没有发现 .env 或 .env.local；可以先复制 .env.example 到 .env。");
+  }
 
   const envStatus = getFeishuEnvStatus();
   let hasError = false;
@@ -52,6 +59,12 @@ function main() {
   if (!envStatus.config) {
     console.error(`[feishu:doctor] 缺少环境变量：${envStatus.missing.join("、")}`);
     console.error("[feishu:doctor] 请把 App ID 和 App Secret 放在本机 .env，不要提交 Git。");
+    if (envStatus.missing.includes("FEISHU_APP_ID")) {
+      console.error(`[feishu:doctor] A 组当前 App ID 可填：${knownAGroupFeishuAppId}`);
+    }
+    if (envStatus.missing.includes("FEISHU_APP_SECRET")) {
+      console.error("[feishu:doctor] App Secret 需要你在飞书开放平台“凭证与基础信息”里复制。");
+    }
     hasError = true;
   } else {
     console.info(`[feishu:doctor] 已读取 App ID：${envStatus.config.appId}`);

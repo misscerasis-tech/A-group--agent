@@ -21,7 +21,7 @@
 
 ## 当前缺口
 
-- 本地 `.env` 还缺 `FEISHU_APP_ID` 和 `FEISHU_APP_SECRET`，所以 `feishu:doctor` 会失败。
+- 本地 `.env` 还缺 `FEISHU_APP_ID` 和 `FEISHU_APP_SECRET`，所以 `feishu:doctor` 会失败；可先 `cp .env.example .env`，示例里已经预填非敏感 App ID。
 - App Secret 不能提交到 Git，也不要发到聊天里；只复制到本机 `.env`。
 - 版本管理页暂无发布版本。页面提示“应用发布后，当前配置方可生效”。
 - 测试企业和人员页暂无测试企业。创建测试企业属于飞书后台状态变更，需要用户确认后再做。
@@ -30,9 +30,10 @@
 
 1. 在飞书开放平台进入 `A 组电商运营 Agent`。
 2. 在“凭证与基础信息”复制 App Secret。
-3. 在本机 `.env` 写入：
+3. 如果本地还没有 `.env`，先复制示例，再在本机 `.env` 写入或确认：
 
 ```bash
+cp .env.example .env
 FEISHU_APP_ID="cli_aaea1dbb6ee1dd10"
 FEISHU_APP_SECRET="只放本机，不提交 Git"
 FEISHU_EVENT_SUBSCRIPTION_MODE="long_connection"

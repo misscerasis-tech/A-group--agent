@@ -24,14 +24,20 @@ npx pnpm@10.13.1 exec next dev -p 3001
 
 3. 在飞书开放平台确认应用：`A 组电商运营 Agent`。
 4. 在“凭证与基础信息”复制 App Secret。
-5. 只在本机 `.env` 填：
+5. 如果本地还没有 `.env`，先复制示例：
+
+```bash
+cp .env.example .env
+```
+
+6. 只在本机 `.env` 填或确认：
 
 ```bash
 FEISHU_APP_ID="cli_aaea1dbb6ee1dd10"
 FEISHU_APP_SECRET="不要提交，只放本机"
 ```
 
-6. 先做飞书配置和本地数据体检：
+7. 先做飞书配置和本地数据体检：
 
 ```bash
 npx pnpm@10.13.1 run feishu:doctor
@@ -39,19 +45,19 @@ npx pnpm@10.13.1 run feishu:doctor
 
 即使 App Secret 还没填，doctor 也会先检查本地经营表路径和字段是否可分析。
 
-7. 确认 App Secret 和本地经营表配置没问题后，再启动 worker：
+8. 确认 App Secret 和本地经营表配置没问题后，再启动 worker：
 
 ```bash
 npx pnpm@10.13.1 run feishu:worker
 ```
 
-8. 在飞书给机器人发单聊：
+9. 在飞书给机器人发单聊：
 
 ```text
 帮我看本周经营情况
 ```
 
-9. 如果 worker 已连接但机器人没有回复，在飞书后台创建版本并发布。页面提示“应用发布后，当前配置方可生效”，这一步需要用户确认。
+10. 如果 worker 已连接但机器人没有回复，在飞书后台创建版本并发布。页面提示“应用发布后，当前配置方可生效”，这一步需要用户确认。
 
 ## 真实数据
 
