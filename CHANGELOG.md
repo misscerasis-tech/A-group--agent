@@ -6,6 +6,73 @@
 
 ### Added
 
+- 暂无。
+
+## [v0.1.36-competitor-source-refresh] - 2026-07-22
+
+### Changed
+
+- 更新样例竞品来源，Nextmug 和 VSITOO 优先使用官方站，Locckmy 明确标注为低价替代演示价。
+
+## [v0.1.35-platform-number-units] - 2026-07-22
+
+### Added
+
+- 平台导出数字支持 `1.2万元`、`2.6千元`、`90单`、`100件`、`80元` 等常见带单位写法。
+
+## [v0.1.34-api-smoke] - 2026-07-22
+
+### Added
+
+- 增加 `pnpm run smoke:api`，自动检查 `/api/agent/analyze` 的平台中文表头、缺参数和缺必填字段处理。
+
+## [v0.1.33-profit-sample-data] - 2026-07-22
+
+### Added
+
+- 首页样例数据补齐毛利字段，让默认演示也能覆盖利润诊断。
+
+## [v0.1.32-import-loader-docs] - 2026-07-22
+
+### Added
+
+- 测试计划补充“演示样例”和“平台表头样例”按钮的使用说明。
+
+## [v0.1.31-import-sample-loaders] - 2026-07-22
+
+### Added
+
+- 真实数据导入工作台增加“演示样例”和“平台表头样例”按钮。
+
+## [v0.1.30-feishu-app-status] - 2026-07-22
+
+### Added
+
+- 记录飞书后台真实应用状态：App ID、机器人能力、长连接事件、发布和 App Secret 缺口。
+
+## [v0.1.29-web-route-smoke] - 2026-07-22
+
+### Added
+
+- 增加 `pnpm run smoke:web`，自动检查主要页面 200 且不泄漏原始 Prisma/DATABASE_URL 错误。
+
+## [v0.1.28-real-table-wording] - 2026-07-22
+
+### Changed
+
+- 飞书回复、doctor 和文档统一使用“经营表”口径，明确支持 CSV/TSV/Markdown 和复制表格。
+
+## [v0.1.27-platform-header-aliases] - 2026-07-22
+
+### Added
+
+- 扩展真实平台中文字段别名，例如 `商品访客数`、`支付买家数`、`商品支付金额`、`退款成功金额`。
+- 导入报告不再展示未识别的可选字段，避免出现 `undefined -> startDate` 这类小白看不懂的映射。
+
+## [Earlier 0.1.x]
+
+### Added
+
 - CSV 导入器支持 TSV、分号分隔文件，以及从 Excel/飞书表格直接复制的制表符数据。
 - 真实数据导入工作台增加“本周目标”输入，网页端也能驱动保利润/保销量等行动优先级。
 - 没有 `week` 列但有 `date/start_date/开始日期` 的平台导出表，也能自动判断最近两期。
