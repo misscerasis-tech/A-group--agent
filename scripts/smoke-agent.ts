@@ -409,7 +409,7 @@ function main() {
   assert(testingReply.includes("App Secret"), "飞书测试回复应该提示 App Secret。");
   assert(returnsReply.includes("售后把成交吃回去"), "飞书应该能单独回答退款/退货问题。");
   assert(taskReply.includes("优先级\t截止\t负责人"), "飞书应该能返回可复制的待办表格。");
-  assert(riskReply.includes("优先级\t商品\tSKU\t问题"), "飞书应该能返回可复制的风险商品表。");
+  assert(riskReply.includes("排查状态\t优先级\t建议负责人"), "飞书应该能返回可复制的风险商品表。");
   assert(dataRequestReply.includes("最近两期经营对比表"), "飞书应该能回答下一份要补的数据。");
 
   const invalidImport = buildEcommerceInputFromCsv({

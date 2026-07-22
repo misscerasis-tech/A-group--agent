@@ -116,7 +116,7 @@ async function main() {
     "接口应该返回结构化运营待办。",
   );
   assert(String(success.body.taskTable ?? "").includes("状态\t优先级\t截止\t负责人"), "接口应该返回可粘贴的待办表格。");
-  assert(String(success.body.riskTable ?? "").includes("优先级\t商品\tSKU\t问题"), "接口应该返回可粘贴的风险商品表。");
+  assert(String(success.body.riskTable ?? "").includes("排查状态\t优先级\t建议负责人"), "接口应该返回可粘贴的风险商品表。");
   assert(
     String(success.body.dataRequestTable ?? "").includes("优先级\t状态\t要补的数据"),
     "接口应该返回可粘贴的补数清单。",

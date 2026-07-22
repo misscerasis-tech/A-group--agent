@@ -112,7 +112,7 @@ describe("feishu agent reply", () => {
 
     const reply = buildFeishuAgentReply("给我风险商品表");
 
-    expect(reply).toContain("优先级\t商品\tSKU\t问题");
+    expect(reply).toContain("排查状态\t优先级\t建议负责人");
     expect(reply).toContain("CUP-BLACK-500");
     expect(reply).toContain("建议动作");
   });

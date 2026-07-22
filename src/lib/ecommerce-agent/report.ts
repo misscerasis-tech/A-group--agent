@@ -80,6 +80,26 @@ function priorityLabel(priority: "high" | "medium" | "low") {
   return labels[priority];
 }
 
+function findingOwner(issue: string) {
+  if (issue.includes("库存")) {
+    return "供应链/运营";
+  }
+
+  if (issue.includes("广告")) {
+    return "投放负责人";
+  }
+
+  if (issue.includes("售后")) {
+    return "客服/运营";
+  }
+
+  if (issue.includes("利润")) {
+    return "店铺负责人";
+  }
+
+  return "电商运营";
+}
+
 function taskTable(analysis: EcommerceAgentAnalysis) {
   if (analysis.operationalTasks.length === 0) {
     return "暂时没有需要创建的运营待办。";
@@ -121,10 +141,12 @@ export function buildOperationalTasksTsv(analysis: EcommerceAgentAnalysis) {
 
 export function buildProductFindingsTsv(analysis: EcommerceAgentAnalysis) {
   return [
-    ["优先级", "商品", "SKU", "问题", "人话原因", "建议动作"].join("\t"),
+    ["排查状态", "优先级", "建议负责人", "商品", "SKU", "问题", "人话原因", "建议动作"].join("\t"),
     ...analysis.productFindings.map((finding) =>
       [
+        "待排查",
         priorityLabel(finding.priority),
+        findingOwner(finding.issue),
         finding.productName,
         finding.sku,
         finding.issue,

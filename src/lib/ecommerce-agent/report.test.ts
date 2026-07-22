@@ -41,7 +41,8 @@ describe("weekly markdown report", () => {
     const analysis = analyzeEcommerceStore(sampleEcommerceAgentInput);
     const riskTable = buildProductFindingsTsv(analysis);
 
-    expect(riskTable.split("\n")[0]).toBe("优先级\t商品\tSKU\t问题\t人话原因\t建议动作");
+    expect(riskTable.split("\n")[0]).toBe("排查状态\t优先级\t建议负责人\t商品\tSKU\t问题\t人话原因\t建议动作");
+    expect(riskTable).toContain("待排查");
     expect(riskTable).toContain("CUP-BLACK-500");
     expect(riskTable).toContain("销售明显下滑");
     expect(riskTable).toContain("商品页");
