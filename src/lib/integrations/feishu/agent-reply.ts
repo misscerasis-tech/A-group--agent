@@ -42,7 +42,17 @@ export type FeishuEcommerceImportContext = {
   input?: EcommerceAgentInput;
   report: EcommerceCsvImportReport;
   sourceLabel: string;
+  mergedTableLabel?: string;
+  tables?: {
+    metricsCsv?: string;
+    competitorsCsv?: string;
+    customerVoicesCsv?: string;
+    inventoryCsv?: string;
+    adsCsv?: string;
+  };
 };
+
+export type FeishuPastedTableKind = "metrics" | "ads" | "inventory" | "customerVoices" | "competitors";
 
 function stripFeishuMentions(text: string) {
   return text
@@ -423,10 +433,11 @@ export function buildCompetitorsReply(analysis: EcommerceAgentAnalysis) {
   ].join("\n");
 }
 
-function looksLikePastedMetricsTable(text: string) {
+function tableSignals(text: string) {
   const normalized = text.toLowerCase();
   const compact = normalized.replace(/[\s_\-./:：]+/g, "");
   const hasTableDelimiter = [",", "\t", ";", "|"].some((delimiter) => text.includes(delimiter));
+  const hasMultipleLines = text.includes("\n");
   const hasPeriodSignal =
     normalized.includes("week") ||
     normalized.includes("period") ||
@@ -487,14 +498,121 @@ function looksLikePastedMetricsTable(text: string) {
     text.includes("商品数量") ||
     text.includes("件数") ||
     text.includes("支付商品件数");
+  const hasAdSignal =
+    compact.includes("adspend") ||
+    compact.includes("adcost") ||
+    compact.includes("adrevenue") ||
+    compact.includes("adsales") ||
+    normalized.includes("roas") ||
+    normalized.includes("acos") ||
+    text.includes("广告花费") ||
+    text.includes("广告成交额") ||
+    text.includes("广告销售额") ||
+    text.includes("广告消耗") ||
+    text.includes("投产比");
+  const hasInventorySignal =
+    normalized.includes("inventory") ||
+    normalized.includes("stock") ||
+    compact.includes("unitcost") ||
+    compact.includes("grossmargin") ||
+    text.includes("库存") ||
+    text.includes("可售") ||
+    text.includes("单位成本") ||
+    text.includes("毛利率");
+  const hasCustomerVoiceSignal =
+    normalized.includes("feedback") ||
+    normalized.includes("review") ||
+    normalized.includes("comment") ||
+    normalized.includes("sentiment") ||
+    text.includes("评价") ||
+    text.includes("客服备注") ||
+    text.includes("用户反馈") ||
+    text.includes("售后备注") ||
+    text.includes("问题类型") ||
+    text.includes("出现次数");
+  const hasCompetitorSignal =
+    normalized.includes("competitor") ||
+    normalized.includes("rating") ||
+    normalized.includes("reviews") ||
+    normalized.includes("promotion") ||
+    normalized.includes("url") ||
+    text.includes("竞品") ||
+    text.includes("链接") ||
+    text.includes("评分") ||
+    text.includes("评论数") ||
+    text.includes("促销") ||
+    text.includes("卖点");
+
+  return {
+    compact,
+    hasAdSignal,
+    hasCompetitorSignal,
+    hasCustomerVoiceSignal,
+    hasInventorySignal,
+    hasMultipleLines,
+    hasOrderDetailDateSignal,
+    hasOrderSignal,
+    hasPeriodSignal,
+    hasProductSignal,
+    hasRevenueSignal,
+    hasTableDelimiter,
+    hasUnitsSignal,
+  };
+}
+
+function looksLikePastedMetricsTable(text: string) {
+  const signals = tableSignals(text);
+  const metricSignalCount = [signals.hasOrderSignal, signals.hasRevenueSignal, signals.hasUnitsSignal].filter(Boolean)
+    .length;
+  const hasWeeklyMetricsShape = signals.hasPeriodSignal && metricSignalCount >= 2;
+  const hasIncompleteWeeklyMetricsShape =
+    signals.hasPeriodSignal &&
+    metricSignalCount >= 1 &&
+    !signals.hasAdSignal &&
+    !signals.hasInventorySignal &&
+    !signals.hasCustomerVoiceSignal &&
+    !signals.hasCompetitorSignal;
+  const hasOrderDetailShape =
+    signals.hasOrderDetailDateSignal &&
+    signals.hasRevenueSignal &&
+    (signals.hasOrderSignal || signals.hasUnitsSignal);
 
   return (
-    hasTableDelimiter &&
-    text.includes("\n") &&
-    hasProductSignal &&
-    (hasOrderSignal || hasRevenueSignal || hasUnitsSignal) &&
-    (hasPeriodSignal || hasOrderDetailDateSignal)
+    signals.hasTableDelimiter &&
+    signals.hasMultipleLines &&
+    signals.hasProductSignal &&
+    (hasWeeklyMetricsShape || hasIncompleteWeeklyMetricsShape || hasOrderDetailShape)
   );
+}
+
+export function detectFeishuPastedTableKind(text: string): FeishuPastedTableKind | null {
+  const signals = tableSignals(text);
+
+  if (!signals.hasTableDelimiter || !signals.hasMultipleLines) {
+    return null;
+  }
+
+  if (looksLikePastedMetricsTable(text)) {
+    return "metrics";
+  }
+
+  if (signals.hasProductSignal && signals.hasAdSignal) {
+    return "ads";
+  }
+
+  if (signals.hasProductSignal && signals.hasInventorySignal) {
+    return "inventory";
+  }
+
+  if (signals.hasProductSignal && signals.hasCustomerVoiceSignal) {
+    return "customerVoices";
+  }
+
+  if (signals.hasCompetitorSignal && (signals.hasRevenueSignal || signals.compact.includes("price") || text.includes("价格"))) {
+    return "competitors";
+  }
+
+  return null;
 }
 
 function buildPastedMetricsTableReply(text: string) {
@@ -523,26 +641,97 @@ function buildPastedMetricsTableReply(text: string) {
   return formatEcommerceAnalysisForFeishu(analyzeEcommerceStore(context.input), context.sourceLabel);
 }
 
-export function buildFeishuImportContextFromText(text: string): FeishuEcommerceImportContext | null {
-  if (!looksLikePastedMetricsTable(text)) {
+const pastedTableLabels: Record<FeishuPastedTableKind, string> = {
+  metrics: "经营数据表",
+  ads: "广告数据表",
+  inventory: "库存/成本快照表",
+  customerVoices: "用户声音/售后评价表",
+  competitors: "竞品数据表",
+};
+
+function buildContextFromTables({
+  tables,
+  store,
+  mergedTableKind,
+}: {
+  tables: NonNullable<FeishuEcommerceImportContext["tables"]>;
+  store?: Partial<EcommerceAgentInput["store"]>;
+  mergedTableKind?: FeishuPastedTableKind;
+}): FeishuEcommerceImportContext | null {
+  if (!tables.metricsCsv) {
     return null;
   }
 
   const result = buildEcommerceInputFromCsv({
-    metricsCsv: text,
+    metricsCsv: tables.metricsCsv,
+    competitorsCsv: tables.competitorsCsv,
+    customerVoicesCsv: tables.customerVoicesCsv,
+    inventoryCsv: tables.inventoryCsv,
+    adsCsv: tables.adsCsv,
     store: {
       storeName: "飞书粘贴数据店铺",
       platform: "待确认平台",
       market: "待确认市场",
       category: "待确认类目",
+      ...store,
     },
   });
 
   return {
     input: result.input,
     report: result.report,
-    sourceLabel: "刚粘贴的表格",
+    sourceLabel: mergedTableKind && mergedTableKind !== "metrics" ? "当前会话数据" : "刚粘贴的表格",
+    mergedTableLabel: mergedTableKind && mergedTableKind !== "metrics" ? pastedTableLabels[mergedTableKind] : undefined,
+    tables,
   };
+}
+
+export function buildFeishuImportContextFromText(
+  text: string,
+  previousContext?: FeishuEcommerceImportContext | null,
+): FeishuEcommerceImportContext | null {
+  const tableKind = detectFeishuPastedTableKind(text);
+
+  if (!tableKind) {
+    return null;
+  }
+
+  if (tableKind === "metrics") {
+    return buildContextFromTables({
+      tables: {
+        ...previousContext?.tables,
+        metricsCsv: text,
+      },
+      store: previousContext?.input?.store,
+      mergedTableKind: "metrics",
+    });
+  }
+
+  if (!previousContext?.tables?.metricsCsv) {
+    return null;
+  }
+
+  const nextTables = {
+    ...previousContext.tables,
+    ...(tableKind === "ads" ? { adsCsv: text } : {}),
+    ...(tableKind === "inventory" ? { inventoryCsv: text } : {}),
+    ...(tableKind === "customerVoices" ? { customerVoicesCsv: text } : {}),
+    ...(tableKind === "competitors" ? { competitorsCsv: text } : {}),
+  };
+
+  return buildContextFromTables({
+    tables: nextTables,
+    store: previousContext.input?.store,
+    mergedTableKind: tableKind,
+  });
+}
+
+export function buildFeishuAuxiliaryTableNeedsMetricsReply(tableKind: FeishuPastedTableKind) {
+  return [
+    `我看到了${pastedTableLabels[tableKind]}，但这个会话里还没有可合并的经营数据表。`,
+    "请先粘贴最近两期经营表，至少包含周期、商品名称或 SKU、订单数、销售额和销量。",
+    `然后再把这张${pastedTableLabels[tableKind]}贴过来，我会合并到同一份复盘里。`,
+  ].join("\n");
 }
 
 export function buildFeishuAgentReply(
@@ -551,6 +740,7 @@ export function buildFeishuAgentReply(
     input?: EcommerceAgentInput;
     report?: EcommerceCsvImportReport;
     sourceLabel?: string;
+    mergedTableLabel?: string;
   } = {},
 ) {
   if (looksLikePastedMetricsTable(text)) {
@@ -560,6 +750,27 @@ export function buildFeishuAgentReply(
   const sourceLabel = options.sourceLabel ?? "样例店铺";
   const hasImportedContext = Boolean(options.input);
   const intent = detectFeishuReplyIntent(text);
+
+  if (options.mergedTableLabel) {
+    if (options.input) {
+      const analysis = analyzeEcommerceStore(options.input);
+
+      return [
+        `我已把${options.mergedTableLabel}合并到当前会话数据。`,
+        "",
+        formatEcommerceAnalysisForFeishu(analysis, sourceLabel),
+      ].join("\n");
+    }
+
+    if (options.report) {
+      return [
+        `我收到了${options.mergedTableLabel}，但合并后还不能直接复盘。`,
+        "先按当前会话数据给你列补数清单：",
+        "",
+        formatDataRequestPlanForFeishu(buildDataRequestPlan(options.report)),
+      ].join("\n");
+    }
+  }
 
   if (intent === "usage") {
     return buildFeishuUsageReply();

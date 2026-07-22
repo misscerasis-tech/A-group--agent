@@ -205,10 +205,20 @@ FEISHU_CHAT_CONTEXT_FILE=".agent-state/feishu-chat-contexts.json"
 也可以直接在飞书里粘贴一小段经营 CSV/TSV/Markdown 表格：
 
 ```csv
-week,product_name,orders,revenue,units_sold,refund_orders,refund_amount,refund_reason
-previous,黑杯,10,500,12,1,30,杯盖漏水
-current,黑杯,8,420,9,2,80,杯盖漏水 / 物流慢
+week,product_name,sku,orders,revenue,units_sold,refund_orders,refund_amount,refund_reason
+previous,黑杯,CUP-BLACK,10,500,12,1,30,杯盖漏水
+current,黑杯,CUP-BLACK,8,420,9,2,80,杯盖漏水 / 物流慢
 ```
+
+同一个飞书会话里，先粘贴经营表后，可以继续粘贴补充表。比如再粘贴广告表：
+
+```text
+周期	商品名称	商家编码	广告花费	ROAS
+上周	黑杯	CUP-BLACK	80	300%
+本周	黑杯	CUP-BLACK	90	2
+```
+
+机器人应该回复“已把广告数据表合并到当前会话数据”，后续再问 `给我待办清单` 或 `我还缺什么数据` 时会使用合并后的数据。库存/成本快照表、用户声音/售后评价表和竞品数据表也走同一套会话合并逻辑。若先粘贴广告表而没有经营表，机器人应该要求先补最近两期经营表。
 
 平台中文表头也可以直接粘贴，例如从飞书表格或 Excel 复制出来的制表符表格：
 

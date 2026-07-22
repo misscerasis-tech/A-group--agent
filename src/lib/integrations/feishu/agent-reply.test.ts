@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildFeishuAuxiliaryTableNeedsMetricsReply,
   buildFeishuAgentReply,
   buildFeishuClearContextReply,
   buildFeishuImportContextFromText,
+  detectFeishuPastedTableKind,
   detectFeishuReplyIntent,
   isFeishuClearContextRequest,
   parseFeishuTextContent,
@@ -182,8 +184,45 @@ describe("feishu agent reply", () => {
     const reply = buildFeishuAgentReply(pastedCsv);
 
     expect(context?.input?.store.storeName).toBe("飞书粘贴数据店铺");
+    expect(context?.tables?.metricsCsv).toBe(pastedCsv);
     expect(reply).toContain("刚粘贴的表格");
     expect(reply).toContain("飞书粘贴数据店铺");
+  });
+
+  it("merges a pasted ad table into the current chat metrics context", () => {
+    const pastedMetrics = [
+      "week\tproduct_name\tsku\torders\trevenue\tunits_sold",
+      "previous\t黑杯\tCUP-BLACK\t10\t500\t12",
+      "current\t黑杯\tCUP-BLACK\t8\t420\t9",
+    ].join("\n");
+    const pastedAds = [
+      "周期\t商品名称\t商家编码\t广告花费\tROAS",
+      "上周\t黑杯\tCUP-BLACK\t80\t300%",
+      "本周\t黑杯\tCUP-BLACK\t90\t2",
+    ].join("\n");
+    const metricsContext = buildFeishuImportContextFromText(pastedMetrics);
+    const mergedContext = buildFeishuImportContextFromText(pastedAds, metricsContext);
+    const reply = buildFeishuAgentReply(pastedAds, mergedContext ?? undefined);
+
+    expect(detectFeishuPastedTableKind(pastedAds)).toBe("ads");
+    expect(mergedContext?.mergedTableLabel).toBe("广告数据表");
+    expect(mergedContext?.report.adRows).toBe(2);
+    expect(mergedContext?.input?.currentWeek.products[0]).toMatchObject({
+      adSpend: 90,
+      adRevenue: 180,
+    });
+    expect(reply).toContain("已把广告数据表合并到当前会话数据");
+    expect(reply).toContain("当前会话数据");
+  });
+
+  it("asks for metrics before accepting standalone auxiliary tables", () => {
+    const pastedAds = [
+      "商品名称\t商家编码\t广告花费\tROAS",
+      "黑杯\tCUP-BLACK\t90\t2",
+    ].join("\n");
+
+    expect(buildFeishuImportContextFromText(pastedAds)).toBeNull();
+    expect(buildFeishuAuxiliaryTableNeedsMetricsReply("ads")).toContain("先粘贴最近两期经营表");
   });
 
   it("keeps an import report for incomplete pasted tables", () => {

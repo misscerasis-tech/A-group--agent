@@ -306,6 +306,29 @@ function main() {
       "current\t黑杯\t9\t450\t10",
     ].join("\n"),
   );
+  const pastedMetricsContext = buildFeishuImportContextFromText(
+    [
+      "week\tproduct_name\tsku\torders\trevenue\tunits_sold",
+      "previous\t黑杯\tCUP-BLACK\t10\t500\t12",
+      "current\t黑杯\tCUP-BLACK\t9\t450\t10",
+    ].join("\n"),
+  );
+  const pastedAdsContext = buildFeishuImportContextFromText(
+    [
+      "周期\t商品名称\t商家编码\t广告花费\tROAS",
+      "上周\t黑杯\tCUP-BLACK\t80\t300%",
+      "本周\t黑杯\tCUP-BLACK\t90\t2",
+    ].join("\n"),
+    pastedMetricsContext,
+  );
+  const pastedAdsReply = buildFeishuAgentReply(
+    [
+      "周期\t商品名称\t商家编码\t广告花费\tROAS",
+      "上周\t黑杯\tCUP-BLACK\t80\t300%",
+      "本周\t黑杯\tCUP-BLACK\t90\t2",
+    ].join("\n"),
+    pastedAdsContext ?? undefined,
+  );
   const pastedPlatformTableReply = buildFeishuAgentReply(
     [
       "周期\t商品名称\t支付买家数\t商品支付金额\t支付商品件数\t退款率\t退款原因",
@@ -367,6 +390,8 @@ function main() {
   assert(workPlanReply.includes("经营数据表"), "飞书工作计划回复应该提示经营数据表。");
   assert(workPlanReply.includes("Markdown"), "飞书工作计划回复应该提示支持 Markdown 表格。");
   assert(pastedTableReply.includes("刚粘贴的表格"), "飞书应该能分析直接粘贴的表格。");
+  assert(pastedAdsContext?.report.adRows === 2, "飞书同一会话应该能把广告表合并进刚粘贴的经营表。");
+  assert(pastedAdsReply.includes("已把广告数据表合并"), "飞书合并广告表后应该明确说明已合并。");
   assert(pastedPlatformTableReply.includes("刚粘贴的表格"), "飞书应该能分析平台中文表头粘贴数据。");
   assert(pastedPlatformTableReply.includes("杯盖漏水"), "飞书平台表头回复应该引用退款原因。");
   assert(pastedOrderDetailReply.includes("刚粘贴的表格"), "飞书应该能分析订单明细粘贴数据。");

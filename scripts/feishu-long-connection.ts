@@ -4,9 +4,11 @@ import { resolve } from "node:path";
 import { buildEcommerceInputFromCsv } from "../src/lib/ecommerce-agent/csv-import";
 import { requireFeishuRuntimeConfig } from "../src/lib/integrations/feishu/config";
 import {
+  buildFeishuAuxiliaryTableNeedsMetricsReply,
   buildFeishuAgentReply,
   buildFeishuClearContextReply,
   buildFeishuImportContextFromText,
+  detectFeishuPastedTableKind,
   isFeishuClearContextRequest,
 } from "../src/lib/integrations/feishu/agent-reply";
 import {
@@ -198,14 +200,21 @@ async function main() {
           return buildFeishuClearContextReply(didClear);
         }
 
-        const pastedContext = buildFeishuImportContextFromText(text);
+        const existingContext = chatContexts.get(event.message.chat_id) ?? importedData;
+        const pastedContext = buildFeishuImportContextFromText(text, existingContext);
 
         if (pastedContext) {
           chatContexts.set(event.message.chat_id, pastedContext);
           return buildFeishuAgentReply(text, pastedContext);
         }
 
-        const context = chatContexts.get(event.message.chat_id) ?? importedData;
+        const pastedTableKind = detectFeishuPastedTableKind(text);
+
+        if (pastedTableKind && pastedTableKind !== "metrics") {
+          return buildFeishuAuxiliaryTableNeedsMetricsReply(pastedTableKind);
+        }
+
+        const context = existingContext;
 
         return buildFeishuAgentReply(text, {
           input: context?.input,
