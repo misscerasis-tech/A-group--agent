@@ -445,10 +445,29 @@ function readField<TField extends string>(
 }
 
 function parseNumber(value: string) {
-  const cleaned = value.replace(/[$￥¥,%\s]/g, "").replace(/,/g, "");
+  const cleaned = value
+    .trim()
+    .replace(/,/g, "")
+    .replace(/[$￥¥,%\s]/g, "")
+    .replace(/人民币|美元|美金/g, "");
 
-  if (!cleaned) {
+  if (!cleaned || ["-", "--", "—", "暂无", "无"].includes(cleaned)) {
     return null;
+  }
+
+  const unitMatch = cleaned.match(
+    /^([-+]?\d+(?:\.\d+)?)(万|w|W|千|k|K)?(?:元|件|单|个|笔|次|人|条)?$/,
+  );
+
+  if (unitMatch) {
+    const parsed = Number(unitMatch[1]);
+    const multiplier = ["万", "w", "W"].includes(unitMatch[2])
+      ? 10000
+      : ["千", "k", "K"].includes(unitMatch[2])
+        ? 1000
+        : 1;
+
+    return Number.isFinite(parsed) ? parsed * multiplier : null;
   }
 
   const parsed = Number(cleaned);

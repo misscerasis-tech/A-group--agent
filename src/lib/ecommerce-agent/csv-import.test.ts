@@ -98,6 +98,38 @@ describe("ecommerce csv import", () => {
     });
   });
 
+  it("parses platform numbers with Chinese units", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,订单数,销售额,销量,广告花费,广告成交额,库存,退款单数,退款金额",
+        "上周,黑杯,90单,1.2万元,100件,800元,3200元,50件,1单,30元",
+        "本周,黑杯,80单,9800元,88件,900元,2.6千元,40件,2单,80元",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.previousWeek.products[0]).toMatchObject({
+      orders: 90,
+      revenue: 12000,
+      unitsSold: 100,
+      adSpend: 800,
+      adRevenue: 3200,
+      inventory: 50,
+      refundOrders: 1,
+      refundAmount: 30,
+    });
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      orders: 80,
+      revenue: 9800,
+      unitsSold: 88,
+      adSpend: 900,
+      adRevenue: 2600,
+      inventory: 40,
+      refundOrders: 2,
+      refundAmount: 80,
+    });
+  });
+
   it("asks for missing required fields instead of guessing", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: ["周期,商品名称,销售额", "本周,黑杯,450"].join("\n"),
