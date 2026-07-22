@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.117-refresh-autonomous-progress] - 2026-07-23
+
+### Changed
+
+- 自主打磨进展记录更新到最新稳定点，补充 Analytics 表头、飞书文件指引和最新 API smoke 覆盖。
+
 ## [v0.1.116-agent-smoke-file-guidance] - 2026-07-23
 
 ### Added

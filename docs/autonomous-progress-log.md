@@ -7,7 +7,7 @@
 ## 当前最新稳定点
 
 - 最新代码：`main`
-- 最新标签：`v0.1.109-copyable-testing-csv-progress`
+- 最新标签：`v0.1.117-refresh-autonomous-progress`
 - 本地测试入口：`http://localhost:3001/agent`
 - 远端仓库：`misscerasis-tech/A-group--agent.git`
 
@@ -16,6 +16,7 @@
 1. 数据导入更接近真实平台导出。
    - 支持 CSV、TSV、Markdown、Excel 和从表格直接复制的内容。
    - 支持周汇总表和最近两周订单明细。
+   - 支持 Shopify Analytics 等汇总报表里的 `net_sales`、`total_sales`、`gross_sales` 和 `net_quantity` 字段。
    - Shopify Orders 和 Amazon Seller Central 订单表可直接聚合。
    - 订单明细支持折扣、商品成本、平台佣金、支付手续费、履约费和退款金额。
 
@@ -34,6 +35,7 @@
    - 同一飞书会话可先贴经营表，再继续合并广告、库存/成本、用户声音或竞品表。
    - 飞书里只发竞品裸链接时，会进入竞品补数流程，不会套样例竞品结论。
    - 飞书里问“怎么真正测试”会返回可直接发送的测试消息、通过标准和最短验收路径。
+   - 飞书里问 Excel/CSV 文件能不能发时，会说明当前不下载附件，并引导复制表格或到 `/agent` 上传。
    - 发送回复失败时，同一事件重试不会被去重吞掉。
    - 未知消息兜底回复不再复述用户原文，降低误发敏感信息时被二次扩散的风险。
    - `feishu:doctor` 会给出飞书开放平台入口、App Secret 复制位置和长连接配置步骤。
@@ -53,7 +55,7 @@
 - `SMOKE_BASE_URL=http://localhost:3001 npx pnpm@10.13.1 run smoke:web`
 - `npx pnpm@10.13.1 run build`
 
-最新 API smoke 已额外覆盖 Shopify Orders 的 `Discount Amount`：订单行收入会按单价乘件数后扣除折扣，再汇总到销售额。
+最新 API smoke 已额外覆盖 Shopify Orders 的 `Discount Amount` 和 Analytics 风格表头：订单行收入会按单价乘件数后扣除折扣，再汇总到销售额；`net_sales` 和 `net_quantity` 会映射到销售额与销量。
 
 ## 用户回来后还必须亲自做
 
