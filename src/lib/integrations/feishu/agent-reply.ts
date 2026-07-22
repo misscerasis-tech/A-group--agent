@@ -37,6 +37,12 @@ export type FeishuReplyIntent =
   | "competitors"
   | "unknown";
 
+export type FeishuEcommerceImportContext = {
+  input?: EcommerceAgentInput;
+  report: EcommerceCsvImportReport;
+  sourceLabel: string;
+};
+
 export function parseFeishuTextContent(content: string) {
   try {
     const parsed = JSON.parse(content) as { text?: unknown };
@@ -356,6 +362,14 @@ function looksLikePastedMetricsTable(text: string) {
     text.includes("支付时间") ||
     text.includes("下单时间") ||
     text.includes("订单日期");
+  const hasProductSignal =
+    normalized.includes("product") ||
+    normalized.includes("sku") ||
+    normalized.includes("seller_sku") ||
+    text.includes("商品") ||
+    text.includes("产品") ||
+    text.includes("商家编码") ||
+    text.includes("货号");
   const hasOrderSignal =
     normalized.includes("orders") ||
     normalized.includes("paid_buyers") ||
@@ -389,30 +403,25 @@ function looksLikePastedMetricsTable(text: string) {
   return (
     hasTableDelimiter &&
     text.includes("\n") &&
-    hasOrderSignal &&
-    hasRevenueSignal &&
-    hasUnitsSignal &&
+    hasProductSignal &&
+    (hasOrderSignal || hasRevenueSignal || hasUnitsSignal) &&
     (hasPeriodSignal || hasOrderDetailDateSignal)
   );
 }
 
 function buildPastedMetricsTableReply(text: string) {
-  const result = buildEcommerceInputFromCsv({
-    metricsCsv: text,
-    store: {
-      storeName: "飞书粘贴数据店铺",
-      platform: "待确认平台",
-      market: "待确认市场",
-      category: "待确认类目",
-    },
-  });
+  const context = buildFeishuImportContextFromText(text);
 
-  if (!result.input) {
-    const issues = result.report.issues
+  if (!context) {
+    return "我看到了表格迹象，但还不能识别成经营数据。你可以先发：我需要准备什么数据。";
+  }
+
+  if (!context.input) {
+    const issues = context.report.issues
       .filter((issue) => issue.severity === "error")
       .slice(0, 5)
       .map((issue, index) => `${index + 1}. ${issue.message}`);
-    const dataRequestPlan = buildDataRequestPlan(result.report);
+    const dataRequestPlan = buildDataRequestPlan(context.report);
 
     return [
       "我看到了你贴的表格，但现在还不能直接复盘。",
@@ -423,7 +432,29 @@ function buildPastedMetricsTableReply(text: string) {
     ].join("\n");
   }
 
-  return formatEcommerceAnalysisForFeishu(analyzeEcommerceStore(result.input), "刚粘贴的表格");
+  return formatEcommerceAnalysisForFeishu(analyzeEcommerceStore(context.input), context.sourceLabel);
+}
+
+export function buildFeishuImportContextFromText(text: string): FeishuEcommerceImportContext | null {
+  if (!looksLikePastedMetricsTable(text)) {
+    return null;
+  }
+
+  const result = buildEcommerceInputFromCsv({
+    metricsCsv: text,
+    store: {
+      storeName: "飞书粘贴数据店铺",
+      platform: "待确认平台",
+      market: "待确认市场",
+      category: "待确认类目",
+    },
+  });
+
+  return {
+    input: result.input,
+    report: result.report,
+    sourceLabel: "刚粘贴的表格",
+  };
 }
 
 export function buildFeishuAgentReply(

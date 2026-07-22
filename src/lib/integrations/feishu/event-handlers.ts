@@ -18,7 +18,7 @@ export type SendFeishuTextMessage = (payload: {
   replyToMessageId?: string;
 }) => Promise<void>;
 
-export type BuildFeishuReply = (text: string) => string;
+export type BuildFeishuReply = (text: string, event: FeishuReceiveMessageEvent) => string;
 
 export type FeishuEventHandlerOptions = {
   maxProcessedMessageIds?: number;
@@ -26,7 +26,7 @@ export type FeishuEventHandlerOptions = {
 
 export function createFeishuEventHandlers(
   sendTextMessage: SendFeishuTextMessage,
-  buildReply: BuildFeishuReply = buildFeishuAgentReply,
+  buildReply: BuildFeishuReply = (text) => buildFeishuAgentReply(text),
   options: FeishuEventHandlerOptions = {},
 ) {
   const maxProcessedMessageIds = Math.max(options.maxProcessedMessageIds ?? 500, 1);
@@ -75,7 +75,7 @@ export function createFeishuEventHandlers(
       let reply: string;
 
       try {
-        reply = buildReply(text);
+        reply = buildReply(text, event);
       } catch (error) {
         console.error("[feishu] 生成 Agent 回复失败：", error instanceof Error ? error.message : error);
         reply = "我收到消息了，但这次生成复盘时出错。你可以先发“我需要准备什么数据”，或把经营表格再贴一次。";

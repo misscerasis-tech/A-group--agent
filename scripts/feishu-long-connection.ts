@@ -3,7 +3,11 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { buildEcommerceInputFromCsv } from "../src/lib/ecommerce-agent/csv-import";
 import { requireFeishuRuntimeConfig } from "../src/lib/integrations/feishu/config";
-import { buildFeishuAgentReply } from "../src/lib/integrations/feishu/agent-reply";
+import {
+  buildFeishuAgentReply,
+  buildFeishuImportContextFromText,
+  type FeishuEcommerceImportContext,
+} from "../src/lib/integrations/feishu/agent-reply";
 import { createFeishuEventHandlers } from "../src/lib/integrations/feishu/event-handlers";
 
 function loadLocalEnvFile(fileName: string) {
@@ -71,6 +75,7 @@ function loadEcommerceContextFromEnv() {
     return {
       input: undefined,
       report: result.report,
+      sourceLabel: "当前导入数据",
       warningCount: result.report.issues.filter((issue) => issue.severity !== "info").length,
     };
   }
@@ -78,6 +83,7 @@ function loadEcommerceContextFromEnv() {
   return {
     input: result.input,
     report: result.report,
+    sourceLabel: "当前导入数据",
     warningCount: result.report.issues.filter((issue) => issue.severity !== "info").length,
   };
 }
@@ -102,6 +108,7 @@ async function main() {
     appId: config.appId,
     appSecret: config.appSecret,
   });
+  const chatContexts = new Map<string, FeishuEcommerceImportContext>();
 
   const wsClient = new Lark.WSClient({
     appId: config.appId,
@@ -166,13 +173,22 @@ async function main() {
 
   await wsClient.start({
     eventDispatcher: new Lark.EventDispatcher({}).register(
-      createFeishuEventHandlers(sendTextMessage, (text) =>
-        buildFeishuAgentReply(text, {
-          input: importedData?.input,
-          report: importedData?.report,
-          sourceLabel: importedData ? "当前导入数据" : "样例店铺",
-        }),
-      ),
+      createFeishuEventHandlers(sendTextMessage, (text, event) => {
+        const pastedContext = buildFeishuImportContextFromText(text);
+
+        if (pastedContext) {
+          chatContexts.set(event.message.chat_id, pastedContext);
+          return buildFeishuAgentReply(text, pastedContext);
+        }
+
+        const context = chatContexts.get(event.message.chat_id) ?? importedData;
+
+        return buildFeishuAgentReply(text, {
+          input: context?.input,
+          report: context?.report,
+          sourceLabel: context?.sourceLabel ?? "样例店铺",
+        });
+      }),
     ),
   });
 

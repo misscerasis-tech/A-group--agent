@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createFeishuEventHandlers } from "./event-handlers";
+import { createFeishuEventHandlers, type FeishuReceiveMessageEvent } from "./event-handlers";
 
 describe("feishu event handlers", () => {
   const textEvent = {
@@ -24,6 +24,21 @@ describe("feishu event handlers", () => {
       chatId: "oc_123",
       replyToMessageId: "om_123",
       text: "复盘结果",
+    });
+  });
+
+  it("passes the Feishu event into reply builders for chat-scoped context", async () => {
+    const sendTextMessage = vi.fn().mockResolvedValue(undefined);
+    const buildReply = vi.fn((text: string, event: FeishuReceiveMessageEvent) => `${event.message.chat_id}:${text}`);
+    const handlers = createFeishuEventHandlers(sendTextMessage, buildReply);
+
+    await handlers["im.message.receive_v1"](textEvent);
+
+    expect(buildReply).toHaveBeenCalledWith("帮我看本周经营情况", textEvent);
+    expect(sendTextMessage).toHaveBeenCalledWith({
+      chatId: "oc_123",
+      replyToMessageId: "om_123",
+      text: "oc_123:帮我看本周经营情况",
     });
   });
 

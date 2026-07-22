@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildFeishuAgentReply,
+  buildFeishuImportContextFromText,
   detectFeishuReplyIntent,
   parseFeishuTextContent,
 } from "./agent-reply";
@@ -141,16 +142,25 @@ describe("feishu agent reply", () => {
   });
 
   it("analyzes pasted metrics csv directly", () => {
-    const reply = buildFeishuAgentReply(
-      [
-        "week,product_name,orders,revenue,units_sold",
-        "previous,黑杯,10,500,12",
-        "current,黑杯,8,420,9",
-      ].join("\n"),
-    );
+    const pastedCsv = [
+      "week,product_name,orders,revenue,units_sold",
+      "previous,黑杯,10,500,12",
+      "current,黑杯,8,420,9",
+    ].join("\n");
+    const context = buildFeishuImportContextFromText(pastedCsv);
+    const reply = buildFeishuAgentReply(pastedCsv);
 
+    expect(context?.input?.store.storeName).toBe("飞书粘贴数据店铺");
     expect(reply).toContain("刚粘贴的表格");
     expect(reply).toContain("飞书粘贴数据店铺");
+  });
+
+  it("keeps an import report for incomplete pasted tables", () => {
+    const context = buildFeishuImportContextFromText(["周期,商品名称,销售额", "本周,黑杯,450"].join("\n"));
+
+    expect(context?.input).toBeUndefined();
+    expect(context?.report.ok).toBe(false);
+    expect(context?.report.questionsForUser.some((question) => question.includes("订单数"))).toBe(true);
   });
 
   it("analyzes pasted spreadsheet-style tsv directly", () => {

@@ -3,7 +3,11 @@ import { resolve } from "node:path";
 import { analyzeEcommerceStore } from "../src/lib/ecommerce-agent/analysis";
 import { buildEcommerceInputFromCsv } from "../src/lib/ecommerce-agent/csv-import";
 import { buildDataRequestPlan } from "../src/lib/ecommerce-agent/data-request";
-import { buildFeishuAgentReply } from "../src/lib/integrations/feishu/agent-reply";
+import {
+  buildFeishuAgentReply,
+  buildFeishuImportContextFromText,
+  type FeishuEcommerceImportContext,
+} from "../src/lib/integrations/feishu/agent-reply";
 
 function assert(condition: unknown, message: string) {
   if (!condition) {
@@ -225,6 +229,35 @@ function main() {
   assert(!incompleteImport.report.ok, "缺字段经营表应该不可直接分析。");
   assert(incompleteFeishuReply.includes("还不能直接复盘"), "飞书不应该把不完整导入表回落成样例复盘。");
   assert(incompleteFeishuReply.includes("订单数"), "飞书应该追问不完整导入表缺少的字段。");
+
+  const chatContexts = new Map<string, FeishuEcommerceImportContext>();
+  function chatScopedReply(text: string, chatId: string) {
+    const pastedContext = buildFeishuImportContextFromText(text);
+
+    if (pastedContext) {
+      chatContexts.set(chatId, pastedContext);
+      return buildFeishuAgentReply(text, pastedContext);
+    }
+
+    const context = chatContexts.get(chatId);
+    return buildFeishuAgentReply(text, {
+      input: context?.input,
+      report: context?.report,
+      sourceLabel: context?.sourceLabel ?? "样例店铺",
+    });
+  }
+
+  chatScopedReply(
+    [
+      "week,product_name,orders,revenue,units_sold",
+      "previous,黑杯,10,500,12",
+      "current,黑杯,8,420,9",
+    ].join("\n"),
+    "oc_smoke",
+  );
+  const followUpReply = chatScopedReply("帮我看本周经营情况", "oc_smoke");
+
+  assert(followUpReply.includes("飞书粘贴数据店铺"), "飞书同一会话后续追问应该使用刚粘贴的经营表。");
 
   console.info("[smoke] 经营表导入、经营分析、飞书问答和异常数据拦截均通过。");
 }
