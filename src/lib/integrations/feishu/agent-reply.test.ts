@@ -123,6 +123,22 @@ describe("feishu agent reply", () => {
     expect(reply).toContain("杯盖漏水");
   });
 
+  it("analyzes pasted order detail tables directly", () => {
+    const reply = buildFeishuAgentReply(
+      [
+        "订单号\t支付时间\t商品名称\t商家编码\t购买数量\t实付金额\t退款金额\t售后状态",
+        "O-1001\t2026-07-08 10:11:00\t黑杯\tCUP-BLACK\t2\t79.8\t\t已完成",
+        "O-1002\t2026-07-09 12:30:00\t黑杯\tCUP-BLACK\t1\t39.9\t0\t已完成",
+        "O-1003\t2026-07-15 09:20:00\t黑杯\tCUP-BLACK\t1\t39.9\t39.9\t已退款",
+        "O-1004\t2026-07-16 19:45:00\t白杯\tCUP-WHITE\t3\t119.7\t\t已完成",
+      ].join("\n"),
+    );
+
+    expect(reply).toContain("刚粘贴的表格");
+    expect(reply).toContain("飞书粘贴数据店铺");
+    expect(reply).toContain("已退款");
+  });
+
   it("analyzes pasted markdown-style tables directly", () => {
     const reply = buildFeishuAgentReply(
       [

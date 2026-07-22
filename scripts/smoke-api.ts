@@ -11,6 +11,14 @@ const customerVoiceTable = [
   "黑杯,CUP-BLACK,商品评价,2026-07-19,负向,杯盖漏水,用户说杯盖渗水,4",
 ].join("\n");
 
+const orderDetailMetricsTable = [
+  "订单号,支付时间,商品名称,商家编码,购买数量,实付金额,退款金额,售后状态",
+  "O-1001,2026-07-08 10:11:00,黑杯,CUP-BLACK,2,79.8,,已完成",
+  "O-1002,2026-07-09 12:30:00,黑杯,CUP-BLACK,1,39.9,0,已完成",
+  "O-1003,2026-07-15 09:20:00,黑杯,CUP-BLACK,1,39.9,39.9,已退款",
+  "O-1004,2026-07-16 19:45:00,白杯,CUP-WHITE,3,119.7,,已完成",
+].join("\n");
+
 async function postAnalyze(body: unknown) {
   const response = await fetch(new URL("/api/agent/analyze", baseUrl), {
     method: "POST",
@@ -44,9 +52,15 @@ async function main() {
 
   assert(success.response.status === 200, `平台表头数据应该返回 200，实际 ${success.response.status}`);
   const report = success.body.report as
-    | { ok?: boolean; fieldMappings?: Array<{ sourceHeader?: string }>; customerVoiceRows?: number }
+    | {
+        ok?: boolean;
+        fieldMappings?: Array<{ sourceHeader?: string }>;
+        customerVoiceRows?: number;
+        metricsInputKind?: string;
+      }
     | undefined;
   assert(report?.ok === true, "平台表头数据应该可分析。");
+  assert(report.metricsInputKind === "weekly_metrics", "平台表头数据应该被识别为周汇总表。");
   assert(report.fieldMappings?.every((mapping) => mapping.sourceHeader), "字段映射不应该出现空 sourceHeader。");
   assert(report.customerVoiceRows === 1, "接口应该识别用户声音表行数。");
   assert(typeof success.body.feishuReply === "string", "接口应该返回飞书回复文本。");
@@ -57,6 +71,19 @@ async function main() {
     String((success.body.workSession as { nextQuestion?: string } | undefined)?.nextQuestion ?? "").includes("竞品"),
     "成功分析后，workSession 应该继续追问分析发现的缺口。",
   );
+
+  const orderDetail = await postAnalyze({
+    store: {
+      storeName: "A组订单明细测试店",
+      platform: "订单导出表",
+    },
+    metricsCsv: orderDetailMetricsTable,
+  });
+  const orderDetailReport = orderDetail.body.report as { ok?: boolean; metricsInputKind?: string } | undefined;
+  assert(orderDetail.response.status === 200, `订单明细数据应该返回 200，实际 ${orderDetail.response.status}`);
+  assert(orderDetailReport?.ok === true, "订单明细数据应该可分析。");
+  assert(orderDetailReport.metricsInputKind === "order_details", "订单明细应该被接口识别并聚合。");
+  assert(String(orderDetail.body.feishuReply ?? "").includes("已退款"), "订单明细回复应该引用售后状态。");
 
   const missingBody = await postAnalyze({});
   assert(missingBody.response.status === 400, `缺 metricsCsv 应该返回 400，实际 ${missingBody.response.status}`);
@@ -71,7 +98,7 @@ async function main() {
   assert(missingFields.response.status === 422, `缺必填字段应该返回 422，实际 ${missingFields.response.status}`);
   assert(missingFields.body.workSession, "缺字段时应该返回 Agent 接手步骤。");
 
-  console.info(`[smoke:api] /api/agent/analyze 平台表头、缺参和缺字段检查均通过：${baseUrl}`);
+  console.info(`[smoke:api] /api/agent/analyze 平台表头、订单明细、缺参和缺字段检查均通过：${baseUrl}`);
 }
 
 main().catch((error) => {

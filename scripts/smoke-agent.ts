@@ -64,6 +64,19 @@ function main() {
 
   assert(tsvImport.report.ok, "从 Excel/飞书表格复制的 TSV 应该可以导入。");
 
+  const orderDetailImport = buildEcommerceInputFromCsv({
+    metricsCsv: readSample("data/samples/aurora-cup-order-details.csv"),
+  });
+
+  assert(orderDetailImport.report.ok, "订单明细导出表应该可以自动聚合并导入。");
+  assert(orderDetailImport.report.metricsInputKind === "order_details", "订单明细应该被识别为明细输入。");
+  assert(orderDetailImport.input?.currentWeek.products.length === 2, "订单明细本周应该按 SKU 聚合。");
+  assert(
+    orderDetailImport.input?.currentWeek.products.find((product) => product.sku === "CUP-BLACK-500")?.refundOrders ===
+      1,
+    "订单明细退款状态应该能转成退款/退货单数。",
+  );
+
   const rateFieldImport = buildEcommerceInputFromCsv({
     metricsCsv: [
       "周期,商品名称,订单数,销售额,销量,转化率,广告消耗,ROAS,毛利率,退款率,退款金额占比",
@@ -122,6 +135,15 @@ function main() {
       "本周\t黑杯\t8\t420\t9\t25%\t杯盖漏水 / 物流慢",
     ].join("\n"),
   );
+  const pastedOrderDetailReply = buildFeishuAgentReply(
+    [
+      "订单号\t支付时间\t商品名称\t商家编码\t购买数量\t实付金额\t退款金额\t售后状态",
+      "O-1001\t2026-07-08 10:11:00\t黑杯\tCUP-BLACK\t2\t79.8\t\t已完成",
+      "O-1002\t2026-07-09 12:30:00\t黑杯\tCUP-BLACK\t1\t39.9\t0\t已完成",
+      "O-1003\t2026-07-15 09:20:00\t黑杯\tCUP-BLACK\t1\t39.9\t39.9\t已退款",
+      "O-1004\t2026-07-16 19:45:00\t白杯\tCUP-WHITE\t3\t119.7\t\t已完成",
+    ].join("\n"),
+  );
   const testingReply = buildFeishuAgentReply("怎么真正测试，接入飞书吗");
   const returnsReply = buildFeishuAgentReply("退款退货怎么看");
 
@@ -130,6 +152,8 @@ function main() {
   assert(pastedTableReply.includes("刚粘贴的表格"), "飞书应该能分析直接粘贴的表格。");
   assert(pastedPlatformTableReply.includes("刚粘贴的表格"), "飞书应该能分析平台中文表头粘贴数据。");
   assert(pastedPlatformTableReply.includes("杯盖漏水"), "飞书平台表头回复应该引用退款原因。");
+  assert(pastedOrderDetailReply.includes("刚粘贴的表格"), "飞书应该能分析订单明细粘贴数据。");
+  assert(pastedOrderDetailReply.includes("已退款"), "飞书订单明细回复应该引用售后状态。");
   assert(testingReply.includes("App Secret"), "飞书测试回复应该提示 App Secret。");
   assert(returnsReply.includes("售后把成交吃回去"), "飞书应该能单独回答退款/退货问题。");
 

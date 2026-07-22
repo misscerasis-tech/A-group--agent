@@ -24,6 +24,7 @@ export type FieldMapping = {
 
 export type EcommerceCsvImportReport = {
   ok: boolean;
+  metricsInputKind: "weekly_metrics" | "order_details";
   metricsRows: number;
   competitorRows: number;
   customerVoiceRows: number;
@@ -93,6 +94,18 @@ type CustomerVoiceField =
   | "theme"
   | "text"
   | "count";
+
+type OrderDetailField =
+  | "orderId"
+  | "orderDate"
+  | "productName"
+  | "sku"
+  | "quantity"
+  | "revenue"
+  | "refundAmount"
+  | "status"
+  | "productCost"
+  | "grossProfit";
 
 const defaultStore: StoreProfile = {
   storeName: "待导入店铺",
@@ -440,6 +453,121 @@ const customerVoiceAliases: Record<CustomerVoiceField, string[]> = {
     "差评内容",
   ],
   count: ["count", "qty", "frequency", "times", "mentions", "数量", "次数", "出现次数", "提及次数"],
+};
+
+const orderDetailFieldLabels: Record<OrderDetailField, string> = {
+  orderId: "订单号",
+  orderDate: "下单/支付日期",
+  productName: "商品名称",
+  sku: "SKU",
+  quantity: "购买件数",
+  revenue: "订单实收金额",
+  refundAmount: "退款金额",
+  status: "订单/售后状态",
+  productCost: "商品成本",
+  grossProfit: "毛利",
+};
+
+const orderDetailAliases: Record<OrderDetailField, string[]> = {
+  orderId: [
+    "order_id",
+    "orderid",
+    "id",
+    "transaction_id",
+    "transactionid",
+    "order_no",
+    "orderno",
+    "订单号",
+    "订单编号",
+    "交易订单号",
+    "交易号",
+    "子订单号",
+    "父订单号",
+    "订单id",
+  ],
+  orderDate: [
+    "order_date",
+    "orderdate",
+    "paid_at",
+    "paidat",
+    "pay_time",
+    "paytime",
+    "created_at",
+    "createdat",
+    "create_time",
+    "createtime",
+    "order_time",
+    "ordertime",
+    "purchase_date",
+    "purchasedate",
+    "date",
+    "日期",
+    "下单日期",
+    "下单时间",
+    "支付日期",
+    "支付时间",
+    "成交日期",
+    "成交时间",
+    "订单日期",
+    "创建时间",
+  ],
+  productName: metricAliases.productName,
+  sku: metricAliases.sku,
+  quantity: [
+    "quantity",
+    "qty",
+    "units",
+    "item_quantity",
+    "itemquantity",
+    "num",
+    "数量",
+    "件数",
+    "购买数量",
+    "商品数量",
+    "支付商品件数",
+    "成交件数",
+    "销售数量",
+  ],
+  revenue: [
+    "revenue",
+    "sales",
+    "amount",
+    "order_amount",
+    "orderamount",
+    "paid_amount",
+    "paidamount",
+    "payment",
+    "item_total",
+    "itemtotal",
+    "actual_amount",
+    "actualamount",
+    "实收金额",
+    "实付金额",
+    "支付金额",
+    "付款金额",
+    "订单金额",
+    "成交金额",
+    "商品金额",
+    "商品支付金额",
+    "销售额",
+  ],
+  refundAmount: metricAliases.refundAmount,
+  status: [
+    "status",
+    "order_status",
+    "orderstatus",
+    "refund_status",
+    "refundstatus",
+    "after_sale_status",
+    "aftersalestatus",
+    "订单状态",
+    "交易状态",
+    "售后状态",
+    "退款状态",
+    "退货状态",
+  ],
+  productCost: metricAliases.productCost,
+  grossProfit: metricAliases.grossProfit,
 };
 
 function normalizeHeader(header: string) {
@@ -800,6 +928,58 @@ function comparePeriods(a: string, b: string) {
   });
 }
 
+function parseImportDate(value: string) {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  const chineseDate = trimmed.match(/(\d{4})年(\d{1,2})月(\d{1,2})日?/);
+  const dashedDate = trimmed.match(/(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+  const dateMatch = chineseDate ?? dashedDate;
+
+  if (dateMatch) {
+    const year = Number(dateMatch[1]);
+    const month = Number(dateMatch[2]);
+    const day = Number(dateMatch[3]);
+    const parsed = new Date(Date.UTC(year, month - 1, day));
+
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  const parsed = new Date(trimmed);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return new Date(Date.UTC(parsed.getFullYear(), parsed.getMonth(), parsed.getDate()));
+}
+
+function addUtcDays(date: Date, days: number) {
+  const copy = new Date(date);
+  copy.setUTCDate(copy.getUTCDate() + days);
+  return copy;
+}
+
+function startOfIsoWeek(date: Date) {
+  const copy = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const day = copy.getUTCDay();
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  copy.setUTCDate(copy.getUTCDate() + diffToMonday);
+  return copy;
+}
+
+function formatIsoDate(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function formatWeekRange(startDate: Date) {
+  const endDate = addUtcDays(startDate, 6);
+  return `${formatIsoDate(startDate)} 至 ${formatIsoDate(endDate)}`;
+}
+
 function inferTwoPeriods(
   rows: Array<Record<string, string>>,
   mapping: Map<MetricField, string>,
@@ -1082,6 +1262,262 @@ function buildWeeklyMetricSet({
   };
 }
 
+type ParsedOrderDetailRow = {
+  rowNumber: number;
+  orderId: string;
+  orderDate: Date;
+  productName: string;
+  sku: string;
+  quantity: number;
+  revenue: number;
+  refundAmount: number | null;
+  status: string;
+  productCost: number | null;
+  grossProfit: number | null;
+};
+
+type OrderMetricGroup = {
+  productName: string;
+  sku: string;
+  orderIds: Set<string>;
+  refundOrderIds: Set<string>;
+  quantity: number;
+  revenue: number;
+  refundAmount: number | null;
+  productCost: number | null;
+  grossProfit: number | null;
+  refundReasons: Set<string>;
+};
+
+function isRefundLikeStatus(status: string) {
+  const normalized = status.trim().toLowerCase();
+
+  if (!normalized) {
+    return false;
+  }
+
+  return ["refund", "return", "after-sale", "aftersale", "退款", "退货", "售后", "已退款", "已退货"].some(
+    (keyword) => normalized.includes(keyword),
+  );
+}
+
+function hasCompleteWeeklyMetricMapping(mapping: Map<MetricField, string>) {
+  return [...metricRequiredFields].every((field) => mapping.has(field));
+}
+
+function canUseOrderDetails(mapping: Map<OrderDetailField, string>) {
+  return mapping.has("orderDate") && mapping.has("revenue") && (mapping.has("productName") || mapping.has("sku"));
+}
+
+function parseOrderDetailRows(
+  table: CsvTable,
+  mapping: Map<OrderDetailField, string>,
+  issues: ImportIssue[],
+) {
+  return table.rows
+    .map((row, index): ParsedOrderDetailRow | null => {
+      const rowNumber = index + 2;
+      const orderDate = parseImportDate(readField(row, mapping, "orderDate"));
+      const productName = readField(row, mapping, "productName");
+      const sku = readField(row, mapping, "sku");
+
+      if (!orderDate) {
+        issues.push({
+          severity: "error",
+          rowNumber,
+          message: "订单明细缺少或无法识别下单/支付日期，暂时不能判断属于哪一周。",
+        });
+        return null;
+      }
+
+      if (!productName && !sku) {
+        issues.push({
+          severity: "error",
+          rowNumber,
+          message: "订单明细缺少商品名称或 SKU，Agent 无法知道这一行是哪款商品。",
+        });
+        return null;
+      }
+
+      const revenue = requireNonNegative(
+        requiredNumber(readField(row, mapping, "revenue"), orderDetailFieldLabels.revenue, issues, rowNumber),
+        orderDetailFieldLabels.revenue,
+        issues,
+        rowNumber,
+      );
+      const quantity = optionalNumber(readField(row, mapping, "quantity"), orderDetailFieldLabels.quantity, issues, rowNumber);
+      const refundAmountValue = readField(row, mapping, "refundAmount");
+      const refundAmount =
+        mapping.has("refundAmount") && !refundAmountValue
+          ? 0
+          : optionalNumber(refundAmountValue, orderDetailFieldLabels.refundAmount, issues, rowNumber);
+      const productCost = optionalNumber(
+        readField(row, mapping, "productCost"),
+        orderDetailFieldLabels.productCost,
+        issues,
+        rowNumber,
+      );
+      const grossProfit = optionalNumber(readField(row, mapping, "grossProfit"), undefined, undefined, undefined, {
+        allowNegative: true,
+      });
+
+      if (revenue === null) {
+        return null;
+      }
+
+      if (quantity !== null && quantity < 0) {
+        return null;
+      }
+
+      return {
+        rowNumber,
+        orderId: readField(row, mapping, "orderId") || `row-${rowNumber}`,
+        orderDate,
+        productName: productName || sku,
+        sku: sku || productName,
+        quantity: quantity ?? 1,
+        revenue,
+        refundAmount,
+        status: readField(row, mapping, "status"),
+        productCost,
+        grossProfit,
+      };
+    })
+    .filter((row): row is ParsedOrderDetailRow => row !== null);
+}
+
+function addNullableSum(currentValue: number | null, value: number | null) {
+  if (currentValue === null || value === null) {
+    return null;
+  }
+
+  return currentValue + value;
+}
+
+function buildOrderDetailProducts(rows: ParsedOrderDetailRow[]) {
+  const groups = new Map<string, OrderMetricGroup>();
+
+  for (const row of rows) {
+    const key = row.sku || row.productName;
+    const existing = groups.get(key);
+    const group =
+      existing ??
+      {
+        productName: row.productName,
+        sku: row.sku,
+        orderIds: new Set<string>(),
+        refundOrderIds: new Set<string>(),
+        quantity: 0,
+        revenue: 0,
+        refundAmount: 0,
+        productCost: 0,
+        grossProfit: 0,
+        refundReasons: new Set<string>(),
+      };
+
+    group.orderIds.add(row.orderId);
+    group.quantity += row.quantity;
+    group.revenue += row.revenue;
+    group.refundAmount = addNullableSum(group.refundAmount, row.refundAmount);
+    group.productCost = addNullableSum(group.productCost, row.productCost);
+    group.grossProfit = addNullableSum(group.grossProfit, row.grossProfit);
+
+    if ((row.refundAmount !== null && row.refundAmount > 0) || isRefundLikeStatus(row.status)) {
+      group.refundOrderIds.add(row.orderId);
+
+      if (row.status.trim()) {
+        group.refundReasons.add(row.status.trim());
+      }
+    }
+
+    groups.set(key, group);
+  }
+
+  return [...groups.values()].map((group): ProductMetric => ({
+    productName: group.productName,
+    sku: group.sku,
+    visitors: null,
+    orders: group.orderIds.size,
+    revenue: roundMetric(group.revenue),
+    unitsSold: roundMetric(group.quantity),
+    adSpend: null,
+    adRevenue: null,
+    inventory: null,
+    productCost: group.productCost === null ? null : roundMetric(group.productCost),
+    grossProfit: group.grossProfit === null ? null : roundMetric(group.grossProfit),
+    refundOrders: group.refundOrderIds.size,
+    refundAmount: group.refundAmount === null ? null : roundMetric(group.refundAmount),
+    refundReason: group.refundReasons.size > 0 ? [...group.refundReasons].join(" / ") : null,
+  }));
+}
+
+function buildWeeklyMetricSetsFromOrderDetails({
+  table,
+  mapping,
+  issues,
+}: {
+  table: CsvTable;
+  mapping: Map<OrderDetailField, string>;
+  issues: ImportIssue[];
+}) {
+  const orderRows = parseOrderDetailRows(table, mapping, issues);
+  const rowsByWeek = new Map<string, { startDate: Date; rows: ParsedOrderDetailRow[] }>();
+
+  for (const row of orderRows) {
+    const startDate = startOfIsoWeek(row.orderDate);
+    const key = formatIsoDate(startDate);
+    const group = rowsByWeek.get(key) ?? { startDate, rows: [] };
+    group.rows.push(row);
+    rowsByWeek.set(key, group);
+  }
+
+  const sortedWeeks = [...rowsByWeek.values()].sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+  const selectedWeeks = sortedWeeks.slice(-2);
+
+  if (sortedWeeks.length > 2) {
+    const [previous, current] = selectedWeeks;
+    issues.push({
+      severity: "info",
+      message: `订单明细覆盖 ${sortedWeeks.length} 个自然周，已自动选择最近两周：${formatWeekRange(
+        previous.startDate,
+      )} 作为上周，${formatWeekRange(current.startDate)} 作为本周。`,
+    });
+  }
+
+  issues.push({
+    severity: "info",
+    message: `识别到订单明细，已按订单日期和 SKU/商品名自动聚合成周度经营表，共读取 ${table.rows.length} 行订单明细。`,
+  });
+
+  const [previousWeekRows, currentWeekRows] =
+    selectedWeeks.length === 2 ? selectedWeeks : [{ startDate: new Date(0), rows: [] }, selectedWeeks[0]];
+
+  if (selectedWeeks.length < 2) {
+    issues.push({
+      severity: "error",
+      message: "订单明细至少需要覆盖两个自然周，Agent 才能判断上周到本周的变化趋势。",
+    });
+  }
+
+  const previousWeekStartDate = previousWeekRows?.startDate;
+  const currentWeekStartDate = currentWeekRows?.startDate;
+
+  return {
+    previousWeek: {
+      label: "上周",
+      startDate: previousWeekStartDate ? formatIsoDate(previousWeekStartDate) : "",
+      endDate: previousWeekStartDate ? formatIsoDate(addUtcDays(previousWeekStartDate, 6)) : "",
+      products: buildOrderDetailProducts(previousWeekRows?.rows ?? []),
+    },
+    currentWeek: {
+      label: "本周",
+      startDate: currentWeekStartDate ? formatIsoDate(currentWeekStartDate) : "",
+      endDate: currentWeekStartDate ? formatIsoDate(addUtcDays(currentWeekStartDate, 6)) : "",
+      products: buildOrderDetailProducts(currentWeekRows?.rows ?? []),
+    },
+  };
+}
+
 function buildCompetitors(
   text: string | undefined,
   issues: ImportIssue[],
@@ -1241,19 +1677,32 @@ export function buildEcommerceInputFromCsv({
 }): EcommerceCsvImportResult {
   const issues: ImportIssue[] = [];
   const metricsTable = parseCsv(metricsCsv);
-  const { mapping, fieldMappings } = buildHeaderMap(
+  const { mapping, fieldMappings: weeklyFieldMappings } = buildHeaderMap(
     metricsTable.headers,
     metricAliases,
     metricRequiredFields,
     metricFieldLabels,
   );
+  const { mapping: orderDetailMapping, fieldMappings: orderDetailFieldMappings } = buildHeaderMap(
+    metricsTable.headers,
+    orderDetailAliases,
+    new Set<OrderDetailField>(["orderDate", "revenue"]),
+    orderDetailFieldLabels,
+  );
+  const shouldUseOrderDetails = !hasCompleteWeeklyMetricMapping(mapping) && canUseOrderDetails(orderDetailMapping);
+  const fieldMappings = shouldUseOrderDetails ? orderDetailFieldMappings : weeklyFieldMappings;
+  const metricsInputKind: EcommerceCsvImportReport["metricsInputKind"] = shouldUseOrderDetails
+    ? "order_details"
+    : "weekly_metrics";
 
-  for (const field of metricRequiredFields) {
-    if (!mapping.has(field)) {
-      issues.push({
-        severity: "error",
-        message: `缺少必要字段「${metricFieldLabels[field]}」。`,
-      });
+  if (!shouldUseOrderDetails) {
+    for (const field of metricRequiredFields) {
+      if (!mapping.has(field)) {
+        issues.push({
+          severity: "error",
+          message: `缺少必要字段「${metricFieldLabels[field]}」。`,
+        });
+      }
     }
   }
 
@@ -1264,50 +1713,67 @@ export function buildEcommerceInputFromCsv({
     });
   }
 
-  const explicitPreviousRows: MetricSourceRow[] = [];
-  const explicitCurrentRows: MetricSourceRow[] = [];
-  const inferredPeriods = inferTwoPeriods(metricsTable.rows, mapping, issues);
+  let explicitPreviousRows: MetricSourceRow[] = [];
+  let explicitCurrentRows: MetricSourceRow[] = [];
+  let previousWeek: WeeklyMetricSet;
+  let currentWeek: WeeklyMetricSet;
 
-  for (const [index, row] of metricsTable.rows.entries()) {
-    const week = normalizeWeek(readField(row, mapping, "week"));
-    const sourceRow = { row, rowNumber: index + 2 };
-    const effectiveWeek =
-      week === "previous" || week === "current"
-        ? week
-        : week === inferredPeriods?.previous
-          ? "previous"
-          : week === inferredPeriods?.current
-            ? "current"
-            : week;
+  if (shouldUseOrderDetails) {
+    const orderDetailResult = buildWeeklyMetricSetsFromOrderDetails({
+      table: metricsTable,
+      mapping: orderDetailMapping,
+      issues,
+    });
 
-    if (effectiveWeek === "previous") {
-      explicitPreviousRows.push(sourceRow);
-    } else if (effectiveWeek === "current") {
-      explicitCurrentRows.push(sourceRow);
+    previousWeek = orderDetailResult.previousWeek;
+    currentWeek = orderDetailResult.currentWeek;
+  } else {
+    explicitPreviousRows = [];
+    explicitCurrentRows = [];
+    const inferredPeriods = inferTwoPeriods(metricsTable.rows, mapping, issues);
+
+    for (const [index, row] of metricsTable.rows.entries()) {
+      const week = normalizeWeek(readField(row, mapping, "week"));
+      const sourceRow = { row, rowNumber: index + 2 };
+      const effectiveWeek =
+        week === "previous" || week === "current"
+          ? week
+          : week === inferredPeriods?.previous
+            ? "previous"
+            : week === inferredPeriods?.current
+              ? "current"
+              : week;
+
+      if (effectiveWeek === "previous") {
+        explicitPreviousRows.push(sourceRow);
+      } else if (effectiveWeek === "current") {
+        explicitCurrentRows.push(sourceRow);
+      }
     }
-  }
 
-  if (explicitPreviousRows.length === 0 || explicitCurrentRows.length === 0) {
-    issues.push({
-      severity: "error",
-      message: "需要同时有“上周/previous”和“本周/current”两段数据，Agent 才能判断变化趋势。",
+    if (explicitPreviousRows.length === 0 || explicitCurrentRows.length === 0) {
+      issues.push({
+        severity: "error",
+        message: "需要同时有“上周/previous”和“本周/current”两段数据，Agent 才能判断变化趋势。",
+      });
+    }
+
+    previousWeek = buildWeeklyMetricSet({
+      label: "上周",
+      rows: explicitPreviousRows,
+      mapping,
+      issues,
+    });
+    currentWeek = buildWeeklyMetricSet({
+      label: "本周",
+      rows: explicitCurrentRows,
+      mapping,
+      issues,
     });
   }
 
   const competitorResult = buildCompetitors(competitorsCsv, issues);
   const customerVoiceResult = buildCustomerVoices(customerVoicesCsv, issues);
-  const previousWeek = buildWeeklyMetricSet({
-    label: "上周",
-    rows: explicitPreviousRows,
-    mapping,
-    issues,
-  });
-  const currentWeek = buildWeeklyMetricSet({
-    label: "本周",
-    rows: explicitCurrentRows,
-    mapping,
-    issues,
-  });
   const errorIssues = issues.filter((issue) => issue.severity === "error");
   const questionsForUser = [
     ...fieldMappings
@@ -1316,13 +1782,14 @@ export function buildEcommerceInputFromCsv({
     ...errorIssues
       .slice(0, 3)
       .map((issue) => `${issue.rowNumber ? `请修正第 ${issue.rowNumber} 行：` : "请修正："}${issue.message}`),
-    ...(explicitPreviousRows.length === 0 ? ["请确认哪些行属于上周。"] : []),
-    ...(explicitCurrentRows.length === 0 ? ["请确认哪些行属于本周。"] : []),
+    ...(!shouldUseOrderDetails && explicitPreviousRows.length === 0 ? ["请确认哪些行属于上周。"] : []),
+    ...(!shouldUseOrderDetails && explicitCurrentRows.length === 0 ? ["请确认哪些行属于本周。"] : []),
     ...(competitorResult.competitors.length === 0 ? ["可以补 1 到 3 个最在意的竞品链接和价格。"] : []),
   ];
 
   const report: EcommerceCsvImportReport = {
     ok: errorIssues.length === 0 && previousWeek.products.length > 0 && currentWeek.products.length > 0,
+    metricsInputKind,
     metricsRows: metricsTable.rows.length,
     competitorRows: competitorResult.rows,
     customerVoiceRows: customerVoiceResult.rows,

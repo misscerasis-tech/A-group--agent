@@ -29,6 +29,14 @@ const platformHeaderMetricsTable = [
   "本周,Aurora Cup 黑色 500ml,CUP-BLACK-500,4380,122,4392,128,1510,2920,118,3514,878,4,160,杯盖漏水 / 物流慢",
 ].join("\n");
 
+const orderDetailMetricsTable = [
+  "订单号,支付时间,商品名称,商家编码,购买数量,实付金额,退款金额,售后状态",
+  "O-1001,2026-07-08 10:11:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,2,79.8,,已完成",
+  "O-1002,2026-07-09 12:30:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,1,39.9,0,已完成",
+  "O-1003,2026-07-15 09:20:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,1,39.9,39.9,已退款",
+  "O-1004,2026-07-16 19:45:00,Aurora Cup 白色 500ml,CUP-WHITE-500,3,119.7,,已完成",
+].join("\n");
+
 const starterCompetitorCsv = [
   "name,url,source,observed_at,price,promotion,rating,reviews,key_selling_points",
   "Ember Travel Mug 2,https://ember.com/products/ember-travel-mug-2,Ember 官方商品页,2026-07-22,199.95,高端温控旅行杯,4.7,12000,精确温控 / App 控制 / 旅行场景",
@@ -115,6 +123,18 @@ export function DataImportPanel() {
     setCategory("待确认类目");
     setGoal(defaultStoreGoal);
     setMetricsCsv(platformHeaderMetricsTable);
+    setCompetitorCsv(starterCompetitorCsv);
+    setCustomerVoicesCsv(starterCustomerVoiceCsv);
+    setHasRun(false);
+  }
+
+  function loadOrderDetailSample() {
+    setStoreName("订单明细测试店");
+    setPlatform("Shopify / Amazon / 抖音电商均可替换");
+    setMarket("待确认市场");
+    setCategory("待确认类目");
+    setGoal(defaultStoreGoal);
+    setMetricsCsv(orderDetailMetricsTable);
     setCompetitorCsv(starterCompetitorCsv);
     setCustomerVoicesCsv(starterCustomerVoiceCsv);
     setHasRun(false);
@@ -334,6 +354,10 @@ export function DataImportPanel() {
             <button className="button secondary" type="button" onClick={loadPlatformHeaderSample}>
               <ClipboardList size={16} aria-hidden="true" />
               平台表头样例
+            </button>
+            <button className="button secondary" type="button" onClick={loadOrderDetailSample}>
+              <ClipboardList size={16} aria-hidden="true" />
+              订单明细样例
             </button>
             <button
               className="button secondary"

@@ -351,6 +351,76 @@ describe("ecommerce csv import", () => {
     expect(result.input?.currentWeek.products[0].revenue).toBe(450);
   });
 
+  it("aggregates order detail exports into weekly sku metrics", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "订单号,支付时间,商品名称,商家编码,购买数量,实付金额,退款金额,售后状态",
+        "O-1001,2026-07-08 10:11:00,黑杯,CUP-BLACK,2,79.8,,已完成",
+        "O-1002,2026-07-09 12:30:00,黑杯,CUP-BLACK,1,39.9,0,已完成",
+        "O-1003,2026-07-15 09:20:00,黑杯,CUP-BLACK,1,39.9,39.9,已退款",
+        "O-1004,2026-07-16 19:45:00,白杯,CUP-WHITE,3,119.7,,已完成",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.report.metricsInputKind).toBe("order_details");
+    expect(result.input?.previousWeek).toMatchObject({
+      startDate: "2026-07-06",
+      endDate: "2026-07-12",
+    });
+    expect(result.input?.currentWeek).toMatchObject({
+      startDate: "2026-07-13",
+      endDate: "2026-07-19",
+    });
+    expect(result.input?.previousWeek.products[0]).toMatchObject({
+      sku: "CUP-BLACK",
+      orders: 2,
+      revenue: 119.7,
+      unitsSold: 3,
+      refundOrders: 0,
+      refundAmount: 0,
+    });
+    expect(result.input?.currentWeek.products.find((product) => product.sku === "CUP-BLACK")).toMatchObject({
+      orders: 1,
+      revenue: 39.9,
+      unitsSold: 1,
+      refundOrders: 1,
+      refundAmount: 39.9,
+      refundReason: "已退款",
+    });
+    expect(result.report.issues.some((issue) => issue.message.includes("订单明细"))).toBe(true);
+  });
+
+  it("uses the latest two natural weeks when order details cover more than two weeks", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "订单号,支付时间,商品名称,商家编码,购买数量,实付金额",
+        "O-9001,2026-07-01,黑杯,CUP-BLACK,1,39.9",
+        "O-9002,2026-07-08,黑杯,CUP-BLACK,2,79.8",
+        "O-9003,2026-07-15,黑杯,CUP-BLACK,3,119.7",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.previousWeek.startDate).toBe("2026-07-06");
+    expect(result.input?.currentWeek.startDate).toBe("2026-07-13");
+    expect(result.report.issues.some((issue) => issue.message.includes("最近两周"))).toBe(true);
+  });
+
+  it("asks for another week when order details only contain one natural week", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "订单号,支付时间,商品名称,商家编码,购买数量,实付金额",
+        "O-1001,2026-07-15,黑杯,CUP-BLACK,1,39.9",
+        "O-1002,2026-07-16,黑杯,CUP-BLACK,2,79.8",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(false);
+    expect(result.report.metricsInputKind).toBe("order_details");
+    expect(result.report.questionsForUser.some((question) => question.includes("两个自然周"))).toBe(true);
+  });
+
   it("rejects impossible negative operating metrics", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

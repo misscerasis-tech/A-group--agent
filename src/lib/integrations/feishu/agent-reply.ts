@@ -285,11 +285,20 @@ function looksLikePastedMetricsTable(text: string) {
     text.includes("周期") ||
     text.includes("上周") ||
     text.includes("本周");
+  const hasOrderDetailDateSignal =
+    normalized.includes("order_date") ||
+    normalized.includes("paid_at") ||
+    normalized.includes("pay_time") ||
+    text.includes("支付时间") ||
+    text.includes("下单时间") ||
+    text.includes("订单日期");
   const hasOrderSignal =
     normalized.includes("orders") ||
     normalized.includes("paid_buyers") ||
     normalized.includes("buyers") ||
+    normalized.includes("order_id") ||
     text.includes("订单") ||
+    text.includes("订单号") ||
     text.includes("买家数") ||
     text.includes("支付买家数");
   const hasRevenueSignal =
@@ -298,6 +307,8 @@ function looksLikePastedMetricsTable(text: string) {
     normalized.includes("sales") ||
     text.includes("销售额") ||
     text.includes("成交额") ||
+    text.includes("实付金额") ||
+    text.includes("实收金额") ||
     text.includes("支付金额") ||
     text.includes("商品支付金额");
   const hasUnitsSignal =
@@ -305,10 +316,20 @@ function looksLikePastedMetricsTable(text: string) {
     normalized.includes("quantity") ||
     normalized.includes("qty") ||
     text.includes("销量") ||
+    text.includes("数量") ||
+    text.includes("购买数量") ||
+    text.includes("商品数量") ||
     text.includes("件数") ||
     text.includes("支付商品件数");
 
-  return hasTableDelimiter && text.includes("\n") && hasPeriodSignal && hasOrderSignal && hasRevenueSignal && hasUnitsSignal;
+  return (
+    hasTableDelimiter &&
+    text.includes("\n") &&
+    hasOrderSignal &&
+    hasRevenueSignal &&
+    hasUnitsSignal &&
+    (hasPeriodSignal || hasOrderDetailDateSignal)
+  );
 }
 
 function buildPastedMetricsTableReply(text: string) {
@@ -332,7 +353,7 @@ function buildPastedMetricsTableReply(text: string) {
       "我看到了你贴的表格，但现在还不能直接复盘。",
       "需要你先补这些信息：",
       ...issues,
-      "最小格式需要：week、product_name、orders、revenue、units_sold，并且要同时有 previous/current 两段数据。CSV、TSV、Markdown 或复制表格都可以。",
+      "最小格式可以是周汇总表：week、product_name、orders、revenue、units_sold；也可以是订单明细：订单号、支付时间、商品名称、实付金额、购买数量。CSV、TSV、Markdown 或复制表格都可以。",
     ].join("\n");
   }
 
