@@ -16,17 +16,38 @@
 
 | 字段 | 含义 | 是否必需 | 示例 |
 | --- | --- | --- | --- |
-| date | 日期 | 必需 | 2026-07-15 |
+| week | 数据周期 | 必需 | previous / current / 上周 / 本周 |
+| startDate | 开始日期 | 推荐 | 2026-07-13 |
+| endDate | 结束日期 | 推荐 | 2026-07-19 |
 | productName | 商品名称 | 必需 | Aurora Cup |
 | sku | SKU | 推荐 | CUP-BLACK-500 |
 | visitors | 访客数 | 推荐 | 1200 |
 | orders | 订单数 | 必需 | 58 |
 | revenue | 销售额 | 必需 | 3480 |
-| unitsSold | 销售件数 | 推荐 | 62 |
+| unitsSold | 销售件数 | 必需 | 62 |
 | adSpend | 广告花费 | 可选 | 820 |
 | adRevenue | 广告成交额 | 可选 | 2100 |
 | inventory | 当前库存 | 可选 | 180 |
+| productCost | 商品成本 | 可选 | 2100 |
+| grossProfit | 毛利 | 可选 | 1380 |
 | returns | 退款或退货数 | 可选 | 3 |
+
+当前导入器已经支持 CSV，不要求字段名完全一致。常见别名会自动识别：
+
+| 标准字段 | 可识别别名示例 |
+| --- | --- |
+| week | week、period、周期、周、时间段 |
+| productName | product_name、product、商品名称、商品、品名 |
+| sku | sku、商家编码、商品编码、货号 |
+| visitors | visitors、sessions、uv、访客数、流量 |
+| orders | orders、order_count、订单数、支付订单数 |
+| revenue | revenue、sales、gmv、销售额、成交额、支付金额 |
+| unitsSold | units_sold、quantity、qty、销量、支付件数 |
+| adSpend | ad_spend、cost、广告花费、广告消耗 |
+| adRevenue | ad_revenue、attributed_sales、广告成交额、广告销售额 |
+| inventory | inventory、stock、库存、可售库存 |
+| productCost | product_cost、cogs、cost_of_goods、商品成本、采购成本 |
+| grossProfit | gross_profit、profit、毛利、毛利润、利润 |
 
 ## 竞品数据
 
@@ -34,11 +55,13 @@
 | --- | --- | --- | --- |
 | competitorName | 竞品名称 | 必需 | HeatGo Cup |
 | url | 竞品链接 | 推荐 | https://example.com/item |
-| price | 当前价格 | 推荐 | 29.99 |
+| price | 当前价格 | 必需 | 29.99 |
 | promotion | 促销信息 | 可选 | 买二减 10% |
 | rating | 评分 | 可选 | 4.6 |
 | reviews | 评论数 | 可选 | 1280 |
 | keySellingPoints | 主要卖点 | 可选 | 温显、轻量、礼盒 |
+
+竞品 CSV 也支持别名，例如 `name/竞品名称`、`url/竞品链接`、`price/价格`、`promotion/促销`、`key_selling_points/卖点`。
 
 ## Agent 自动计算指标
 
@@ -50,6 +73,8 @@ Agent 可以从原始字段计算：
 - 转化率。
 - 广告回本情况。
 - 库存可售天数。
+- 毛利变化。
+- 毛利率风险。
 - 商品贡献度。
 - 异常商品。
 - 竞品价格差。

@@ -18,7 +18,12 @@ export type SendFeishuTextMessage = (payload: {
   replyToMessageId?: string;
 }) => Promise<void>;
 
-export function createFeishuEventHandlers(sendTextMessage: SendFeishuTextMessage) {
+export type BuildFeishuReply = (text: string) => string;
+
+export function createFeishuEventHandlers(
+  sendTextMessage: SendFeishuTextMessage,
+  buildReply: BuildFeishuReply = buildFeishuAgentReply,
+) {
   return {
     "im.message.receive_v1": async (event: FeishuReceiveMessageEvent) => {
       if (event.sender?.sender_type === "app") {
@@ -35,7 +40,7 @@ export function createFeishuEventHandlers(sendTextMessage: SendFeishuTextMessage
       }
 
       const text = parseFeishuTextContent(event.message.content);
-      const reply = buildFeishuAgentReply(text);
+      const reply = buildReply(text);
 
       await sendTextMessage({
         chatId: event.message.chat_id,

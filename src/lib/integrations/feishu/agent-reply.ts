@@ -1,6 +1,7 @@
 import { analyzeEcommerceStore } from "../../ecommerce-agent/analysis";
+import { buildEcommerceInputFromCsv } from "../../ecommerce-agent/csv-import";
 import { sampleEcommerceAgentInput } from "../../ecommerce-agent/sample-data";
-import type { EcommerceAgentAnalysis } from "../../ecommerce-agent/types";
+import type { EcommerceAgentAnalysis, EcommerceAgentInput } from "../../ecommerce-agent/types";
 
 export type FeishuReplyIntent =
   | "store_review"
@@ -44,7 +45,10 @@ export function detectFeishuReplyIntent(text: string): FeishuReplyIntent {
   return "unknown";
 }
 
-export function formatEcommerceAnalysisForFeishu(analysis: EcommerceAgentAnalysis) {
+export function formatEcommerceAnalysisForFeishu(
+  analysis: EcommerceAgentAnalysis,
+  sourceLabel = "样例店铺",
+) {
   const findings = analysis.productFindings
     .slice(0, 3)
     .map(
@@ -59,7 +63,7 @@ export function formatEcommerceAnalysisForFeishu(analysis: EcommerceAgentAnalysi
     .map((question, index) => `${index + 1}. ${question.question} ${question.whyItMatters}`);
 
   return [
-    `我先按样例店铺做一版复盘：${analysis.headline}`,
+    `我先按${sourceLabel}做一版复盘：${analysis.headline}`,
     "",
     "先说人话：",
     ...analysis.plainSummary.map((line) => `- ${line}`),
@@ -73,7 +77,9 @@ export function formatEcommerceAnalysisForFeishu(analysis: EcommerceAgentAnalysi
     "我还会追问你：",
     ...questions,
     "",
-    "等你把真实订单、商品、库存、广告和竞品数据给我，我会用同一套逻辑重新判断，不会拿样例结论硬套。",
+    sourceLabel === "样例店铺"
+      ? "等你把真实订单、商品、库存、广告和竞品数据给我，我会用同一套逻辑重新判断，不会拿样例结论硬套。"
+      : "这版结论来自当前导入数据。如果字段缺失，我会继续追问，不会把缺失项硬编成确定结论。",
   ].join("\n");
 }
 
@@ -123,8 +129,59 @@ export function buildInventoryReply(analysis: EcommerceAgentAnalysis) {
   ].join("\n");
 }
 
-export function buildFeishuAgentReply(text: string) {
-  const analysis = analyzeEcommerceStore(sampleEcommerceAgentInput);
+function looksLikePastedMetricsCsv(text: string) {
+  const normalized = text.toLowerCase();
+
+  return (
+    text.includes(",") &&
+    text.includes("\n") &&
+    (normalized.includes("week") || text.includes("周期")) &&
+    (normalized.includes("orders") || text.includes("订单")) &&
+    (normalized.includes("revenue") || normalized.includes("gmv") || text.includes("销售额"))
+  );
+}
+
+function buildPastedCsvReply(text: string) {
+  const result = buildEcommerceInputFromCsv({
+    metricsCsv: text,
+    store: {
+      storeName: "飞书粘贴数据店铺",
+      platform: "待确认平台",
+      market: "待确认市场",
+      category: "待确认类目",
+    },
+  });
+
+  if (!result.input) {
+    const issues = result.report.issues
+      .filter((issue) => issue.severity === "error")
+      .slice(0, 5)
+      .map((issue, index) => `${index + 1}. ${issue.message}`);
+
+    return [
+      "我看到了你贴的 CSV，但现在还不能直接复盘。",
+      "需要你先补这些信息：",
+      ...issues,
+      "最小格式需要：week、product_name、orders、revenue、units_sold，并且要同时有 previous/current 两段数据。",
+    ].join("\n");
+  }
+
+  return formatEcommerceAnalysisForFeishu(analyzeEcommerceStore(result.input), "刚粘贴的 CSV");
+}
+
+export function buildFeishuAgentReply(
+  text: string,
+  options: {
+    input?: EcommerceAgentInput;
+    sourceLabel?: string;
+} = {},
+) {
+  if (looksLikePastedMetricsCsv(text)) {
+    return buildPastedCsvReply(text);
+  }
+
+  const sourceLabel = options.sourceLabel ?? "样例店铺";
+  const analysis = analyzeEcommerceStore(options.input ?? sampleEcommerceAgentInput);
   const intent = detectFeishuReplyIntent(text);
 
   if (intent === "usage") {
@@ -140,7 +197,7 @@ export function buildFeishuAgentReply(text: string) {
   }
 
   if (intent === "store_review") {
-    return formatEcommerceAnalysisForFeishu(analysis);
+    return formatEcommerceAnalysisForFeishu(analysis, sourceLabel);
   }
 
   return [

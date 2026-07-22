@@ -21,6 +21,12 @@
 http://localhost:3000/agent
 ```
 
+如果 3000 被占用，Next.js 会提示可用的新端口，例如当前本地常用：
+
+```bash
+http://localhost:3001/agent
+```
+
 当前演示假设：
 
 - 店铺：Aurora Cup 独立站
@@ -39,6 +45,7 @@ http://localhost:3000/agent
 - `docs/feishu-connector-migration.md`：飞书机器人迁移能力设计。
 - `docs/github-versioning.md`：GitHub、Tag 和回滚流程。
 - `docs/testing-plan.md`：真实测试路径。
+- `docs/user-return-checklist.md`：用户回来后需要亲自确认的事项。
 
 ## 样例数据
 
@@ -46,6 +53,8 @@ http://localhost:3000/agent
 - `data/samples/aurora-cup-competitors.csv`
 
 样例数据用于演示 Agent 工作流，不代表真实经营结果。拿到真实数据后优先替换样例数据，同时保留样例作为现场演示降级。
+
+首页已经提供“真实数据导入工作台”，可以直接粘贴或上传 CSV。飞书 worker 也可以通过 `.env` 的 `ECOMMERCE_WEEKLY_METRICS_CSV` 和 `ECOMMERCE_COMPETITORS_CSV` 指向本地 CSV 文件。
 
 ## 本地开发
 

@@ -301,6 +301,7 @@ textarea {
   min-height: 40px;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   border: 1px solid var(--accent);
   border-radius: 8px;
   background: var(--accent);
@@ -398,6 +399,10 @@ textarea {
   border-color: #f4a6a1;
   background: #fffafa;
   color: var(--danger);
+}
+
+.state-box.compact {
+  padding: 22px 18px;
 }
 
 .checkbox-list {
@@ -568,6 +573,143 @@ textarea {
 
 .agent-summary {
   margin: 16px 0;
+}
+
+.import-workbench {
+  margin-bottom: 16px;
+}
+
+.import-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+  gap: 16px;
+}
+
+.import-inputs,
+.import-output,
+.import-status,
+.import-analysis,
+.csv-box {
+  display: grid;
+  gap: 12px;
+}
+
+.compact-form-grid {
+  gap: 12px;
+}
+
+.csv-box-header,
+.button-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.csv-box-header span,
+.mapping-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.csv-box textarea {
+  min-height: 142px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.file-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.file-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.button-row {
+  justify-content: flex-start;
+}
+
+.mapping-list,
+.issue-list {
+  display: grid;
+  gap: 8px;
+}
+
+.mapping-row {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 9px;
+}
+
+.mapping-row.ok {
+  background: #f4fbf8;
+}
+
+.mapping-row.missing {
+  background: #fffafa;
+  color: var(--danger);
+}
+
+.mapping-row span {
+  font-weight: 700;
+}
+
+.mapping-row small {
+  margin-left: auto;
+  color: var(--muted);
+}
+
+.issue-list p {
+  margin: 0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  line-height: 1.5;
+}
+
+.issue-list p.warning {
+  background: var(--warning-soft);
+  color: #805500;
+}
+
+.issue-list p.error {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.issue-list p.info {
+  background: var(--surface-soft);
+  color: #344054;
+}
+
+.import-metrics > div {
+  display: grid;
+  gap: 5px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 11px;
+}
+
+.import-metrics span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.import-analysis h4,
+.import-status h4 {
+  margin: 0;
+}
+
+.import-analysis pre {
+  max-height: 300px;
+  overflow: auto;
 }
 
 .metric-tile {
@@ -778,6 +920,16 @@ textarea {
   .grid.three,
   .grid.four {
     grid-template-columns: 1fr;
+  }
+
+  .import-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .csv-box-header,
+  .button-row {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .metric-guide-grid,

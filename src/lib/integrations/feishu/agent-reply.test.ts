@@ -28,4 +28,17 @@ describe("feishu agent reply", () => {
     expect(reply).toContain("建议你先做");
     expect(reply).toContain("真实订单");
   });
+
+  it("analyzes pasted metrics csv directly", () => {
+    const reply = buildFeishuAgentReply(
+      [
+        "week,product_name,orders,revenue,units_sold",
+        "previous,黑杯,10,500,12",
+        "current,黑杯,8,420,9",
+      ].join("\n"),
+    );
+
+    expect(reply).toContain("刚粘贴的 CSV");
+    expect(reply).toContain("飞书粘贴数据店铺");
+  });
 });

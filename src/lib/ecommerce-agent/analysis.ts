@@ -17,6 +17,18 @@ function sumNullable(values: Array<number | null>) {
   return values.reduce<number>((sum, value) => sum + (value ?? 0), 0);
 }
 
+function productGrossProfit(product: ProductMetric) {
+  if (product.grossProfit !== undefined && product.grossProfit !== null) {
+    return product.grossProfit;
+  }
+
+  if (product.productCost !== undefined && product.productCost !== null) {
+    return product.revenue - product.productCost;
+  }
+
+  return null;
+}
+
 function toTotals(metricSet: WeeklyMetricSet): MetricTotals {
   return {
     visitors: sumNullable(metricSet.products.map((product) => product.visitors)),
@@ -25,6 +37,12 @@ function toTotals(metricSet: WeeklyMetricSet): MetricTotals {
     unitsSold: metricSet.products.reduce((sum, product) => sum + product.unitsSold, 0),
     adSpend: sumNullable(metricSet.products.map((product) => product.adSpend)),
     adRevenue: sumNullable(metricSet.products.map((product) => product.adRevenue)),
+    productCost: sumNullable(
+      metricSet.products.map((product) =>
+        product.productCost !== undefined ? product.productCost : null,
+      ),
+    ),
+    grossProfit: sumNullable(metricSet.products.map(productGrossProfit)),
   };
 }
 
@@ -50,6 +68,14 @@ function adReturn(totals: MetricTotals) {
   }
 
   return totals.adRevenue / totals.adSpend;
+}
+
+function grossMargin(totals: MetricTotals) {
+  if (totals.grossProfit === null || totals.revenue === 0) {
+    return null;
+  }
+
+  return totals.grossProfit / totals.revenue;
 }
 
 function formatPercent(value: number) {
@@ -102,6 +128,12 @@ function buildDataHealth(input: EcommerceAgentInput) {
     health.push("已有库存数据，可以估算每个 SKU 还能卖几天。");
   }
 
+  if (allProducts.some((product) => productGrossProfit(product) === null)) {
+    health.push("成本或毛利数据不完整，暂时只能判断销售表现，不能完整判断赚不赚钱。");
+  } else {
+    health.push("已有成本或毛利数据，可以判断销售增长是否真的带来利润。");
+  }
+
   if (input.competitors.length === 0) {
     health.push("还没有竞品链接，竞品价格和促销判断需要用户补充。");
   } else {
@@ -132,6 +164,11 @@ function buildProductFindings(input: EcommerceAgentInput): ProductFinding[] {
         ? currentProduct.orders / currentProduct.visitors
         : null;
     const daysLeft = inventoryDays(currentProduct);
+    const currentGrossProfit = productGrossProfit(currentProduct);
+    const currentGrossMargin =
+      currentGrossProfit !== null && currentProduct.revenue > 0
+        ? currentGrossProfit / currentProduct.revenue
+        : null;
 
     if (revenueChange < -0.12) {
       findings.push({
@@ -155,6 +192,17 @@ function buildProductFindings(input: EcommerceAgentInput): ProductFinding[] {
         plainReason: `按这周速度估算，这款商品大约还能卖 ${daysLeft.toFixed(0)} 天。继续推广可能很快断货。`,
         suggestedAction: "先安排补货或降低推广强度，避免广告把用户带来后却买不到。",
         priority: "high",
+      });
+    }
+
+    if (currentGrossMargin !== null && currentGrossMargin < 0.25) {
+      findings.push({
+        sku: currentProduct.sku,
+        productName: currentProduct.productName,
+        issue: "利润空间偏低",
+        plainReason: `这款商品本周毛利率约 ${(currentGrossMargin * 100).toFixed(1)}%。卖得越多，也可能只是把低利润订单放大。`,
+        suggestedAction: "先检查采购成本、折扣、运费和广告成本，低毛利款不要盲目加大促销。",
+        priority: "medium",
       });
     }
 
@@ -260,6 +308,13 @@ function buildQuestions(input: EcommerceAgentInput): AgentQuestion[] {
     });
   }
 
+  if (allProducts.some((product) => productGrossProfit(product) === null)) {
+    questions.push({
+      question: "有没有商品成本、毛利或利润数据？",
+      whyItMatters: "这样我才能判断是只卖得多，还是卖得多且真的赚钱。",
+    });
+  }
+
   if (input.competitors.length === 0) {
     questions.push({
       question: "有没有 1 到 3 个你最在意的竞品链接？",
@@ -280,6 +335,7 @@ function buildNextActions(findings: ProductFinding[], competitorInsights: string
   const hasRevenueDrop = findings.some((finding) => finding.issue === "销售明显下滑");
   const hasInventoryRisk = findings.some((finding) => finding.issue === "卖得变快但库存偏紧");
   const hasWeakAds = findings.some((finding) => finding.issue === "广告回本偏弱");
+  const hasWeakProfit = findings.some((finding) => finding.issue === "利润空间偏低");
   const hasCompetitorPromotion = competitorInsights.some((insight) => insight.includes("促销"));
 
   if (hasRevenueDrop || hasCompetitorPromotion) {
@@ -297,6 +353,15 @@ function buildNextActions(findings: ProductFinding[], competitorInsights: string
       owner: "投放负责人",
       reason: "继续平均加预算会放大亏损，先把低回本广告停下来。",
       firstStep: "导出广告组明细，按花费从高到低筛出成交额最低的 2 个广告组。",
+    });
+  }
+
+  if (hasWeakProfit) {
+    actions.push({
+      title: "复核低毛利商品的成本结构",
+      owner: "店铺负责人",
+      reason: "低毛利商品继续放量，可能让销售额好看但利润承压。",
+      firstStep: "把低毛利 SKU 的采购成本、运费、折扣和广告花费放到同一张表里核对。",
     });
   }
 
@@ -336,6 +401,16 @@ export function analyzeEcommerceStore(input: EcommerceAgentInput): EcommerceAgen
     previousAdReturn === null || currentAdReturn === null
       ? null
       : rateChange(previousAdReturn, currentAdReturn);
+  const previousGrossMargin = grossMargin(previous);
+  const currentGrossMargin = grossMargin(current);
+  const grossProfitChangeRate =
+    previous.grossProfit === null || current.grossProfit === null
+      ? null
+      : rateChange(previous.grossProfit, current.grossProfit);
+  const grossMarginChange =
+    previousGrossMargin === null || currentGrossMargin === null
+      ? null
+      : rateChange(previousGrossMargin, currentGrossMargin);
   const productFindings = buildProductFindings(input);
   const competitorInsights = buildCompetitorInsights(input);
   const nextActions = buildNextActions(productFindings, competitorInsights);
@@ -350,6 +425,9 @@ export function analyzeEcommerceStore(input: EcommerceAgentInput): EcommerceAgen
     adReturnChange === null
       ? "广告数据不完整，我不会强行判断广告好坏。"
       : `广告回本${adReturnChange >= 0 ? "变好" : "变差"}了 ${formatPercent(adReturnChange)}。简单说，每花 1 美元广告费，带回来的成交额变${adReturnChange >= 0 ? "多" : "少"}了。`,
+    grossProfitChangeRate === null
+      ? "成本或毛利数据不完整，所以我不会把“卖得多”直接说成“赚得多”。"
+      : `毛利${grossProfitChangeRate >= 0 ? "增长" : "下降"}了 ${formatPercent(grossProfitChangeRate)}。这说明本周不只要看销售额，还要看每单留下多少钱。`,
   ];
 
   return {
@@ -363,6 +441,8 @@ export function analyzeEcommerceStore(input: EcommerceAgentInput): EcommerceAgen
       orderChangeRate,
       conversionRateChange,
       adReturnChange,
+      grossProfitChangeRate,
+      grossMarginChange,
     },
     productFindings,
     competitorInsights,

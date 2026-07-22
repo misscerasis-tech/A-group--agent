@@ -17,6 +17,8 @@ export type ProductMetric = {
   adSpend: number | null;
   adRevenue: number | null;
   inventory: number | null;
+  productCost?: number | null;
+  grossProfit?: number | null;
 };
 
 export type WeeklyMetricSet = {
@@ -53,6 +55,8 @@ export type MetricTotals = {
   unitsSold: number;
   adSpend: number | null;
   adRevenue: number | null;
+  productCost: number | null;
+  grossProfit: number | null;
 };
 
 export type ProductFinding = {
@@ -87,6 +91,8 @@ export type EcommerceAgentAnalysis = {
     orderChangeRate: number;
     conversionRateChange: number | null;
     adReturnChange: number | null;
+    grossProfitChangeRate: number | null;
+    grossMarginChange: number | null;
   };
   productFindings: ProductFinding[];
   competitorInsights: string[];

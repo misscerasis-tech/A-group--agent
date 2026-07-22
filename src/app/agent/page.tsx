@@ -12,6 +12,7 @@ import { AppShell } from "@/components/app-shell";
 import { demoWorkspaceContext, ecommerceMetricGuide } from "@/lib/demo-context";
 import { analyzeEcommerceStore } from "@/lib/ecommerce-agent/analysis";
 import { sampleEcommerceAgentInput } from "@/lib/ecommerce-agent/sample-data";
+import { DataImportPanel } from "./data-import-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -75,6 +76,8 @@ export default function AgentPage() {
           <span>回写飞书</span>
         </div>
       </section>
+
+      <DataImportPanel />
 
       <section className="grid two">
         <div className="panel">

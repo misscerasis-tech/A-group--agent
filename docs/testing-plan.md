@@ -28,19 +28,40 @@
 
 ## 阶段 2：真实表格测试
 
-需要实现上传或导入后测试：
+当前已经可以在 `/agent` 首页的“真实数据导入工作台”测试：
 
-- 订单表。
-- 商品表。
-- 库存表。
-- 广告表。
-- 竞品链接表。
+- 上传或粘贴经营数据 CSV。
+- 上传或粘贴竞品数据 CSV。
+- 查看字段识别结果。
+- 查看缺失字段追问。
+- 生成基于导入数据的复盘和飞书回写文本。
+
+也可以直接调本地 API：
+
+```bash
+curl -X POST http://localhost:3001/api/agent/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"metricsCsv":"week,product_name,orders,revenue,units_sold\nprevious,黑杯,10,500,12\ncurrent,黑杯,8,420,9","store":{"storeName":"测试店铺"}}'
+```
 
 通过标准：
 
 - 字段缺失时，Agent 会追问，不会硬编。
 - 字段名称不同也能映射，例如“GMV/销售额/revenue”都能识别。
 - 输出仍然是小白可读的自然语言。
+
+本地飞书 worker 也可以读取 CSV。`.env` 示例：
+
+```bash
+ECOMMERCE_STORE_NAME="我的店铺"
+ECOMMERCE_PLATFORM="Shopify"
+ECOMMERCE_MARKET="美国"
+ECOMMERCE_CATEGORY="旅行杯"
+ECOMMERCE_WEEKLY_METRICS_CSV="data/samples/aurora-cup-weekly-metrics.csv"
+ECOMMERCE_COMPETITORS_CSV="data/samples/aurora-cup-competitors.csv"
+```
+
+如果不配置 CSV 路径，飞书 worker 会使用样例店铺回复；配置后会按“当前导入数据”回复。
 
 ## 阶段 3：飞书机器人测试
 
@@ -99,6 +120,14 @@ FEISHU_EVENT_SUBSCRIPTION_MODE="long_connection"
 - `我需要准备什么数据`
 - `先看库存风险`
 - `怎么用`
+
+也可以直接在飞书里粘贴一小段经营 CSV：
+
+```csv
+week,product_name,orders,revenue,units_sold
+previous,黑杯,10,500,12
+current,黑杯,8,420,9
+```
 
 第一版会用样例店铺回复，验证闭环后再把输入换成真实表格。
 
