@@ -5,7 +5,9 @@ import { buildEcommerceInputFromCsv } from "../src/lib/ecommerce-agent/csv-impor
 import { buildDataRequestPlan } from "../src/lib/ecommerce-agent/data-request";
 import {
   buildFeishuAgentReply,
+  buildFeishuClearContextReply,
   buildFeishuImportContextFromText,
+  isFeishuClearContextRequest,
   type FeishuEcommerceImportContext,
 } from "../src/lib/integrations/feishu/agent-reply";
 
@@ -306,6 +308,8 @@ function main() {
   assert(pastedAmazonOrderReply.includes("Refunded"), "飞书 Amazon 订单 TSV 回复应该引用退款状态。");
   assert(pastedFencedCsvReply.includes("刚粘贴的表格"), "飞书应该能分析 Markdown 代码块里的 CSV。");
   assert(pastedIntroTableReply.includes("刚粘贴的表格"), "飞书应该能跳过粘贴表格前的人话说明。");
+  assert(isFeishuClearContextRequest("清空这份数据，重新开始"), "飞书应该能识别清空当前会话数据请求。");
+  assert(buildFeishuClearContextReply(true).includes("已清空"), "飞书清空数据回复应该确认已清空。");
   assert(testingReply.includes("App Secret"), "飞书测试回复应该提示 App Secret。");
   assert(returnsReply.includes("售后把成交吃回去"), "飞书应该能单独回答退款/退货问题。");
   assert(taskReply.includes("优先级\t截止\t负责人"), "飞书应该能返回可复制的待办表格。");

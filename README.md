@@ -102,7 +102,7 @@ npx pnpm@10.13.1 run feishu:worker
 ```
 
 第一轮飞书测试使用长连接，不需要公网回调地址。运行前在本机 `.env` 填 `FEISHU_APP_ID` 和 `FEISHU_APP_SECRET`，不要提交真实密钥。如果 `.env` 指向的经营表不完整，worker 也会继续启动；机器人会在飞书里按当前导入报告追问缺失字段，不会回落成样例店铺复盘。
-在同一个飞书单聊或群聊里，用户直接粘贴经营表后，本地 worker 会记住这个 chat 最近一次导入的数据；后续再问“帮我复盘”“给我待办清单”“我还缺什么数据”，会优先使用刚粘贴的表。默认缓存文件是 `.agent-state/feishu-chat-contexts.json`，只在本机、已被 Git 忽略；重启 worker 后仍会恢复。若不想保存聊天导入数据，可在 `.env` 设置 `FEISHU_CHAT_CONTEXT_PERSISTENCE=off`。
+在同一个飞书单聊或群聊里，用户直接粘贴经营表后，本地 worker 会记住这个 chat 最近一次导入的数据；后续再问“帮我复盘”“给我待办清单”“我还缺什么数据”，会优先使用刚粘贴的表。默认缓存文件是 `.agent-state/feishu-chat-contexts.json`，只在本机、已被 Git 忽略；重启 worker 后仍会恢复。发“清空这份数据”“忘记当前数据”或“重新开始”可以清除当前 chat 缓存。若不想保存聊天导入数据，可在 `.env` 设置 `FEISHU_CHAT_CONTEXT_PERSISTENCE=off`。
 
 质量检查：
 

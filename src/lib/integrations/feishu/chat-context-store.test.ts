@@ -78,6 +78,18 @@ describe("feishu chat context store", () => {
     expect(restoredStore.get("oc_new")).toBeDefined();
   });
 
+  it("deletes a chat context from the persisted file", () => {
+    const filePath = join(createTempDir(), "contexts.json");
+    const store = createFileFeishuChatContextStore(filePath);
+
+    store.set("oc_123", createImportContext());
+    expect(store.delete("oc_123")).toBe(true);
+
+    const restoredStore = createFileFeishuChatContextStore(filePath);
+
+    expect(restoredStore.get("oc_123")).toBeUndefined();
+  });
+
   it("can disable file persistence from env", () => {
     const filePath = resolveFeishuChatContextFile(
       {

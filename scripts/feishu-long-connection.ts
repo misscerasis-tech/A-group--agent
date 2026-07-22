@@ -5,7 +5,9 @@ import { buildEcommerceInputFromCsv } from "../src/lib/ecommerce-agent/csv-impor
 import { requireFeishuRuntimeConfig } from "../src/lib/integrations/feishu/config";
 import {
   buildFeishuAgentReply,
+  buildFeishuClearContextReply,
   buildFeishuImportContextFromText,
+  isFeishuClearContextRequest,
 } from "../src/lib/integrations/feishu/agent-reply";
 import {
   createFileFeishuChatContextStore,
@@ -190,6 +192,12 @@ async function main() {
   await wsClient.start({
     eventDispatcher: new Lark.EventDispatcher({}).register(
       createFeishuEventHandlers(sendTextMessage, (text, event) => {
+        if (isFeishuClearContextRequest(text)) {
+          const didClear = chatContexts.delete(event.message.chat_id);
+
+          return buildFeishuClearContextReply(didClear);
+        }
+
         const pastedContext = buildFeishuImportContextFromText(text);
 
         if (pastedContext) {

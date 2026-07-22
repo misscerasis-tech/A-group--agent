@@ -5,6 +5,7 @@ import type { FeishuEcommerceImportContext } from "./agent-reply";
 export type FeishuChatContextStore = {
   get: (chatId: string) => FeishuEcommerceImportContext | undefined;
   set: (chatId: string, context: FeishuEcommerceImportContext) => void;
+  delete: (chatId: string) => boolean;
   size: () => number;
 };
 
@@ -67,6 +68,7 @@ export function createInMemoryFeishuChatContextStore(
     set: (chatId, context) => {
       contexts.set(chatId, context);
     },
+    delete: (chatId) => contexts.delete(chatId),
     size: () => contexts.size,
   };
 }
@@ -120,6 +122,15 @@ export function createFileFeishuChatContextStore(
       });
       pruneOldestContexts(contexts, maxContexts);
       flush();
+    },
+    delete: (chatId) => {
+      const deleted = contexts.delete(chatId);
+
+      if (deleted) {
+        flush();
+      }
+
+      return deleted;
     },
     size: () => contexts.size,
   };

@@ -231,10 +231,37 @@ export function buildFeishuUsageReply() {
     "- “这周目标是保销量/保利润”",
     "- “给我待办清单”",
     "- “给我风险商品表”",
+    "- “清空这份数据”",
     "- “我现在做什么？”",
     "",
     "也可以直接粘贴一小段 CSV/TSV/Markdown 表格，或从 Excel/飞书表格复制几行。我会先检查字段，缺什么就问你，不会把缺失项说成确定结论。",
   ].join("\n");
+}
+
+export function isFeishuClearContextRequest(text: string) {
+  const normalized = text.trim().toLowerCase();
+
+  return [
+    "清空这份数据",
+    "清空当前数据",
+    "清除当前数据",
+    "删除当前数据",
+    "忘记这份数据",
+    "忘记当前数据",
+    "清空缓存",
+    "清除缓存",
+    "重置会话",
+    "重新开始",
+    "start over",
+    "reset",
+    "clear data",
+  ].some((keyword) => normalized.includes(keyword));
+}
+
+export function buildFeishuClearContextReply(didClear: boolean) {
+  return didClear
+    ? "已清空这个会话里最近一次粘贴的经营数据。你可以重新粘贴新的表格，或发“我需要准备什么数据”。"
+    : "这个会话里暂时没有已保存的粘贴数据。你可以直接粘贴经营表，或发“我需要准备什么数据”。";
 }
 
 export function buildWorkPlanReply(report?: EcommerceCsvImportReport, questions: AgentQuestion[] = []) {

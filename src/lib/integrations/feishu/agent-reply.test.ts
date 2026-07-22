@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   buildFeishuAgentReply,
+  buildFeishuClearContextReply,
   buildFeishuImportContextFromText,
   detectFeishuReplyIntent,
+  isFeishuClearContextRequest,
   parseFeishuTextContent,
 } from "./agent-reply";
 import { buildEcommerceInputFromCsv } from "../../ecommerce-agent/csv-import";
@@ -160,6 +162,14 @@ describe("feishu agent reply", () => {
     expect(reply).toContain("建议你先做");
     expect(reply).toContain("验收");
     expect(reply).toContain("真实订单");
+  });
+
+  it("detects requests to clear the current chat import context", () => {
+    expect(isFeishuClearContextRequest("清空这份数据，重新开始")).toBe(true);
+    expect(isFeishuClearContextRequest("please clear data")).toBe(true);
+    expect(isFeishuClearContextRequest("给我待办清单")).toBe(false);
+    expect(buildFeishuClearContextReply(true)).toContain("已清空");
+    expect(buildFeishuClearContextReply(false)).toContain("暂时没有");
   });
 
   it("analyzes pasted metrics csv directly", () => {
