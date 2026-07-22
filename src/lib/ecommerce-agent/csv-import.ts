@@ -1069,6 +1069,10 @@ function countDelimitedCells(line: string, delimiter: string) {
   return splitDelimitedLine(line, delimiter).length;
 }
 
+function countNonEmptyDelimitedCells(line: string, delimiter: string) {
+  return splitDelimitedLine(line, delimiter).filter((cell) => cell.trim().length > 0).length;
+}
+
 function detectDelimiter(lines: string[]) {
   const candidates = [",", "\t", ";", "|"];
   const scoredCandidates = candidates.map((delimiter) => {
@@ -1184,11 +1188,14 @@ export function parseCsv(text: string): CsvTable {
   const headerLineIndex = findHeaderLineIndex(readableLines, delimiter);
   const tableLineEntries = readableLineEntries.slice(headerLineIndex);
   const headers = makeUniqueHeaders(splitDelimitedLine(tableLineEntries[0].line, delimiter));
-  const rows = tableLineEntries.slice(1).map(({ line }) => {
+  const dataLineEntries = tableLineEntries
+    .slice(1)
+    .filter(({ line }) => countNonEmptyDelimitedCells(line, delimiter) >= 2);
+  const rows = dataLineEntries.map(({ line }) => {
     const cells = splitDelimitedLine(line, delimiter);
     return Object.fromEntries(headers.map((header, index) => [header, cells[index] ?? ""]));
   });
-  const rowNumbers = tableLineEntries.slice(1).map(({ rowNumber }) => rowNumber);
+  const rowNumbers = dataLineEntries.map(({ rowNumber }) => rowNumber);
 
   return { headers, rows, rowNumbers, delimiter };
 }

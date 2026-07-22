@@ -7,7 +7,7 @@
 ## 当前最新稳定点
 
 - 最新代码：`main`
-- 最新标签：`v0.1.135-skip-auxiliary-summary-rows`
+- 最新标签：`v0.1.136-skip-table-footer-notes`
 - 本地测试入口：`http://localhost:3001/agent`
 - 远端仓库：`misscerasis-tech/A-group--agent.git`
 
@@ -15,6 +15,7 @@
 
 1. 数据导入更接近真实平台导出。
    - 支持 CSV、TSV、Markdown、Excel 和从表格直接复制的内容。
+   - 从聊天、文档或平台后台复制表格时，表头前说明和表尾备注会被跳过，不会变成错误数据行。
    - Excel 上传会优先读取第一张像表格的数据工作表；空 sheet 或只有说明文字的 sheet 不会抢在真实数据前面。
    - 支持周汇总表和最近两周订单明细。
    - 支持 Shopify Analytics 等汇总报表里的 `net_sales`、`total_sales`、`gross_sales` 和 `net_quantity` 字段。

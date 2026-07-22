@@ -452,6 +452,7 @@ function main() {
       "week\tproduct_name\torders\trevenue\tunits_sold",
       "previous\t黑杯\t10\t500\t12",
       "current\t黑杯\t8\t420\t9",
+      "备注：以上数据来自平台后台",
     ].join("\n"),
   );
   const testingReply = buildFeishuAgentReply("怎么真正测试，接入飞书吗");

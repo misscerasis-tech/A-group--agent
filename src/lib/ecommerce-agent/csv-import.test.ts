@@ -88,7 +88,7 @@ describe("ecommerce csv import", () => {
     expect(result.input?.currentWeek.products[0].orders).toBe(8);
   });
 
-  it("skips pasted notes before the real table header", () => {
+  it("skips pasted notes before the real table header and footer notes after data rows", () => {
     const table = parseCsv(
       [
         "这是从飞书表格复制出来的经营数据，请直接帮我复盘",
@@ -96,6 +96,8 @@ describe("ecommerce csv import", () => {
         "week\tproduct_name\torders\trevenue\tunits_sold",
         "previous\t黑杯\t10\t500\t12",
         "current\t黑杯\t8\t420\t9",
+        "备注：以上数据来自平台后台",
+        "以上数据仅供内部复盘",
       ].join("\n"),
     );
     const result = buildEcommerceInputFromCsv({
@@ -105,6 +107,8 @@ describe("ecommerce csv import", () => {
         "week\tproduct_name\torders\trevenue\tunits_sold",
         "previous\t黑杯\t10\t500\t12",
         "current\t黑杯\t8\t420\t9",
+        "备注：以上数据来自平台后台",
+        "以上数据仅供内部复盘",
       ].join("\n"),
     });
 
