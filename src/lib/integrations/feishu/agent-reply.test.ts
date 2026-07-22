@@ -4,6 +4,7 @@ import {
   buildFeishuAgentReply,
   buildFeishuClearContextReply,
   buildFeishuImportContextFromText,
+  buildFeishuImportContextFromTables,
   detectFeishuPastedTableKind,
   detectFeishuReplyIntent,
   isFeishuClearContextRequest,
@@ -213,6 +214,33 @@ describe("feishu agent reply", () => {
     });
     expect(reply).toContain("已把广告数据表合并到当前会话数据");
     expect(reply).toContain("当前会话数据");
+  });
+
+  it("merges auxiliary tables into env-loaded metrics contexts", () => {
+    const envContext = buildFeishuImportContextFromTables({
+      tables: {
+        metricsCsv: [
+          "week\tproduct_name\tsku\torders\trevenue\tunits_sold",
+          "previous\t黑杯\tCUP-BLACK\t10\t500\t12",
+          "current\t黑杯\tCUP-BLACK\t8\t420\t9",
+        ].join("\n"),
+      },
+      sourceLabel: "当前导入数据",
+    });
+    const mergedContext = buildFeishuImportContextFromText(
+      [
+        "商品名称\t商家编码\t当前库存\t单位成本",
+        "黑杯\tCUP-BLACK\t18\t20",
+      ].join("\n"),
+      envContext,
+    );
+
+    expect(envContext?.sourceLabel).toBe("当前导入数据");
+    expect(mergedContext?.mergedTableLabel).toBe("库存/成本快照表");
+    expect(mergedContext?.input?.currentWeek.products[0]).toMatchObject({
+      inventory: 18,
+      productCost: 180,
+    });
   });
 
   it("asks for metrics before accepting standalone auxiliary tables", () => {

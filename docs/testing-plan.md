@@ -125,7 +125,7 @@ ECOMMERCE_INVENTORY_CSV="data/samples/aurora-cup-inventory.csv"
 ECOMMERCE_CUSTOMER_VOICES_CSV="data/samples/aurora-cup-customer-voices.csv"
 ```
 
-如果不配置经营表路径，飞书 worker 会使用样例店铺回复；配置后会按“当前导入数据”回复。配置用户声音表后，售后风险会优先引用客服备注、评价或售后文本里的问题主题。
+如果不配置经营表路径，飞书 worker 会使用样例店铺回复；配置后会按“当前导入数据”回复。配置用户声音表后，售后风险会优先引用客服备注、评价或售后文本里的问题主题。`.env` 配置的经营表也会保留原始表格上下文，所以在飞书里继续粘贴广告表、库存/成本表、用户声音表或竞品表时，可以合并到这份本地导入数据。
 
 如果要从空白真实数据开始，先复制 `data/templates/` 里的对应模板，保留第一行表头，把示例行换成真实商品或订单。
 

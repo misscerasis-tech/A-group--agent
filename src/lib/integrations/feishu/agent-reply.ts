@@ -649,14 +649,16 @@ const pastedTableLabels: Record<FeishuPastedTableKind, string> = {
   competitors: "竞品数据表",
 };
 
-function buildContextFromTables({
+export function buildFeishuImportContextFromTables({
   tables,
   store,
   mergedTableKind,
+  sourceLabel,
 }: {
   tables: NonNullable<FeishuEcommerceImportContext["tables"]>;
   store?: Partial<EcommerceAgentInput["store"]>;
   mergedTableKind?: FeishuPastedTableKind;
+  sourceLabel?: string;
 }): FeishuEcommerceImportContext | null {
   if (!tables.metricsCsv) {
     return null;
@@ -680,7 +682,7 @@ function buildContextFromTables({
   return {
     input: result.input,
     report: result.report,
-    sourceLabel: mergedTableKind && mergedTableKind !== "metrics" ? "当前会话数据" : "刚粘贴的表格",
+    sourceLabel: sourceLabel ?? (mergedTableKind && mergedTableKind !== "metrics" ? "当前会话数据" : "刚粘贴的表格"),
     mergedTableLabel: mergedTableKind && mergedTableKind !== "metrics" ? pastedTableLabels[mergedTableKind] : undefined,
     tables,
   };
@@ -697,7 +699,7 @@ export function buildFeishuImportContextFromText(
   }
 
   if (tableKind === "metrics") {
-    return buildContextFromTables({
+    return buildFeishuImportContextFromTables({
       tables: {
         ...previousContext?.tables,
         metricsCsv: text,
@@ -719,7 +721,7 @@ export function buildFeishuImportContextFromText(
     ...(tableKind === "competitors" ? { competitorsCsv: text } : {}),
   };
 
-  return buildContextFromTables({
+  return buildFeishuImportContextFromTables({
     tables: nextTables,
     store: previousContext.input?.store,
     mergedTableKind: tableKind,

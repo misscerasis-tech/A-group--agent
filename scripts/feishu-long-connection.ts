@@ -1,13 +1,13 @@
 import * as Lark from "@larksuiteoapi/node-sdk";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { buildEcommerceInputFromCsv } from "../src/lib/ecommerce-agent/csv-import";
 import { requireFeishuRuntimeConfig } from "../src/lib/integrations/feishu/config";
 import {
   buildFeishuAuxiliaryTableNeedsMetricsReply,
   buildFeishuAgentReply,
   buildFeishuClearContextReply,
   buildFeishuImportContextFromText,
+  buildFeishuImportContextFromTables,
   detectFeishuPastedTableKind,
   isFeishuClearContextRequest,
 } from "../src/lib/integrations/feishu/agent-reply";
@@ -64,12 +64,14 @@ function loadEcommerceContextFromEnv() {
     return null;
   }
 
-  const result = buildEcommerceInputFromCsv({
-    metricsCsv,
-    competitorsCsv: readOptionalFile(process.env.ECOMMERCE_COMPETITORS_CSV),
-    customerVoicesCsv: readOptionalFile(process.env.ECOMMERCE_CUSTOMER_VOICES_CSV),
-    inventoryCsv: readOptionalFile(process.env.ECOMMERCE_INVENTORY_CSV),
-    adsCsv: readOptionalFile(process.env.ECOMMERCE_ADS_CSV),
+  const context = buildFeishuImportContextFromTables({
+    tables: {
+      metricsCsv,
+      competitorsCsv: readOptionalFile(process.env.ECOMMERCE_COMPETITORS_CSV),
+      customerVoicesCsv: readOptionalFile(process.env.ECOMMERCE_CUSTOMER_VOICES_CSV),
+      inventoryCsv: readOptionalFile(process.env.ECOMMERCE_INVENTORY_CSV),
+      adsCsv: readOptionalFile(process.env.ECOMMERCE_ADS_CSV),
+    },
     store: {
       storeName: process.env.ECOMMERCE_STORE_NAME,
       platform: process.env.ECOMMERCE_PLATFORM,
@@ -77,22 +79,23 @@ function loadEcommerceContextFromEnv() {
       category: process.env.ECOMMERCE_CATEGORY,
       goal: process.env.ECOMMERCE_GOAL,
     },
+    sourceLabel: "当前导入数据",
   });
 
-  if (!result.input) {
+  if (!context) {
+    return null;
+  }
+
+  if (!context.input) {
     return {
-      input: undefined,
-      report: result.report,
-      sourceLabel: "当前导入数据",
-      warningCount: result.report.issues.filter((issue) => issue.severity !== "info").length,
+      ...context,
+      warningCount: context.report.issues.filter((issue) => issue.severity !== "info").length,
     };
   }
 
   return {
-    input: result.input,
-    report: result.report,
-    sourceLabel: "当前导入数据",
-    warningCount: result.report.issues.filter((issue) => issue.severity !== "info").length,
+    ...context,
+    warningCount: context.report.issues.filter((issue) => issue.severity !== "info").length,
   };
 }
 
