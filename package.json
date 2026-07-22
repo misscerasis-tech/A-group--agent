@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "agent:smoke": "tsx scripts/smoke-agent.ts",
+    "smoke:web": "tsx scripts/smoke-web.ts",
     "feishu:doctor": "tsx scripts/feishu-doctor.ts",
     "feishu:worker": "tsx scripts/feishu-long-connection.ts",
     "db:generate": "prisma generate",

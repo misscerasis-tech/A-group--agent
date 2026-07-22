@@ -76,6 +76,12 @@ npx pnpm@10.13.1 install
 npx pnpm@10.13.1 run dev
 ```
 
+检查主要页面是否正常、是否还泄漏原始数据库配置错误：
+
+```bash
+SMOKE_BASE_URL=http://localhost:3001 npx pnpm@10.13.1 run smoke:web
+```
+
 启动飞书本地长连接 worker：
 
 ```bash

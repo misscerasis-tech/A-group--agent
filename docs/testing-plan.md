@@ -54,6 +54,18 @@ curl -X POST http://localhost:3001/api/agent/analyze \
 API 会返回 `analysis`、`feishuReply` 和 `markdownReport`。
 其中 `workSession` 会告诉前端或飞书：当前还缺什么、下一句应该问用户什么、Agent 接下来能不能继续跑。
 
+页面健康检查也可以自动跑一遍，专门确认导航页面不会再把原始 Prisma/DATABASE_URL 错误露给用户：
+
+```bash
+npx pnpm@10.13.1 run smoke:web
+```
+
+如果本地不是 `3001` 端口，可以指定：
+
+```bash
+SMOKE_BASE_URL=http://localhost:3000 npx pnpm@10.13.1 run smoke:web
+```
+
 通过标准：
 
 - 字段缺失时，Agent 会追问，不会硬编。
@@ -64,6 +76,7 @@ API 会返回 `analysis`、`feishuReply` 和 `markdownReport`。
 - 如果表里有三周或更多周期，Agent 会自动选择最近两期作为上周和本周。
 - 输出仍然是小白可读的自然语言。
 - 返回的 `workSession.nextQuestion` 能直接作为 Agent 追问用户的下一句话。
+- `smoke:web` 里所有导航页面返回 200，并且不出现原始数据库配置错误。
 
 本地飞书 worker 也可以读取 CSV/TSV/Markdown 表格文件。`.env` 示例：
 
