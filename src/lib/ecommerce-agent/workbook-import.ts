@@ -9,22 +9,23 @@ export function workbookArrayBufferToCsv(buffer: ArrayBuffer) {
     type: "array",
     cellDates: false,
   });
-  const firstSheetName = workbook.SheetNames[0];
 
-  if (!firstSheetName) {
+  if (workbook.SheetNames.length === 0) {
     throw new Error("Excel 文件里没有可读取的工作表。");
   }
 
-  const sheet = workbook.Sheets[firstSheetName];
-  const csv = XLSX.utils.sheet_to_csv(sheet, {
-    FS: ",",
-    RS: "\n",
-    blankrows: false,
-  });
+  for (const sheetName of workbook.SheetNames) {
+    const sheet = workbook.Sheets[sheetName];
+    const csv = XLSX.utils.sheet_to_csv(sheet, {
+      FS: ",",
+      RS: "\n",
+      blankrows: false,
+    });
 
-  if (!csv.trim()) {
-    throw new Error("Excel 第一张工作表没有可读取的数据。");
+    if (csv.trim()) {
+      return csv;
+    }
   }
 
-  return csv;
+  throw new Error("Excel 文件里的工作表都没有可读取的数据。");
 }

@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.68-excel-non-empty-sheet] - 2026-07-23
+
+### Added
+
+- Excel 上传会读取第一张有数据的工作表；如果第一页是空白说明页，会自动跳到后面的经营数据 sheet。
+
 ## [v0.1.67-order-detail-gap-question] - 2026-07-23
 
 ### Added
