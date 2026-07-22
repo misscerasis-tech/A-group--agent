@@ -326,6 +326,20 @@ function main() {
     "异常数据应该追问具体行号。",
   );
 
+  const invalidImportWithIntro = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "这段表格来自运营导出",
+      "week,product_name,orders,revenue,units_sold",
+      "previous,A,-1,1000,10",
+      "current,A,12,1200,12",
+    ].join("\n"),
+  });
+
+  assert(
+    invalidImportWithIntro.report.questionsForUser[0]?.includes("请修正第 3 行"),
+    "跳过说明行后，异常数据仍应该追问原始粘贴行号。",
+  );
+
   const incompleteImport = buildEcommerceInputFromCsv({
     metricsCsv: ["周期,商品名称,销售额", "本周,黑杯,450"].join("\n"),
   });

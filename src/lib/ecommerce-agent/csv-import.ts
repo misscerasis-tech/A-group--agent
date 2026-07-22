@@ -43,6 +43,7 @@ export type EcommerceCsvImportResult = {
 type CsvTable = {
   headers: string[];
   rows: Array<Record<string, string>>;
+  rowNumbers: number[];
   delimiter: string;
 };
 
@@ -935,27 +936,39 @@ function findHeaderLineIndex(lines: string[], delimiter: string) {
 }
 
 export function parseCsv(text: string): CsvTable {
-  const lines = text
+  const lineEntries = text
     .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => !/^```/.test(line))
-    .filter(Boolean);
+    .map((line, index) => ({
+      line: line.trim(),
+      rowNumber: index + 1,
+    }))
+    .filter(({ line }) => !/^```/.test(line))
+    .filter(({ line }) => Boolean(line));
+  const lines = lineEntries.map(({ line }) => line);
 
   if (lines.length === 0) {
-    return { headers: [], rows: [], delimiter: "," };
+    return { headers: [], rows: [], rowNumbers: [], delimiter: "," };
   }
 
   const delimiter = detectDelimiter(lines);
-  const readableLines = lines.filter((line, index) => index === 0 || !isMarkdownTableSeparator(line, delimiter));
+  const readableLineEntries = lineEntries.filter(
+    ({ line }, index) => index === 0 || !isMarkdownTableSeparator(line, delimiter),
+  );
+  const readableLines = readableLineEntries.map(({ line }) => line);
   const headerLineIndex = findHeaderLineIndex(readableLines, delimiter);
-  const tableLines = readableLines.slice(headerLineIndex);
-  const headers = splitDelimitedLine(tableLines[0], delimiter).map((header) => header.replace(/^\uFEFF/, ""));
-  const rows = tableLines.slice(1).map((line) => {
+  const tableLineEntries = readableLineEntries.slice(headerLineIndex);
+  const headers = splitDelimitedLine(tableLineEntries[0].line, delimiter).map((header) => header.replace(/^\uFEFF/, ""));
+  const rows = tableLineEntries.slice(1).map(({ line }) => {
     const cells = splitDelimitedLine(line, delimiter);
     return Object.fromEntries(headers.map((header, index) => [header, cells[index] ?? ""]));
   });
+  const rowNumbers = tableLineEntries.slice(1).map(({ rowNumber }) => rowNumber);
 
-  return { headers, rows, delimiter };
+  return { headers, rows, rowNumbers, delimiter };
+}
+
+function getCsvRowNumber(table: CsvTable, rowIndex: number) {
+  return table.rowNumbers[rowIndex] ?? rowIndex + 2;
 }
 
 function buildHeaderMap<TField extends string>(
@@ -1611,7 +1624,7 @@ function parseOrderDetailRows(
 ) {
   return table.rows
     .map((row, index): ParsedOrderDetailRow | null => {
-      const rowNumber = index + 2;
+      const rowNumber = getCsvRowNumber(table, index);
       const orderDate = parseImportDate(readField(row, mapping, "orderDate"));
       const productName = readField(row, mapping, "productName");
       const sku = readField(row, mapping, "sku");
@@ -1854,13 +1867,14 @@ function buildCompetitors(
   );
 
   const competitors = table.rows.flatMap((row, index) => {
+    const rowNumber = getCsvRowNumber(table, index);
     const name = readField(row, mapping, "name");
     const price = parseNumber(readField(row, mapping, "price"));
 
     if (!name || price === null) {
       issues.push({
         severity: "warning",
-        rowNumber: index + 2,
+        rowNumber,
         message: "有一行竞品缺少名称或价格，已跳过。",
       });
       return [];
@@ -1928,6 +1942,7 @@ function buildCustomerVoices(
   );
 
   const customerVoices = table.rows.flatMap((row, index) => {
+    const rowNumber = getCsvRowNumber(table, index);
     const productName = readField(row, mapping, "productName");
     const sku = readField(row, mapping, "sku");
     const theme = readField(row, mapping, "theme");
@@ -1936,7 +1951,7 @@ function buildCustomerVoices(
     if (!productName && !sku) {
       issues.push({
         severity: "warning",
-        rowNumber: index + 2,
+        rowNumber,
         message: "有一行用户声音缺少商品名称或 SKU，已跳过。",
       });
       return [];
@@ -1945,7 +1960,7 @@ function buildCustomerVoices(
     if (!theme && !voiceText) {
       issues.push({
         severity: "warning",
-        rowNumber: index + 2,
+        rowNumber,
         message: "有一行用户声音缺少问题主题或反馈内容，已跳过。",
       });
       return [];
@@ -1994,7 +2009,7 @@ function buildInventorySnapshots(
   );
 
   const inventorySnapshots = table.rows.flatMap((row, index) => {
-    const rowNumber = index + 2;
+    const rowNumber = getCsvRowNumber(table, index);
     const productName = readField(row, mapping, "productName");
     const sku = readField(row, mapping, "sku");
     const inventory = requireNonNegative(
@@ -2205,7 +2220,7 @@ function buildAdSnapshots(
   const inferredPeriods = inferTwoAdPeriods(table.rows, mapping, issues);
 
   const adSnapshots = table.rows.flatMap((row, index) => {
-    const rowNumber = index + 2;
+    const rowNumber = getCsvRowNumber(table, index);
     const productName = readField(row, mapping, "productName");
     const sku = readField(row, mapping, "sku");
     const week = normalizeAdWeek(row, mapping, inferredPeriods);
@@ -2396,7 +2411,7 @@ export function buildEcommerceInputFromCsv({
 
     for (const [index, row] of metricsTable.rows.entries()) {
       const week = normalizeWeek(readField(row, mapping, "week"));
-      const sourceRow = { row, rowNumber: index + 2 };
+      const sourceRow = { row, rowNumber: getCsvRowNumber(metricsTable, index) };
       const effectiveWeek =
         week === "previous" || week === "current"
           ? week

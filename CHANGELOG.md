@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.75-import-source-row-numbers] - 2026-07-23
+
+### Added
+
+- CSV/TSV/Markdown 导入会保留原始粘贴或文件行号；即使表格前有说明行，错误追问也会指向用户看到的真实行号。
+- Agent smoke 覆盖“跳过说明行后仍提示正确异常行号”的场景。
+
 ## [v0.1.74-feishu-context-cache] - 2026-07-23
 
 ### Added
