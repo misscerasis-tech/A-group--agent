@@ -90,6 +90,7 @@ npx pnpm@10.13.1 run feishu:worker
 ./node_modules/.bin/tsc --noEmit
 ./node_modules/.bin/vitest run
 ./node_modules/.bin/eslint .
+npx pnpm@10.13.1 run agent:smoke
 ```
 
 ## 飞书与凭证

@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "agent:smoke": "tsx scripts/smoke-agent.ts",
     "feishu:worker": "tsx scripts/feishu-long-connection.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
