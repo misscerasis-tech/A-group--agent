@@ -51,6 +51,8 @@
 
 如果用户没有按周汇总好的经营表，可以先导出订单明细。Agent 会在识别到订单号、支付时间、商品名称/SKU、实付金额和购买数量后，按订单日期自动聚合成最近两周的 SKU 经营表。
 
+Shopify Orders 导出的 `Name / Paid at / Lineitem name / Lineitem sku / Lineitem quantity / Lineitem price / Refunded Amount / Financial Status` 可以直接作为订单明细导入。其中 `Lineitem price` 会按单价处理，Agent 会乘以 `Lineitem quantity` 后再汇总为销售额。
+
 订单明细最小字段：
 
 | 字段 | 含义 | 是否必需 | 示例 |

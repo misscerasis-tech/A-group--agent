@@ -44,6 +44,7 @@ npx pnpm@10.13.1 run agent:smoke
 - 点击“演示样例”可恢复 Shopify 演示数据。
 - 点击“平台表头样例”可测试 `商品访客数`、`支付买家数`、`商品支付金额`、`退款成功金额`、`退款原因` 这类平台导出字段。
 - 点击“订单明细样例”可测试没有周汇总表时，Agent 是否能把订单号、支付时间、商品、金额和件数自动聚合成最近两周复盘。
+- 粘贴或上传 Shopify Orders 导出表，确认 `Name`、`Paid at`、`Lineitem name`、`Lineitem sku`、`Lineitem quantity`、`Lineitem price`、`Refunded Amount` 和 `Financial Status` 能被识别；其中 `Lineitem price` 应按单价乘件数聚合。
 - 也可以测试 `转化率`、`ROAS/投产比`、`毛利率`、`退款率`、`退款金额占比` 这类平台只给比率的字段。
 - 查看字段识别结果。
 - 查看缺失字段追问。
@@ -91,6 +92,7 @@ SMOKE_BASE_URL=http://localhost:3000 npx pnpm@10.13.1 run smoke:web
 - 上传 `.xlsx/.xls` 时，网页工作台会读取第一张工作表并转成表格文本。
 - 没有 `week` 列但有 `date/start_date/开始日期` 时，Agent 会用日期判断最近两期。
 - 没有周汇总表时，可以给订单明细；Agent 会按订单日期聚合最近两个自然周。
+- Shopify Orders 的 `Lineitem price` 会按单价处理，乘以 `Lineitem quantity` 后才进入销售额汇总。
 - 如果表里有三周或更多周期，Agent 会自动选择最近两期作为上周和本周。
 - 如果同一周期同一 SKU 出现多行，Agent 会先合并后分析，并在导入提醒里说明。
 - 如果另传库存/成本快照，Agent 会按 SKU/商品名更新本周库存，补齐单位成本或毛利率，并提醒未匹配行。

@@ -119,6 +119,27 @@ function main() {
     "订单明细退款状态应该能转成退款/退货单数。",
   );
 
+  const shopifyOrderImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "Name,Paid at,Lineitem name,Lineitem sku,Lineitem quantity,Lineitem price,Refunded Amount,Financial Status",
+      "#1001,2026-07-08 10:11:00,黑杯,CUP-BLACK,2,39.9,,paid",
+      "#1002,2026-07-09 12:30:00,黑杯,CUP-BLACK,1,39.9,0,paid",
+      "#1003,2026-07-15 09:20:00,黑杯,CUP-BLACK,1,39.9,39.9,refunded",
+      "#1004,2026-07-16 19:45:00,白杯,CUP-WHITE,3,29.9,,paid",
+    ].join("\n"),
+  });
+
+  assert(shopifyOrderImport.report.ok, "Shopify Orders 导出表应该可以自动聚合并导入。");
+  assert(
+    shopifyOrderImport.input?.previousWeek.products.find((product) => product.sku === "CUP-BLACK")?.revenue ===
+      119.7,
+    "Shopify Lineitem price 应按单价乘购买件数聚合。",
+  );
+  assert(
+    shopifyOrderImport.input?.currentWeek.products.find((product) => product.sku === "CUP-WHITE")?.revenue === 89.7,
+    "Shopify 多件商品应该按件数计算销售额。",
+  );
+
   const rateFieldImport = buildEcommerceInputFromCsv({
     metricsCsv: [
       "周期,商品名称,订单数,销售额,销量,转化率,广告消耗,ROAS,毛利率,退款率,退款金额占比",

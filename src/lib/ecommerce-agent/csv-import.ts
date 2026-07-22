@@ -478,7 +478,10 @@ const orderDetailAliases: Record<OrderDetailField, string[]> = {
   orderId: [
     "order_id",
     "orderid",
+    "order_name",
+    "ordername",
     "id",
+    "name",
     "transaction_id",
     "transactionid",
     "order_no",
@@ -517,14 +520,31 @@ const orderDetailAliases: Record<OrderDetailField, string[]> = {
     "订单日期",
     "创建时间",
   ],
-  productName: metricAliases.productName,
-  sku: metricAliases.sku,
+  productName: [
+    ...metricAliases.productName,
+    "lineitem_name",
+    "lineitemname",
+    "line_item_name",
+    "line item name",
+    "订单商品名称",
+  ],
+  sku: [
+    ...metricAliases.sku,
+    "lineitem_sku",
+    "lineitemsku",
+    "line_item_sku",
+    "line item sku",
+  ],
   quantity: [
     "quantity",
     "qty",
     "units",
     "item_quantity",
     "itemquantity",
+    "lineitem_quantity",
+    "lineitemquantity",
+    "line_item_quantity",
+    "line item quantity",
     "num",
     "数量",
     "件数",
@@ -545,6 +565,14 @@ const orderDetailAliases: Record<OrderDetailField, string[]> = {
     "payment",
     "item_total",
     "itemtotal",
+    "lineitem_price",
+    "lineitemprice",
+    "line_item_price",
+    "line item price",
+    "lineitem_total",
+    "lineitemtotal",
+    "line_item_total",
+    "line item total",
     "actual_amount",
     "actualamount",
     "实收金额",
@@ -562,6 +590,10 @@ const orderDetailAliases: Record<OrderDetailField, string[]> = {
     "status",
     "order_status",
     "orderstatus",
+    "financial_status",
+    "financialstatus",
+    "fulfillment_status",
+    "fulfillmentstatus",
     "refund_status",
     "refundstatus",
     "after_sale_status",
@@ -1398,6 +1430,14 @@ function canUseOrderDetails(mapping: Map<OrderDetailField, string>) {
   return mapping.has("orderDate") && mapping.has("revenue") && (mapping.has("productName") || mapping.has("sku"));
 }
 
+function isOrderDetailUnitPriceHeader(header?: string) {
+  if (!header) {
+    return false;
+  }
+
+  return ["lineitemprice", "lineitemunitprice", "lineitemunitamount"].includes(normalizeHeader(header));
+}
+
 function parseOrderDetailRows(
   table: CsvTable,
   mapping: Map<OrderDetailField, string>,
@@ -1428,13 +1468,17 @@ function parseOrderDetailRows(
         return null;
       }
 
-      const revenue = requireNonNegative(
+      const quantity = optionalNumber(readField(row, mapping, "quantity"), orderDetailFieldLabels.quantity, issues, rowNumber);
+      if (quantity !== null && quantity < 0) {
+        return null;
+      }
+
+      const rawRevenue = requireNonNegative(
         requiredNumber(readField(row, mapping, "revenue"), orderDetailFieldLabels.revenue, issues, rowNumber),
         orderDetailFieldLabels.revenue,
         issues,
         rowNumber,
       );
-      const quantity = optionalNumber(readField(row, mapping, "quantity"), orderDetailFieldLabels.quantity, issues, rowNumber);
       const refundAmountValue = readField(row, mapping, "refundAmount");
       const refundAmount =
         mapping.has("refundAmount") && !refundAmountValue
@@ -1450,13 +1494,13 @@ function parseOrderDetailRows(
         allowNegative: true,
       });
 
-      if (revenue === null) {
+      if (rawRevenue === null) {
         return null;
       }
 
-      if (quantity !== null && quantity < 0) {
-        return null;
-      }
+      const revenue = isOrderDetailUnitPriceHeader(mapping.get("revenue"))
+        ? roundMetric(rawRevenue * (quantity ?? 1))
+        : rawRevenue;
 
       return {
         rowNumber,

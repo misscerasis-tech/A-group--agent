@@ -477,6 +477,35 @@ describe("ecommerce csv import", () => {
     expect(result.report.issues.some((issue) => issue.message.includes("订单明细"))).toBe(true);
   });
 
+  it("imports Shopify order exports with line item headers", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "Name,Paid at,Lineitem name,Lineitem sku,Lineitem quantity,Lineitem price,Refunded Amount,Financial Status",
+        "#1001,2026-07-08 10:11:00,黑杯,CUP-BLACK,2,39.9,,paid",
+        "#1002,2026-07-09 12:30:00,黑杯,CUP-BLACK,1,39.9,0,paid",
+        "#1003,2026-07-15 09:20:00,黑杯,CUP-BLACK,1,39.9,39.9,refunded",
+        "#1004,2026-07-16 19:45:00,白杯,CUP-WHITE,3,29.9,,paid",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.report.metricsInputKind).toBe("order_details");
+    expect(result.input?.previousWeek.products.find((product) => product.sku === "CUP-BLACK")).toMatchObject({
+      orders: 2,
+      revenue: 119.7,
+      unitsSold: 3,
+      refundAmount: 0,
+    });
+    expect(result.input?.currentWeek.products.find((product) => product.sku === "CUP-BLACK")).toMatchObject({
+      orders: 1,
+      revenue: 39.9,
+      unitsSold: 1,
+      refundOrders: 1,
+      refundAmount: 39.9,
+    });
+    expect(result.input?.currentWeek.products.find((product) => product.sku === "CUP-WHITE")?.revenue).toBe(89.7);
+  });
+
   it("uses the latest two natural weeks when order details cover more than two weeks", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

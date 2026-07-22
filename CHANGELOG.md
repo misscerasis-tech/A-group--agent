@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.62-shopify-order-export] - 2026-07-23
+
+### Added
+
+- 订单明细导入器支持 Shopify Orders 常见表头：`Name`、`Paid at`、`Lineitem name`、`Lineitem sku`、`Lineitem quantity`、`Lineitem price`、`Refunded Amount` 和 `Financial Status`。
+- Shopify `Lineitem price` 会按单价乘购买件数后再聚合销售额，避免把多件订单低估成单件金额。
+
 ## [v0.1.61-file-import-errors] - 2026-07-23
 
 ### Added
