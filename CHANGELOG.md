@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.63-shopify-sample-entry] - 2026-07-23
+
+### Added
+
+- `/agent` 真实数据导入工作台新增“Shopify 订单样例”，可一键验证 Shopify Orders 原始导出表头和单价乘件数聚合。
+- API smoke 新增 Shopify Orders 请求，Web smoke 检查 `/agent` 页面保留 Shopify 订单入口和 KPI 指南。
+
 ## [v0.1.62-shopify-order-export] - 2026-07-23
 
 ### Added

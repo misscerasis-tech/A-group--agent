@@ -45,6 +45,14 @@ const orderDetailMetricsTable = [
   "O-1004,2026-07-16 19:45:00,Aurora Cup 白色 500ml,CUP-WHITE-500,3,119.7,,已完成",
 ].join("\n");
 
+const shopifyOrdersMetricsTable = [
+  "Name,Paid at,Lineitem name,Lineitem sku,Lineitem quantity,Lineitem price,Refunded Amount,Financial Status",
+  "#1001,2026-07-08 10:11:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,2,39.9,,paid",
+  "#1002,2026-07-09 12:30:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,1,39.9,0,paid",
+  "#1003,2026-07-15 09:20:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,1,39.9,39.9,refunded",
+  "#1004,2026-07-16 19:45:00,Aurora Cup 白色 500ml,CUP-WHITE-500,3,29.9,,paid",
+].join("\n");
+
 const starterCompetitorCsv = [
   "name,url,source,observed_at,price,promotion,rating,reviews,key_selling_points",
   "Ember Travel Mug 2,https://ember.com/products/ember-travel-mug-2,Ember 官方商品页,2026-07-22,199.95,高端温控旅行杯,4.7,12000,精确温控 / App 控制 / 旅行场景",
@@ -209,6 +217,20 @@ export function DataImportPanel() {
     setCategory("待确认类目");
     setGoal(defaultStoreGoal);
     setMetricsCsv(orderDetailMetricsTable);
+    setCompetitorCsv(starterCompetitorCsv);
+    setInventoryCsv(starterInventoryCsv);
+    setAdsCsv(starterAdsCsv);
+    setCustomerVoicesCsv(starterCustomerVoiceCsv);
+    setHasRun(false);
+  }
+
+  function loadShopifyOrdersSample() {
+    setStoreName("Shopify Orders 测试店");
+    setPlatform("Shopify");
+    setMarket("美国");
+    setCategory("智能温控/温显旅行杯");
+    setGoal(defaultStoreGoal);
+    setMetricsCsv(shopifyOrdersMetricsTable);
     setCompetitorCsv(starterCompetitorCsv);
     setInventoryCsv(starterInventoryCsv);
     setAdsCsv(starterAdsCsv);
@@ -509,6 +531,10 @@ export function DataImportPanel() {
             <button className="button secondary" type="button" onClick={loadOrderDetailSample}>
               <ClipboardList size={16} aria-hidden="true" />
               订单明细样例
+            </button>
+            <button className="button secondary" type="button" onClick={loadShopifyOrdersSample}>
+              <ClipboardList size={16} aria-hidden="true" />
+              Shopify 订单样例
             </button>
             <button
               className="button secondary"

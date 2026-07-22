@@ -29,6 +29,14 @@ const orderDetailMetricsTable = [
   "O-1004,2026-07-16 19:45:00,白杯,CUP-WHITE,3,119.7,,已完成",
 ].join("\n");
 
+const shopifyOrdersMetricsTable = [
+  "Name,Paid at,Lineitem name,Lineitem sku,Lineitem quantity,Lineitem price,Refunded Amount,Financial Status",
+  "#1001,2026-07-08 10:11:00,黑杯,CUP-BLACK,2,39.9,,paid",
+  "#1002,2026-07-09 12:30:00,黑杯,CUP-BLACK,1,39.9,0,paid",
+  "#1003,2026-07-15 09:20:00,黑杯,CUP-BLACK,1,39.9,39.9,refunded",
+  "#1004,2026-07-16 19:45:00,白杯,CUP-WHITE,3,29.9,,paid",
+].join("\n");
+
 async function postAnalyze(body: unknown) {
   const response = await fetch(new URL("/api/agent/analyze", baseUrl), {
     method: "POST",
@@ -112,6 +120,23 @@ async function main() {
   assert(orderDetailReport.metricsInputKind === "order_details", "订单明细应该被接口识别并聚合。");
   assert(String(orderDetail.body.feishuReply ?? "").includes("已退款"), "订单明细回复应该引用售后状态。");
 
+  const shopifyOrders = await postAnalyze({
+    store: {
+      storeName: "A组 Shopify Orders 测试店",
+      platform: "Shopify",
+    },
+    metricsCsv: shopifyOrdersMetricsTable,
+  });
+  const shopifyOrdersAnalysis = shopifyOrders.body.analysis as
+    | { totals?: { current?: { revenue?: number } } }
+    | undefined;
+  assert(shopifyOrders.response.status === 200, `Shopify Orders 应该返回 200，实际 ${shopifyOrders.response.status}`);
+  assert(
+    (shopifyOrders.body.report as { metricsInputKind?: string } | undefined)?.metricsInputKind === "order_details",
+    "Shopify Orders 应该被接口识别为订单明细。",
+  );
+  assert(shopifyOrdersAnalysis?.totals?.current?.revenue === 129.6, "Shopify Lineitem price 应该按单价乘件数汇总。");
+
   const missingBody = await postAnalyze({});
   assert(missingBody.response.status === 400, `缺 metricsCsv 应该返回 400，实际 ${missingBody.response.status}`);
   assert(
@@ -132,7 +157,7 @@ async function main() {
   );
 
   console.info(
-    `[smoke:api] /api/agent/analyze 平台表头、订单明细、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
+    `[smoke:api] /api/agent/analyze 平台表头、订单明细、Shopify Orders、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
   );
 }
 

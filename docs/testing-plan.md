@@ -44,6 +44,7 @@ npx pnpm@10.13.1 run agent:smoke
 - 点击“演示样例”可恢复 Shopify 演示数据。
 - 点击“平台表头样例”可测试 `商品访客数`、`支付买家数`、`商品支付金额`、`退款成功金额`、`退款原因` 这类平台导出字段。
 - 点击“订单明细样例”可测试没有周汇总表时，Agent 是否能把订单号、支付时间、商品、金额和件数自动聚合成最近两周复盘。
+- 点击“Shopify 订单样例”可测试 Shopify Orders 原始导出表头和 `Lineitem price` 单价乘件数逻辑。
 - 粘贴或上传 Shopify Orders 导出表，确认 `Name`、`Paid at`、`Lineitem name`、`Lineitem sku`、`Lineitem quantity`、`Lineitem price`、`Refunded Amount` 和 `Financial Status` 能被识别；其中 `Lineitem price` 应按单价乘件数聚合。
 - 也可以测试 `转化率`、`ROAS/投产比`、`毛利率`、`退款率`、`退款金额占比` 这类平台只给比率的字段。
 - 查看字段识别结果。

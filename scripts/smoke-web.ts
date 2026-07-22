@@ -22,33 +22,48 @@ const rawSetupErrorPatterns = [
   /schema\.prisma/,
 ];
 
+const requiredRouteText: Record<string, string[]> = {
+  "/agent": ["真实数据导入工作台", "Shopify 订单样例", "电商一定关注哪些数据"],
+};
+
 async function checkRoute(route: string) {
   const url = new URL(route, baseUrl);
   const response = await fetch(url);
   const text = await response.text();
   const leakedSetupError = rawSetupErrorPatterns.some((pattern) => pattern.test(text));
+  const missingText = (requiredRouteText[route] ?? []).filter((requiredText) => !text.includes(requiredText));
 
   return {
     route,
     status: response.status,
     leakedSetupError,
+    missingText,
   };
 }
 
 async function main() {
   const results = await Promise.all(routes.map(checkRoute));
-  const failed = results.filter((result) => result.status !== 200 || result.leakedSetupError);
+  const failed = results.filter(
+    (result) => result.status !== 200 || result.leakedSetupError || result.missingText.length > 0,
+  );
 
   for (const result of results) {
     console.info(
-      `[smoke:web] ${result.route} ${result.status}${result.leakedSetupError ? " raw-setup-error" : ""}`,
+      `[smoke:web] ${result.route} ${result.status}${result.leakedSetupError ? " raw-setup-error" : ""}${
+        result.missingText.length > 0 ? ` missing=${result.missingText.join("/")}` : ""
+      }`,
     );
   }
 
   if (failed.length > 0) {
     throw new Error(
       `页面健康检查失败：${failed
-        .map((result) => `${result.route}=${result.status}${result.leakedSetupError ? "/raw-setup-error" : ""}`)
+        .map(
+          (result) =>
+            `${result.route}=${result.status}${result.leakedSetupError ? "/raw-setup-error" : ""}${
+              result.missingText.length > 0 ? `/missing:${result.missingText.join("/")}` : ""
+            }`,
+        )
         .join("，")}`,
     );
   }
