@@ -30,6 +30,15 @@ describe("feishu agent reply", () => {
     expect(reply).toContain("Agent 动作");
   });
 
+  it("answers real testing and Feishu connection questions", () => {
+    expect(detectFeishuReplyIntent("怎么真正测试，接入飞书吗")).toBe("testing");
+
+    const reply = buildFeishuAgentReply("怎么真正测试，接入飞书吗");
+
+    expect(reply).toContain("先测 Agent 脑子");
+    expect(reply).toContain("App Secret");
+  });
+
   it("answers goal-specific ecommerce questions", () => {
     expect(buildFeishuAgentReply("这周先保利润")).toContain("目标是保利润");
     expect(buildFeishuAgentReply("广告怎么看")).toContain("花钱买订单");

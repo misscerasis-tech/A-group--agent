@@ -2,6 +2,7 @@ import { analyzeEcommerceStore } from "../../ecommerce-agent/analysis";
 import { buildEcommerceInputFromCsv } from "../../ecommerce-agent/csv-import";
 import { buildKpiGuideReply } from "../../ecommerce-agent/kpi-guide";
 import { sampleEcommerceAgentInput } from "../../ecommerce-agent/sample-data";
+import { buildTestingChecklistReply } from "../../ecommerce-agent/testing-checklist";
 import type { EcommerceAgentAnalysis, EcommerceAgentInput } from "../../ecommerce-agent/types";
 import {
   buildBeginnerWorkSession,
@@ -12,6 +13,7 @@ export type FeishuReplyIntent =
   | "store_review"
   | "data_checklist"
   | "work_plan"
+  | "testing"
   | "usage"
   | "inventory"
   | "profit"
@@ -38,6 +40,14 @@ export function detectFeishuReplyIntent(text: string): FeishuReplyIntent {
 
   if (["怎么用", "帮助", "help", "用法"].some((keyword) => normalized.includes(keyword))) {
     return "usage";
+  }
+
+  if (
+    ["怎么测", "测试", "真正测试", "接入飞书", "飞书怎么测", "长连接", "worker"].some(
+      (keyword) => normalized.includes(keyword),
+    )
+  ) {
+    return "testing";
   }
 
   if (
@@ -147,6 +157,10 @@ export function buildFeishuUsageReply() {
 
 export function buildWorkPlanReply() {
   return formatBeginnerWorkSessionForFeishu(buildBeginnerWorkSession());
+}
+
+export function buildFeishuTestingReply() {
+  return buildTestingChecklistReply();
 }
 
 export function buildInventoryReply(analysis: EcommerceAgentAnalysis) {
@@ -294,6 +308,10 @@ export function buildFeishuAgentReply(
 
   if (intent === "work_plan") {
     return buildWorkPlanReply();
+  }
+
+  if (intent === "testing") {
+    return buildFeishuTestingReply();
   }
 
   if (intent === "inventory") {
