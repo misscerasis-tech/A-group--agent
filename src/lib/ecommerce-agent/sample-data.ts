@@ -6,7 +6,7 @@ export const sampleEcommerceAgentInput: EcommerceAgentInput = {
     platform: "Shopify",
     market: "美国",
     category: "智能温控/温显旅行杯",
-    goal: "同时看销量、利润、广告回本、库存风险和竞品压力",
+    goal: "同时看销量、利润、广告回本、库存风险、退款/退货和竞品压力",
     userLevel: "beginner",
   },
   previousWeek: {
@@ -24,6 +24,8 @@ export const sampleEcommerceAgentInput: EcommerceAgentInput = {
         adSpend: 1320,
         adRevenue: 3960,
         inventory: 320,
+        refundOrders: 5,
+        refundAmount: 180,
       },
       {
         productName: "Aurora Cup 白色 500ml",
@@ -35,6 +37,8 @@ export const sampleEcommerceAgentInput: EcommerceAgentInput = {
         adSpend: 980,
         adRevenue: 2580,
         inventory: 260,
+        refundOrders: 3,
+        refundAmount: 90,
       },
       {
         productName: "Aurora Cup 礼盒套装",
@@ -46,6 +50,8 @@ export const sampleEcommerceAgentInput: EcommerceAgentInput = {
         adSpend: 620,
         adRevenue: 1980,
         inventory: 140,
+        refundOrders: 2,
+        refundAmount: 120,
       },
     ],
   },
@@ -64,6 +70,8 @@ export const sampleEcommerceAgentInput: EcommerceAgentInput = {
         adSpend: 1510,
         adRevenue: 2920,
         inventory: 118,
+        refundOrders: 4,
+        refundAmount: 160,
       },
       {
         productName: "Aurora Cup 白色 500ml",
@@ -75,6 +83,8 @@ export const sampleEcommerceAgentInput: EcommerceAgentInput = {
         adSpend: 1040,
         adRevenue: 2210,
         inventory: 206,
+        refundOrders: 3,
+        refundAmount: 110,
       },
       {
         productName: "Aurora Cup 礼盒套装",
@@ -86,6 +96,8 @@ export const sampleEcommerceAgentInput: EcommerceAgentInput = {
         adSpend: 680,
         adRevenue: 2410,
         inventory: 42,
+        refundOrders: 3,
+        refundAmount: 180,
       },
     ],
   },

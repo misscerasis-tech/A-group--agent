@@ -11,6 +11,8 @@ describe("weekly markdown report", () => {
     expect(report).toContain("# Aurora Cup 独立站 经营复盘");
     expect(report).toContain("## 2. 关键指标");
     expect(report).toContain("| 销售额 |");
+    expect(report).toContain("| 退款金额 |");
+    expect(report).toContain("退款/退货单占比变化");
     expect(report).toContain("## 6. 下周行动");
   });
 });

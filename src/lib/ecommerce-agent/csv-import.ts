@@ -60,7 +60,9 @@ type MetricField =
   | "adRevenue"
   | "inventory"
   | "productCost"
-  | "grossProfit";
+  | "grossProfit"
+  | "refundOrders"
+  | "refundAmount";
 
 type CompetitorField =
   | "name"
@@ -79,7 +81,7 @@ const defaultStore: StoreProfile = {
   platform: "待确认平台",
   market: "待确认市场",
   category: "待确认类目",
-  goal: "同时看销量、利润、广告回本、库存风险和竞品压力",
+  goal: "同时看销量、利润、广告回本、库存风险、退款/退货和竞品压力",
   userLevel: "beginner",
 };
 
@@ -98,6 +100,8 @@ const metricFieldLabels: Record<MetricField, string> = {
   inventory: "库存",
   productCost: "商品成本",
   grossProfit: "毛利",
+  refundOrders: "退款/退货单数",
+  refundAmount: "退款金额",
 };
 
 const metricRequiredFields = new Set<MetricField>([
@@ -161,6 +165,36 @@ const metricAliases: Record<MetricField, string[]> = {
   inventory: ["inventory", "stock", "available_stock", "库存", "当前库存", "可售库存", "库存数"],
   productCost: ["product_cost", "cogs", "cost_of_goods", "商品成本", "采购成本"],
   grossProfit: ["gross_profit", "grossprofit", "profit", "margin_amount", "毛利", "毛利润", "利润"],
+  refundOrders: [
+    "refund_orders",
+    "refundorders",
+    "refund_count",
+    "refunds",
+    "returns",
+    "return_count",
+    "return_orders",
+    "refund_quantity",
+    "退款单数",
+    "退款订单数",
+    "退款数",
+    "退货单数",
+    "退货订单数",
+    "退货数",
+    "售后单数",
+  ],
+  refundAmount: [
+    "refund_amount",
+    "refundamount",
+    "refunded_amount",
+    "refund_revenue",
+    "refund_sales",
+    "returns_amount",
+    "return_amount",
+    "退款金额",
+    "退款额",
+    "退货金额",
+    "售后金额",
+  ],
 };
 
 const competitorAliases: Record<CompetitorField, string[]> = {
@@ -508,6 +542,35 @@ function buildMetricRow(
     return null;
   }
 
+  const refundOrders = optionalNumber(
+    readField(row, mapping, "refundOrders"),
+    metricFieldLabels.refundOrders,
+    issues,
+    rowNumber,
+  );
+  const refundAmount = optionalNumber(
+    readField(row, mapping, "refundAmount"),
+    metricFieldLabels.refundAmount,
+    issues,
+    rowNumber,
+  );
+
+  if (refundOrders !== null && refundOrders > orders) {
+    issues.push({
+      severity: "warning",
+      rowNumber,
+      message: "退款/退货单数大于订单数，请确认这列是否包含历史订单的售后。",
+    });
+  }
+
+  if (refundAmount !== null && refundAmount > revenue) {
+    issues.push({
+      severity: "warning",
+      rowNumber,
+      message: "退款金额大于销售额，请确认退款口径是否跨周期或包含历史订单。",
+    });
+  }
+
   return {
     productName: productName || sku,
     sku: sku || productName,
@@ -527,6 +590,8 @@ function buildMetricRow(
     grossProfit: optionalNumber(readField(row, mapping, "grossProfit"), undefined, undefined, undefined, {
       allowNegative: true,
     }),
+    refundOrders,
+    refundAmount,
   };
 }
 

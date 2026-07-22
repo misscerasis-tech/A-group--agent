@@ -43,6 +43,7 @@ describe("feishu agent reply", () => {
     expect(buildFeishuAgentReply("这周先保利润")).toContain("目标是保利润");
     expect(buildFeishuAgentReply("广告怎么看")).toContain("花钱买订单");
     expect(buildFeishuAgentReply("竞品怎么看")).toContain("价格、促销、卖点");
+    expect(buildFeishuAgentReply("退款退货怎么看")).toContain("售后把成交吃回去");
     expect(buildFeishuAgentReply("先保销量")).toContain("目标是保销量");
   });
 

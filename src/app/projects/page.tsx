@@ -29,7 +29,7 @@ export default function ProjectsPage() {
               <StatusBadge label="进行中" tone="success" />
             </header>
             <p>{demoProject.description}</p>
-            <p>本项目覆盖销量、利润、广告回本、库存风险和竞品压力。</p>
+            <p>本项目覆盖销量、利润、广告回本、库存风险、退款/退货和竞品压力。</p>
           </article>
         </div>
 

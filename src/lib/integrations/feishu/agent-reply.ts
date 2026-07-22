@@ -19,6 +19,7 @@ export type FeishuReplyIntent =
   | "profit"
   | "sales"
   | "ads"
+  | "returns"
   | "competitors"
   | "unknown";
 
@@ -48,6 +49,10 @@ export function detectFeishuReplyIntent(text: string): FeishuReplyIntent {
     )
   ) {
     return "testing";
+  }
+
+  if (["退款", "退货", "售后", "退单", "差评"].some((keyword) => normalized.includes(keyword))) {
+    return "returns";
   }
 
   if (
@@ -136,7 +141,7 @@ export function buildFeishuDataChecklistReply() {
     buildKpiGuideReply(),
     "",
     "最小 CSV/TSV 只要先有：week、product_name、orders、revenue、units_sold。",
-    "如果你有广告、库存、毛利和竞品，我会把结论从“能复盘”升级成“能安排动作”。",
+    "如果你有广告、库存、毛利、退款/退货和竞品，我会把结论从“能复盘”升级成“能安排动作”。",
     "缺什么我会继续问，不会假装看懂。",
   ].join("\n");
 }
@@ -148,6 +153,7 @@ export function buildFeishuUsageReply() {
     "- “帮我看本周经营情况”",
     "- “我需要准备什么数据？”",
     "- “先看库存风险”",
+    "- “退款/退货风险怎么看？”",
     "- “这周目标是保销量/保利润”",
     "- “我现在做什么？”",
     "",
@@ -232,6 +238,29 @@ export function buildAdsReply(analysis: EcommerceAgentAnalysis) {
       : "2. 当前没有明显低回本商品，但还需要广告组/关键词层级数据才能继续细拆。",
     "3. 不建议平均加预算。先保留能成交的广告组，暂停花费高但成交弱的广告组。",
     "第一步：导出广告组明细，至少给我广告组名、SKU、花费、成交额、订单数。",
+  ].join("\n");
+}
+
+export function buildReturnsReply(analysis: EcommerceAgentAnalysis) {
+  const returnFindings = analysis.productFindings.filter((finding) => finding.issue === "售后风险偏高");
+  const hasRefundTotals =
+    analysis.totals.current.refundOrders !== null || analysis.totals.current.refundAmount !== null;
+
+  return [
+    "我会把退款/退货当成“售后把成交吃回去”来看：",
+    hasRefundTotals
+      ? `1. 当前数据里，退款/退货单数是 ${analysis.totals.current.refundOrders ?? "待补充"}，退款金额是 ${
+          analysis.totals.current.refundAmount === null
+            ? "待补充"
+            : `$${analysis.totals.current.refundAmount.toLocaleString("en-US", {
+                maximumFractionDigits: 0,
+              })}`
+        }。`
+      : "1. 先补退款单数、退货数或退款金额。不完整时，我不会判断售后风险高低。",
+    returnFindings.length > 0
+      ? `2. 优先查这些售后风险商品：${returnFindings.map((finding) => finding.productName).join("、")}。`
+      : "2. 当前没有明显高退款/退货 SKU；如果真实数据里没有退款字段，我会先追问你补。",
+    "3. 第一张表先给到 SKU、订单数、销售额、退款单数、退款金额。下一步再看退款原因、差评关键词和物流异常。",
   ].join("\n");
 }
 
@@ -329,6 +358,10 @@ export function buildFeishuAgentReply(
 
   if (intent === "ads") {
     return buildAdsReply(analysis);
+  }
+
+  if (intent === "returns") {
+    return buildReturnsReply(analysis);
   }
 
   if (intent === "competitors") {

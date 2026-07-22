@@ -56,6 +56,55 @@ describe("ecommerce agent analysis", () => {
     expect(analysis.plainSummary.some((line) => line.includes("毛利"))).toBe(true);
   });
 
+  it("asks for refund data instead of guessing售后风险", () => {
+    const analysis = analyzeEcommerceStore({
+      ...sampleEcommerceAgentInput,
+      previousWeek: {
+        ...sampleEcommerceAgentInput.previousWeek,
+        products: sampleEcommerceAgentInput.previousWeek.products.map((product) => ({
+          ...product,
+          refundOrders: undefined,
+          refundAmount: undefined,
+        })),
+      },
+      currentWeek: {
+        ...sampleEcommerceAgentInput.currentWeek,
+        products: sampleEcommerceAgentInput.currentWeek.products.map((product) => ({
+          ...product,
+          refundOrders: undefined,
+          refundAmount: undefined,
+        })),
+      },
+    });
+
+    expect(analysis.totals.current.refundOrders).toBeNull();
+    expect(analysis.questionsForUser.some((item) => item.question.includes("退款"))).toBe(true);
+    expect(analysis.dataHealth.some((item) => item.includes("还没有退款/退货数据"))).toBe(true);
+    expect(analysis.plainSummary.some((line) => line.includes("退款/退货数据缺失"))).toBe(true);
+  });
+
+  it("flags high refund and return risk by sku", () => {
+    const analysis = analyzeEcommerceStore({
+      ...sampleEcommerceAgentInput,
+      currentWeek: {
+        ...sampleEcommerceAgentInput.currentWeek,
+        products: sampleEcommerceAgentInput.currentWeek.products.map((product) =>
+          product.sku === "CUP-WHITE-500"
+            ? {
+                ...product,
+                refundOrders: 18,
+                refundAmount: 760,
+              }
+            : product,
+        ),
+      },
+    });
+
+    expect(analysis.productFindings.some((finding) => finding.issue === "售后风险偏高")).toBe(true);
+    expect(analysis.nextActions.some((action) => action.title === "先查退款/退货原因")).toBe(true);
+    expect(analysis.plainSummary.some((line) => line.includes("退款/退货这块"))).toBe(true);
+  });
+
   it("does not treat missing competitor data as an active competitor promotion", () => {
     const analysis = analyzeEcommerceStore({
       ...sampleEcommerceAgentInput,

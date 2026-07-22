@@ -87,9 +87,9 @@ export const ecommerceKpiGuide: EcommerceKpiGuideItem[] = [
     name: "退款 / 退货",
     plainName: "买完后有多少人退掉",
     whyItMatters: "判断商品质量、物流、描述不符和售后风险。",
-    homepageSignal: "第一版样例暂不展示，真实数据接入后进入风险提醒。",
+    homepageSignal: "首页会在数据完整度、商品问题和周报里提示售后是否把成交吃回去。",
     priority: "风险",
-    csvFields: ["refunds", "returns", "退款", "退货"],
+    csvFields: ["refund_orders", "refund_amount", "returns", "退款单数", "退款金额"],
     beginnerQuestion: "平台能导出退款金额、退款单数或退货原因吗？",
   },
   {
@@ -115,7 +115,7 @@ export function buildKpiGuideReply() {
     "",
     ...lines,
     "",
-    "首页也是按这个重要性体现：先放销售额和订单数判断大盘，再放转化、广告回本和库存解释原因与风险，最后用竞品动态补充外部压力。",
+    "首页也是按这个重要性体现：先放销售额和订单数判断大盘，再放转化、广告回本、库存和售后解释原因与风险，最后用竞品动态补充外部压力。",
     "你不用一次给全。缺哪一类，我会用一句人话继续问你要。",
   ].join("\n");
 }

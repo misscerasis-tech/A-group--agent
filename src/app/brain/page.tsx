@@ -13,7 +13,7 @@ export default function ProductBrainPage() {
         <div>
           <h2>商品档案</h2>
           <p className="muted">
-            Agent 需要知道商品事实，才能把销售、广告、库存和竞品变化解释成人能执行的动作。
+            Agent 需要知道商品事实，才能把销售、广告、库存、售后和竞品变化解释成人能执行的动作。
           </p>
         </div>
         <Link className="button" href="/agent">

@@ -43,6 +43,16 @@ function toTotals(metricSet: WeeklyMetricSet): MetricTotals {
       ),
     ),
     grossProfit: sumNullable(metricSet.products.map(productGrossProfit)),
+    refundOrders: sumNullable(
+      metricSet.products.map((product) =>
+        product.refundOrders !== undefined ? product.refundOrders : null,
+      ),
+    ),
+    refundAmount: sumNullable(
+      metricSet.products.map((product) =>
+        product.refundAmount !== undefined ? product.refundAmount : null,
+      ),
+    ),
   };
 }
 
@@ -78,12 +88,33 @@ function grossMargin(totals: MetricTotals) {
   return totals.grossProfit / totals.revenue;
 }
 
+function refundOrderRate(totals: MetricTotals) {
+  if (totals.refundOrders === null || totals.orders === 0) {
+    return null;
+  }
+
+  return totals.refundOrders / totals.orders;
+}
+
+function refundAmountRate(totals: MetricTotals) {
+  if (totals.refundAmount === null || totals.revenue === 0) {
+    return null;
+  }
+
+  return totals.refundAmount / totals.revenue;
+}
+
 function formatPercent(value: number) {
   return `${Math.abs(value * 100).toFixed(1)}%`;
 }
 
 function formatMoney(value: number) {
   return `$${value.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+}
+
+function formatPointChange(previous: number, current: number) {
+  const change = current - previous;
+  return `${change >= 0 ? "增加" : "减少"} ${Math.abs(change * 100).toFixed(1)} 个百分点`;
 }
 
 function getProductBySku(products: ProductMetric[], sku: string) {
@@ -104,6 +135,44 @@ function averageSellingPrice(product: ProductMetric) {
   }
 
   return product.revenue / product.unitsSold;
+}
+
+function hasRefundData(product: ProductMetric) {
+  return product.refundOrders !== undefined && product.refundOrders !== null
+    ? true
+    : product.refundAmount !== undefined && product.refundAmount !== null;
+}
+
+function productRefundOrderRate(product: ProductMetric) {
+  if (product.refundOrders === undefined || product.refundOrders === null || product.orders === 0) {
+    return null;
+  }
+
+  return product.refundOrders / product.orders;
+}
+
+function productRefundAmountRate(product: ProductMetric) {
+  if (product.refundAmount === undefined || product.refundAmount === null || product.revenue === 0) {
+    return null;
+  }
+
+  return product.refundAmount / product.revenue;
+}
+
+function describeRefundRisk(product: ProductMetric) {
+  const orderRate = productRefundOrderRate(product);
+  const amountRate = productRefundAmountRate(product);
+  const parts: string[] = [];
+
+  if (orderRate !== null) {
+    parts.push(`退款/退货单约占订单 ${(orderRate * 100).toFixed(1)}%`);
+  }
+
+  if (amountRate !== null) {
+    parts.push(`退款金额约占销售额 ${(amountRate * 100).toFixed(1)}%`);
+  }
+
+  return parts.join("，");
 }
 
 function buildDataHealth(input: EcommerceAgentInput) {
@@ -132,6 +201,16 @@ function buildDataHealth(input: EcommerceAgentInput) {
     health.push("成本或毛利数据不完整，暂时只能判断销售表现，不能完整判断赚不赚钱。");
   } else {
     health.push("已有成本或毛利数据，可以判断销售增长是否真的带来利润。");
+  }
+
+  const refundDataRows = allProducts.filter(hasRefundData).length;
+
+  if (refundDataRows === 0) {
+    health.push("还没有退款/退货数据，暂时不能判断售后是否在吃掉销售和利润。");
+  } else if (refundDataRows < allProducts.length) {
+    health.push("退款/退货数据只覆盖部分 SKU，售后风险判断会先作为提示项。");
+  } else {
+    health.push("已有退款/退货数据，可以判断售后、描述或物流问题是否拖累真实利润。");
   }
 
   if (input.competitors.length === 0) {
@@ -169,6 +248,12 @@ function buildProductFindings(input: EcommerceAgentInput): ProductFinding[] {
       currentGrossProfit !== null && currentProduct.revenue > 0
         ? currentGrossProfit / currentProduct.revenue
         : null;
+    const currentRefundOrderRate = productRefundOrderRate(currentProduct);
+    const currentRefundAmountRate = productRefundAmountRate(currentProduct);
+    const highestRefundRate = Math.max(
+      currentRefundOrderRate ?? Number.NEGATIVE_INFINITY,
+      currentRefundAmountRate ?? Number.NEGATIVE_INFINITY,
+    );
 
     if (revenueChange < -0.12) {
       findings.push({
@@ -203,6 +288,17 @@ function buildProductFindings(input: EcommerceAgentInput): ProductFinding[] {
         plainReason: `这款商品本周毛利率约 ${(currentGrossMargin * 100).toFixed(1)}%。卖得越多，也可能只是把低利润订单放大。`,
         suggestedAction: "先检查采购成本、折扣、运费和广告成本，低毛利款不要盲目加大促销。",
         priority: "medium",
+      });
+    }
+
+    if (highestRefundRate >= 0.08) {
+      findings.push({
+        sku: currentProduct.sku,
+        productName: currentProduct.productName,
+        issue: "售后风险偏高",
+        plainReason: `${describeRefundRisk(currentProduct)}。这说明部分成交被退款或退货吃回去，需要检查商品描述、质量、物流或售后承诺是否让用户失望。`,
+        suggestedAction: "导出这款 SKU 的退款原因、差评关键词和物流异常记录，先改最常出现的 1 个问题。",
+        priority: highestRefundRate >= 0.15 ? "high" : "medium",
       });
     }
 
@@ -315,6 +411,18 @@ function buildQuestions(input: EcommerceAgentInput): AgentQuestion[] {
     });
   }
 
+  if (allProducts.every((product) => !hasRefundData(product))) {
+    questions.push({
+      question: "有没有退款单数、退货数或退款金额？",
+      whyItMatters: "这样我才能判断售后是不是把已经成交的订单吃回去。",
+    });
+  } else if (allProducts.some((product) => !hasRefundData(product))) {
+    questions.push({
+      question: "能否补齐缺少退款/退货数据的 SKU？",
+      whyItMatters: "售后风险要按商品看，缺几款就容易漏掉真正拖利润的商品。",
+    });
+  }
+
   if (input.competitors.length === 0) {
     questions.push({
       question: "有没有 1 到 3 个你最在意的竞品链接？",
@@ -340,6 +448,7 @@ function buildNextActions(
   const hasInventoryRisk = findings.some((finding) => finding.issue === "卖得变快但库存偏紧");
   const hasWeakAds = findings.some((finding) => finding.issue === "广告回本偏弱");
   const hasWeakProfit = findings.some((finding) => finding.issue === "利润空间偏低");
+  const hasRefundRisk = findings.some((finding) => finding.issue === "售后风险偏高");
   const hasCompetitorPromotion = competitorInsights.some((insight) => insight.includes("正在做促销"));
   const normalizedGoal = goal.toLowerCase();
   const wantsProfit = ["利润", "毛利", "赚钱", "保利润"].some((keyword) =>
@@ -373,6 +482,15 @@ function buildNextActions(
       owner: "电商运营",
       reason: "本周问题更像是用户进来后不够想买，价格、优惠和首屏卖点要先改。",
       firstStep: "把主推 SKU 的首图、价格、优惠和前三条卖点截图给 Agent 做二次检查。",
+    });
+  }
+
+  if (hasRefundRisk) {
+    actions.push({
+      title: "先查退款/退货原因",
+      owner: "客服/运营",
+      reason: "售后问题会把已经成交的销售额吃回去，还会影响评价和后续转化。",
+      firstStep: "导出高退款 SKU 的退款原因、差评关键词和物流异常，先按出现次数最多的问题改。",
     });
   }
 
@@ -432,6 +550,10 @@ export function analyzeEcommerceStore(input: EcommerceAgentInput): EcommerceAgen
       : rateChange(previousAdReturn, currentAdReturn);
   const previousGrossMargin = grossMargin(previous);
   const currentGrossMargin = grossMargin(current);
+  const previousRefundOrderRate = refundOrderRate(previous);
+  const currentRefundOrderRate = refundOrderRate(current);
+  const previousRefundAmountRate = refundAmountRate(previous);
+  const currentRefundAmountRate = refundAmountRate(current);
   const grossProfitChangeRate =
     previous.grossProfit === null || current.grossProfit === null
       ? null
@@ -440,11 +562,44 @@ export function analyzeEcommerceStore(input: EcommerceAgentInput): EcommerceAgen
     previousGrossMargin === null || currentGrossMargin === null
       ? null
       : rateChange(previousGrossMargin, currentGrossMargin);
+  const refundOrderRateChange =
+    previousRefundOrderRate === null || currentRefundOrderRate === null
+      ? null
+      : rateChange(previousRefundOrderRate, currentRefundOrderRate);
+  const refundAmountRateChange =
+    previousRefundAmountRate === null || currentRefundAmountRate === null
+      ? null
+      : rateChange(previousRefundAmountRate, currentRefundAmountRate);
   const productFindings = buildProductFindings(input);
   const competitorInsights = buildCompetitorInsights(input);
   const nextActions = buildNextActions(productFindings, competitorInsights, input.store.goal);
   const direction = revenueChangeRate >= 0 ? "变好了" : "变差了";
   const headline = `${input.store.storeName} 本周整体${direction}：销售额${revenueChangeRate >= 0 ? "增长" : "下降"} ${formatPercent(revenueChangeRate)}`;
+  const currentRefundParts = [
+    currentRefundOrderRate === null
+      ? null
+      : `退款/退货单约占订单 ${(currentRefundOrderRate * 100).toFixed(1)}%`,
+    currentRefundAmountRate === null
+      ? null
+      : `退款金额约占销售额 ${(currentRefundAmountRate * 100).toFixed(1)}%`,
+  ].filter((line): line is string => line !== null);
+  const refundTrend = [
+    previousRefundOrderRate !== null && currentRefundOrderRate !== null
+      ? `退款/退货单占比比上周${formatPointChange(previousRefundOrderRate, currentRefundOrderRate)}`
+      : null,
+    previousRefundAmountRate !== null && currentRefundAmountRate !== null
+      ? `退款金额占比比上周${formatPointChange(previousRefundAmountRate, currentRefundAmountRate)}`
+      : null,
+  ]
+    .filter((line): line is string => line !== null)
+    .join("，");
+  const refundSummary =
+    currentRefundParts.length === 0
+      ? "退款/退货数据缺失，我暂时不能判断售后是不是在侵蚀真实利润。"
+      : [
+          `退款/退货这块，本周${currentRefundParts.join("，")}。`,
+          refundTrend ? `${refundTrend}。` : "等连续数据补齐后，我会继续判断售后风险有没有变严重。",
+        ].join("");
 
   const plainSummary = [
     `这周一共卖了 ${formatMoney(current.revenue)}，订单数是 ${current.orders} 单。和上周相比，销售额${revenueChangeRate >= 0 ? "多了" : "少了"} ${formatPercent(revenueChangeRate)}，订单数${orderChangeRate >= 0 ? "多了" : "少了"} ${formatPercent(orderChangeRate)}。`,
@@ -457,6 +612,7 @@ export function analyzeEcommerceStore(input: EcommerceAgentInput): EcommerceAgen
     grossProfitChangeRate === null
       ? "成本或毛利数据不完整，所以我不会把“卖得多”直接说成“赚得多”。"
       : `毛利${grossProfitChangeRate >= 0 ? "增长" : "下降"}了 ${formatPercent(grossProfitChangeRate)}。这说明本周不只要看销售额，还要看每单留下多少钱。`,
+    refundSummary,
   ];
 
   return {
@@ -472,6 +628,8 @@ export function analyzeEcommerceStore(input: EcommerceAgentInput): EcommerceAgen
       adReturnChange,
       grossProfitChangeRate,
       grossMarginChange,
+      refundOrderRateChange,
+      refundAmountRateChange,
     },
     productFindings,
     competitorInsights,

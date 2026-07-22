@@ -94,6 +94,25 @@ describe("ecommerce csv import", () => {
     expect(result.input?.currentWeek.products[0].grossProfit).toBe(120);
   });
 
+  it("imports refund and return fields from Chinese headers", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,订单数,销售额,销量,退款单数,退款金额",
+        "上周,黑杯,10,500,12,1,30",
+        "本周,黑杯,9,450,10,2,80",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.currentWeek.products[0].refundOrders).toBe(2);
+    expect(result.input?.currentWeek.products[0].refundAmount).toBe(80);
+    expect(
+      result.report.fieldMappings.some(
+        (mapping) => mapping.canonicalField === "refundOrders" && mapping.sourceHeader === "退款单数",
+      ),
+    ).toBe(true);
+  });
+
   it("uses the latest two periods when a platform export contains more than two weeks", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [
@@ -141,5 +160,33 @@ describe("ecommerce csv import", () => {
       true,
     );
     expect(result.report.questionsForUser[0]).toContain("请修正第 2 行");
+  });
+
+  it("rejects negative refund metrics", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "week,product_name,orders,revenue,units_sold,refund_amount",
+        "previous,黑杯,10,500,12,30",
+        "current,黑杯,9,450,10,-5",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(false);
+    expect(result.report.issues.some((issue) => issue.message.includes("退款金额"))).toBe(true);
+  });
+
+  it("warns when refund metrics may include historical orders", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "week,product_name,orders,revenue,units_sold,refund_orders,refund_amount",
+        "previous,黑杯,10,500,12,1,30",
+        "current,黑杯,2,100,2,3,130",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.report.issues.some((issue) => issue.severity === "warning" && issue.message.includes("历史订单"))).toBe(
+      true,
+    );
   });
 });

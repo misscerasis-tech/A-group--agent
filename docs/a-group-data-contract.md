@@ -30,7 +30,8 @@
 | inventory | 当前库存 | 可选 | 180 |
 | productCost | 商品成本 | 可选 | 2100 |
 | grossProfit | 毛利 | 可选 | 1380 |
-| returns | 退款或退货数 | 可选 | 3 |
+| refundOrders | 退款或退货单数 | 可选 | 3 |
+| refundAmount | 退款金额 | 可选 | 120 |
 
 当前导入器已经支持 CSV/TSV，不要求字段名完全一致。从 Excel、飞书表格或 Google Sheets 直接复制出来的制表符表格也能识别。常见别名会自动识别：
 
@@ -50,6 +51,8 @@
 | inventory | inventory、stock、库存、可售库存 |
 | productCost | product_cost、cogs、cost_of_goods、商品成本、采购成本 |
 | grossProfit | gross_profit、profit、毛利、毛利润、利润 |
+| refundOrders | refund_orders、refunds、returns、return_count、退款单数、退货数、售后单数 |
+| refundAmount | refund_amount、refunded_amount、return_amount、退款金额、退货金额、售后金额 |
 
 ## 竞品数据
 
@@ -77,6 +80,9 @@ Agent 可以从原始字段计算：
 - 库存可售天数。
 - 毛利变化。
 - 毛利率风险。
+- 退款/退货单占比。
+- 退款金额占销售额比例。
+- 售后风险商品。
 - 商品贡献度。
 - 异常商品。
 - 竞品价格差。
@@ -109,6 +115,11 @@ Agent 可以从原始字段计算：
 
 - 不判断断货风险。
 - 追问库存表或每个 SKU 当前库存。
+
+如果没有退款/退货数据：
+
+- 不判断售后是否在侵蚀真实利润。
+- 追问退款单数、退货数、退款金额或退款原因。
 
 如果没有竞品数据：
 

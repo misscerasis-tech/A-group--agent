@@ -16,7 +16,7 @@
 当前可测：
 
 - 打开 `http://localhost:3001/agent`。
-- 检查 Agent 是否讲清楚本周销售、订单、转化、广告和库存变化。
+- 检查 Agent 是否讲清楚本周销售、订单、转化、广告、库存和退款/退货变化。
 - 检查商品问题诊断是否合理。
 - 检查下周行动清单是否能直接执行。
 
@@ -48,7 +48,7 @@ npx pnpm@10.13.1 run agent:smoke
 ```bash
 curl -X POST http://localhost:3001/api/agent/analyze \
   -H "Content-Type: application/json" \
-  -d '{"metricsCsv":"week,product_name,orders,revenue,units_sold\nprevious,黑杯,10,500,12\ncurrent,黑杯,8,420,9","store":{"storeName":"测试店铺"}}'
+  -d '{"metricsCsv":"week,product_name,orders,revenue,units_sold,refund_orders,refund_amount\nprevious,黑杯,10,500,12,1,30\ncurrent,黑杯,8,420,9,2,80","store":{"storeName":"测试店铺"}}'
 ```
 
 API 会返回 `analysis`、`feishuReply` 和 `markdownReport`。
@@ -58,6 +58,7 @@ API 会返回 `analysis`、`feishuReply` 和 `markdownReport`。
 
 - 字段缺失时，Agent 会追问，不会硬编。
 - 字段名称不同也能映射，例如“GMV/销售额/revenue”都能识别。
+- 退款字段也能映射，例如“refund_orders/returns/退款单数”和“refund_amount/退款金额”都能识别。
 - CSV、TSV 和从 Excel/飞书表格直接复制出来的制表符数据都能识别。
 - 没有 `week` 列但有 `date/start_date/开始日期` 时，Agent 会用日期判断最近两期。
 - 如果表里有三周或更多周期，Agent 会自动选择最近两期作为上周和本周。
@@ -138,15 +139,16 @@ FEISHU_EVENT_SUBSCRIPTION_MODE="long_connection"
 - `先看库存风险`
 - `这周先保利润`
 - `广告怎么看`
+- `退款退货怎么看`
 - `竞品怎么看`
 - `怎么用`
 
 也可以直接在飞书里粘贴一小段经营 CSV/TSV：
 
 ```csv
-week,product_name,orders,revenue,units_sold
-previous,黑杯,10,500,12
-current,黑杯,8,420,9
+week,product_name,orders,revenue,units_sold,refund_orders,refund_amount
+previous,黑杯,10,500,12,1,30
+current,黑杯,8,420,9,2,80
 ```
 
 第一版会用样例店铺回复，验证闭环后再把输入换成真实表格。

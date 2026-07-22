@@ -1,7 +1,7 @@
-week,start_date,end_date,product_name,sku,visitors,orders,revenue,units_sold,ad_spend,ad_revenue,inventory,gross_profit
-previous,2026-07-06,2026-07-12,Aurora Cup 黑色 500ml,CUP-BLACK-500,4200,168,6048,176,1320,3960,320,2419
-previous,2026-07-06,2026-07-12,Aurora Cup 白色 500ml,CUP-WHITE-500,3100,112,4032,118,980,2580,260,1613
-previous,2026-07-06,2026-07-12,Aurora Cup 礼盒套装,CUP-GIFT-SET,1800,72,4248,74,620,1980,140,1912
-current,2026-07-13,2026-07-19,Aurora Cup 黑色 500ml,CUP-BLACK-500,4380,122,4392,128,1510,2920,118,878
-current,2026-07-13,2026-07-19,Aurora Cup 白色 500ml,CUP-WHITE-500,2940,95,3420,101,1040,2210,206,1197
-current,2026-07-13,2026-07-19,Aurora Cup 礼盒套装,CUP-GIFT-SET,2160,86,5074,89,680,2410,42,2283
+week,start_date,end_date,product_name,sku,visitors,orders,revenue,units_sold,ad_spend,ad_revenue,inventory,gross_profit,refund_orders,refund_amount
+previous,2026-07-06,2026-07-12,Aurora Cup 黑色 500ml,CUP-BLACK-500,4200,168,6048,176,1320,3960,320,2419,5,180
+previous,2026-07-06,2026-07-12,Aurora Cup 白色 500ml,CUP-WHITE-500,3100,112,4032,118,980,2580,260,1613,3,90
+previous,2026-07-06,2026-07-12,Aurora Cup 礼盒套装,CUP-GIFT-SET,1800,72,4248,74,620,1980,140,1912,2,120
+current,2026-07-13,2026-07-19,Aurora Cup 黑色 500ml,CUP-BLACK-500,4380,122,4392,128,1510,2920,118,878,4,160
+current,2026-07-13,2026-07-19,Aurora Cup 白色 500ml,CUP-WHITE-500,2940,95,3420,101,1040,2210,206,1197,3,110
+current,2026-07-13,2026-07-19,Aurora Cup 礼盒套装,CUP-GIFT-SET,2160,86,5074,89,680,2410,42,2283,3,180

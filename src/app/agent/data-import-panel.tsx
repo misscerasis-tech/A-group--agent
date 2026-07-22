@@ -28,7 +28,7 @@ const starterCompetitorCsv = [
 ].join("\n");
 
 const importDraftStorageKey = "a-group-ecommerce-agent-import-draft-v1";
-const defaultStoreGoal = "同时看销量、利润、广告回本、库存风险和竞品压力";
+const defaultStoreGoal = "同时看销量、利润、广告回本、库存风险、退款/退货和竞品压力";
 
 type ImportDraft = {
   storeName?: string;
@@ -181,7 +181,7 @@ export function DataImportPanel() {
                 onChange={(event) => setGoal(event.target.value)}
               />
               <datalist id="ecommerce-goal-options">
-                <option value="同时看销量、利润、广告回本、库存风险和竞品压力" />
+                <option value="同时看销量、利润、广告回本、库存风险、退款/退货和竞品压力" />
                 <option value="这周先保利润" />
                 <option value="这周先保销量" />
                 <option value="先看库存风险" />

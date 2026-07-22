@@ -8,6 +8,10 @@ function formatNullableMoney(value: number | null) {
   return value === null ? "待补充" : formatMoney(value);
 }
 
+function formatNullableCount(value: number | null) {
+  return value === null ? "待补充" : `${value}`;
+}
+
 function formatRate(value: number | null) {
   if (value === null) {
     return "待补充";
@@ -26,6 +30,8 @@ function metricTable(previous: MetricTotals, current: MetricTotals) {
     `| 广告花费 | ${formatNullableMoney(previous.adSpend)} | ${formatNullableMoney(current.adSpend)} | - |`,
     `| 广告成交额 | ${formatNullableMoney(previous.adRevenue)} | ${formatNullableMoney(current.adRevenue)} | - |`,
     `| 毛利 | ${formatNullableMoney(previous.grossProfit)} | ${formatNullableMoney(current.grossProfit)} | - |`,
+    `| 退款/退货单数 | ${formatNullableCount(previous.refundOrders)} | ${formatNullableCount(current.refundOrders)} | - |`,
+    `| 退款金额 | ${formatNullableMoney(previous.refundAmount)} | ${formatNullableMoney(current.refundAmount)} | - |`,
   ].join("\n");
 }
 
@@ -49,6 +55,8 @@ export function buildWeeklyMarkdownReport(
     `- 进店后下单变化：${formatRate(analysis.totals.conversionRateChange)}`,
     `- 广告回本变化：${formatRate(analysis.totals.adReturnChange)}`,
     `- 毛利变化：${formatRate(analysis.totals.grossProfitChangeRate)}`,
+    `- 退款/退货单占比变化：${formatRate(analysis.totals.refundOrderRateChange)}`,
+    `- 退款金额占比变化：${formatRate(analysis.totals.refundAmountRateChange)}`,
     "",
     "## 3. 数据完整度",
     ...analysis.dataHealth.map((item) => `- ${item}`),

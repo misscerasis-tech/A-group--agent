@@ -27,7 +27,7 @@ export const demoWorkspaceContext = {
 export const demoProject = {
   id: "demo-project-weekly-ops-review",
   name: "Aurora Cup 本周经营复盘",
-  description: "围绕销量、利润、广告回本、库存风险和竞品压力的电商运营复盘项目。",
+  description: "围绕销量、利润、广告回本、库存风险、退款/退货和竞品压力的电商运营复盘项目。",
   status: "ACTIVE" as const,
   linkedProducts: 3,
 };
