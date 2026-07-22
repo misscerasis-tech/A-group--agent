@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.137-api-malformed-json-smoke] - 2026-07-23
+
+### Added
+
+- `smoke:api` 增加非 JSON 请求体检查，确认 `/api/agent/analyze` 返回 400 和可读 JSON 错误。
+- 测试计划补充 API 错误响应不应暴露 HTML 错误页或堆栈。
+
 ## [v0.1.136-skip-table-footer-notes] - 2026-07-23
 
 ### Added

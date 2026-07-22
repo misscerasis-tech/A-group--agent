@@ -78,6 +78,21 @@ async function postAnalyze(body: unknown) {
   };
 }
 
+async function postRawAnalyze(body: string) {
+  const response = await fetch(new URL("/api/agent/analyze", baseUrl), {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body,
+  });
+
+  return {
+    response,
+    body: (await response.json()) as Record<string, unknown>,
+  };
+}
+
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) {
     throw new Error(message);
@@ -85,6 +100,10 @@ function assert(condition: unknown, message: string): asserts condition {
 }
 
 async function main() {
+  const malformedJson = await postRawAnalyze("这不是 JSON");
+  assert(malformedJson.response.status === 400, `非 JSON 请求体应该返回 400，实际 ${malformedJson.response.status}`);
+  assert(String(malformedJson.body.error ?? "").includes("JSON"), "非 JSON 请求体应该返回可读 JSON 错误。");
+
   const success = await postAnalyze({
     store: {
       storeName: "A组接口测试店",
@@ -305,7 +324,7 @@ async function main() {
   );
 
   console.info(
-    `[smoke:api] /api/agent/analyze 平台表头、Analytics 表头、客单价补销售额、负数退款金额、订单明细、Shopify Orders、Shopify 折扣、Amazon 订单 TSV、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
+    `[smoke:api] /api/agent/analyze 非 JSON、平台表头、Analytics 表头、客单价补销售额、负数退款金额、订单明细、Shopify Orders、Shopify 折扣、Amazon 订单 TSV、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
   );
 }
 
