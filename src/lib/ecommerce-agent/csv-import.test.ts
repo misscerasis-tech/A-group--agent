@@ -690,6 +690,24 @@ describe("ecommerce csv import", () => {
     expect(result.report.issues.some((issue) => issue.message.includes("订单明细"))).toBe(true);
   });
 
+  it("normalizes negative refund amounts in order detail exports", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "订单号,支付时间,商品名称,商家编码,购买数量,实付金额,退款金额,售后状态",
+        "O-1001,2026-07-08 10:11:00,黑杯,CUP-BLACK,1,39.9,0,已完成",
+        "O-1002,2026-07-15 09:20:00,黑杯,CUP-BLACK,1,39.9,-39.9,refunded",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      refundOrders: 1,
+      refundAmount: 39.9,
+      refundReason: "refunded",
+    });
+    expect(result.report.issues.some((issue) => issue.message.includes("已按绝对值 39.9 处理"))).toBe(true);
+  });
+
   it("multiplies unit cost in order detail exports by quantity", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [
@@ -889,7 +907,7 @@ describe("ecommerce csv import", () => {
     expect(result.report.questionsForUser[0]).toContain("请修正第 2 行");
   });
 
-  it("rejects negative refund metrics", () => {
+  it("normalizes negative refund metrics as refund amounts", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [
         "week,product_name,orders,revenue,units_sold,refund_amount",
@@ -898,8 +916,9 @@ describe("ecommerce csv import", () => {
       ].join("\n"),
     });
 
-    expect(result.report.ok).toBe(false);
-    expect(result.report.issues.some((issue) => issue.message.includes("退款金额"))).toBe(true);
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.currentWeek.products[0].refundAmount).toBe(5);
+    expect(result.report.issues.some((issue) => issue.message.includes("已按绝对值 5 处理"))).toBe(true);
   });
 
   it("warns when refund metrics may include historical orders", () => {

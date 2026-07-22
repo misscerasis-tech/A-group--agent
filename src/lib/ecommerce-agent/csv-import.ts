@@ -1360,6 +1360,26 @@ function optionalNumber(
   return parsed;
 }
 
+function optionalAbsoluteAmount(
+  value: string,
+  fieldLabel: string,
+  issues: ImportIssue[],
+  rowNumber: number,
+) {
+  const parsed = optionalNumber(value, fieldLabel, issues, rowNumber, { allowNegative: true });
+
+  if (parsed !== null && parsed < 0) {
+    issues.push({
+      severity: "info",
+      rowNumber,
+      message: `「${fieldLabel}」为负数，已按绝对值 ${roundMetric(Math.abs(parsed))} 处理。`,
+    });
+    return Math.abs(parsed);
+  }
+
+  return parsed;
+}
+
 function optionalCostComponent<TField extends string>(
   row: Record<string, string>,
   mapping: Map<TField, string>,
@@ -1684,7 +1704,7 @@ function buildMetricRow(
     issues,
     rowNumber,
   );
-  let refundAmount = optionalNumber(
+  let refundAmount = optionalAbsoluteAmount(
     readField(row, mapping, "refundAmount"),
     metricFieldLabels.refundAmount,
     issues,
@@ -2018,7 +2038,7 @@ function parseOrderDetailRows(
       const refundAmount =
         mapping.has("refundAmount") && !refundAmountValue
           ? 0
-          : optionalNumber(refundAmountValue, orderDetailFieldLabels.refundAmount, issues, rowNumber);
+          : optionalAbsoluteAmount(refundAmountValue, orderDetailFieldLabels.refundAmount, issues, rowNumber);
       let productCost = optionalNumber(
         readField(row, mapping, "productCost"),
         orderDetailFieldLabels.productCost,

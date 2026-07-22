@@ -429,6 +429,21 @@ function main() {
   assert(dataRequestReply.includes("最近两期经营对比表"), "飞书应该能回答下一份要补的数据。");
   assert(fileQuestionReply.includes("附件消息我暂时不会下载"), "飞书应该解释 Excel/CSV 文件怎么给。");
 
+  const negativeRefundImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "week,product_name,orders,revenue,units_sold,refund_amount",
+      "previous,A,10,1000,10,30",
+      "current,A,12,1200,12,-45",
+    ].join("\n"),
+  });
+
+  assert(negativeRefundImport.report.ok, "负数退款金额应该按退款金额处理，而不是阻断复盘。");
+  assert(negativeRefundImport.input?.currentWeek.products[0].refundAmount === 45, "负数退款金额应该按绝对值导入。");
+  assert(
+    negativeRefundImport.report.issues.some((issue) => issue.message.includes("已按绝对值 45 处理")),
+    "负数退款金额应该进入导入提醒。",
+  );
+
   const invalidImport = buildEcommerceInputFromCsv({
     metricsCsv: [
       "week,product_name,orders,revenue,units_sold,inventory",

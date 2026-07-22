@@ -45,7 +45,7 @@ const shopifyOrdersMetricsTable = [
   "Name,Paid at,Lineitem name,Lineitem sku,Lineitem quantity,Lineitem price,Refunded Amount,Financial Status",
   "#1001,2026-07-08 10:11:00,黑杯,CUP-BLACK,2,39.9,,paid",
   "#1002,2026-07-09 12:30:00,黑杯,CUP-BLACK,1,39.9,0,paid",
-  "#1003,2026-07-15 09:20:00,黑杯,CUP-BLACK,1,39.9,39.9,refunded",
+  "#1003,2026-07-15 09:20:00,黑杯,CUP-BLACK,1,39.9,-39.9,refunded",
   "#1004,2026-07-16 19:45:00,白杯,CUP-WHITE,3,29.9,,paid",
 ].join("\n");
 
@@ -216,6 +216,12 @@ async function main() {
     "Shopify Orders 应该被接口识别为订单明细。",
   );
   assert(shopifyOrdersAnalysis?.totals?.current?.revenue === 129.6, "Shopify Lineitem price 应该按单价乘件数汇总。");
+  assert(
+    ((shopifyOrders.body.report as { issues?: Array<{ message?: string }> } | undefined)?.issues ?? []).some((issue) =>
+      issue.message?.includes("已按绝对值 39.9 处理"),
+    ),
+    "Shopify 负数退款金额应该按绝对值进入导入报告。",
+  );
 
   const shopifyDiscountOrders = await postAnalyze({
     store: {
@@ -299,7 +305,7 @@ async function main() {
   );
 
   console.info(
-    `[smoke:api] /api/agent/analyze 平台表头、Analytics 表头、客单价补销售额、订单明细、Shopify Orders、Shopify 折扣、Amazon 订单 TSV、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
+    `[smoke:api] /api/agent/analyze 平台表头、Analytics 表头、客单价补销售额、负数退款金额、订单明细、Shopify Orders、Shopify 折扣、Amazon 订单 TSV、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
   );
 }
 
