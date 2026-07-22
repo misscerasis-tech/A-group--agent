@@ -275,7 +275,7 @@ export function buildCompetitorsReply(analysis: EcommerceAgentAnalysis) {
 
 function looksLikePastedMetricsTable(text: string) {
   const normalized = text.toLowerCase();
-  const hasTableDelimiter = [",", "\t", ";"].some((delimiter) => text.includes(delimiter));
+  const hasTableDelimiter = [",", "\t", ";", "|"].some((delimiter) => text.includes(delimiter));
 
   return (
     hasTableDelimiter &&

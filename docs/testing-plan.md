@@ -59,7 +59,7 @@ API 会返回 `analysis`、`feishuReply` 和 `markdownReport`。
 - 字段缺失时，Agent 会追问，不会硬编。
 - 字段名称不同也能映射，例如“GMV/销售额/revenue”都能识别。
 - 退款字段也能映射，例如“refund_orders/returns/退款单数”和“refund_amount/退款金额”都能识别。
-- CSV、TSV 和从 Excel/飞书表格直接复制出来的制表符数据都能识别。
+- CSV、TSV、Markdown 表格，以及从 Excel/飞书表格直接复制出来的制表符数据都能识别。
 - 没有 `week` 列但有 `date/start_date/开始日期` 时，Agent 会用日期判断最近两期。
 - 如果表里有三周或更多周期，Agent 会自动选择最近两期作为上周和本周。
 - 输出仍然是小白可读的自然语言。

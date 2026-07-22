@@ -35,6 +35,21 @@ describe("ecommerce csv import", () => {
     expect(result.input?.currentWeek.products[0].orders).toBe(9);
   });
 
+  it("parses markdown-style tables pasted from docs or chat", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "| week | product_name | orders | revenue | units_sold | refund_orders | refund_amount |",
+        "| --- | --- | ---: | ---: | ---: | ---: | ---: |",
+        "| previous | 黑杯 | 10 | 500 | 12 | 1 | 30 |",
+        "| current | 黑杯 | 9 | 450 | 10 | 2 | 80 |",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.currentWeek.products[0].revenue).toBe(450);
+    expect(result.input?.currentWeek.products[0].refundAmount).toBe(80);
+  });
+
   it("maps Chinese ecommerce headers into agent input", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

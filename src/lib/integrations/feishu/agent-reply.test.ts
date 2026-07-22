@@ -80,4 +80,18 @@ describe("feishu agent reply", () => {
     expect(reply).toContain("刚粘贴的表格");
     expect(reply).toContain("飞书粘贴数据店铺");
   });
+
+  it("analyzes pasted markdown-style tables directly", () => {
+    const reply = buildFeishuAgentReply(
+      [
+        "| week | product_name | orders | revenue | units_sold |",
+        "| --- | --- | ---: | ---: | ---: |",
+        "| previous | 黑杯 | 10 | 500 | 12 |",
+        "| current | 黑杯 | 8 | 420 | 9 |",
+      ].join("\n"),
+    );
+
+    expect(reply).toContain("刚粘贴的表格");
+    expect(reply).toContain("飞书粘贴数据店铺");
+  });
 });

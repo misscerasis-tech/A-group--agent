@@ -261,6 +261,11 @@ function splitDelimitedLine(line: string, delimiter: string) {
   }
 
   cells.push(current.trim());
+
+  if (delimiter === "|" && cells[0] === "" && cells[cells.length - 1] === "") {
+    return cells.slice(1, -1);
+  }
+
   return cells;
 }
 
@@ -269,7 +274,7 @@ function countDelimitedCells(line: string, delimiter: string) {
 }
 
 function detectDelimiter(lines: string[]) {
-  const candidates = [",", "\t", ";"];
+  const candidates = [",", "\t", ";", "|"];
   const scoredCandidates = candidates.map((delimiter) => {
     const counts = lines.slice(0, 5).map((line) => countDelimitedCells(line, delimiter));
     const usableCounts = counts.filter((count) => count > 1);
@@ -286,6 +291,16 @@ function detectDelimiter(lines: string[]) {
   return scoredCandidates.sort((a, b) => b.score - a.score)[0]?.delimiter ?? ",";
 }
 
+function isMarkdownTableSeparator(line: string, delimiter: string) {
+  if (delimiter !== "|") {
+    return false;
+  }
+
+  const cells = splitDelimitedLine(line, delimiter);
+
+  return cells.length > 0 && cells.every((cell) => /^:?-{3,}:?$/.test(cell.trim()));
+}
+
 export function parseCsv(text: string): CsvTable {
   const lines = text
     .split(/\r?\n/)
@@ -297,8 +312,9 @@ export function parseCsv(text: string): CsvTable {
   }
 
   const delimiter = detectDelimiter(lines);
-  const headers = splitDelimitedLine(lines[0], delimiter).map((header) => header.replace(/^\uFEFF/, ""));
-  const rows = lines.slice(1).map((line) => {
+  const readableLines = lines.filter((line, index) => index === 0 || !isMarkdownTableSeparator(line, delimiter));
+  const headers = splitDelimitedLine(readableLines[0], delimiter).map((header) => header.replace(/^\uFEFF/, ""));
+  const rows = readableLines.slice(1).map((line) => {
     const cells = splitDelimitedLine(line, delimiter);
     return Object.fromEntries(headers.map((header, index) => [header, cells[index] ?? ""]));
   });

@@ -33,7 +33,7 @@
 | refundOrders | 退款或退货单数 | 可选 | 3 |
 | refundAmount | 退款金额 | 可选 | 120 |
 
-当前导入器已经支持 CSV/TSV，不要求字段名完全一致。从 Excel、飞书表格或 Google Sheets 直接复制出来的制表符表格也能识别。常见别名会自动识别：
+当前导入器已经支持 CSV/TSV/Markdown 表格，不要求字段名完全一致。从 Excel、飞书表格或 Google Sheets 直接复制出来的制表符表格也能识别。常见别名会自动识别：
 
 `week` 可以直接写 `previous/current`、`上周/本周`，也可以写真实日期或周，例如 `2026-07-08`、`2026-W29`。如果没有 `week` 列，但有 `date/start_date/开始日期`，Agent 会把日期当成周期来源。如果导出的表里超过两个周期，Agent 会自动选择最近两期做对比，并在导入报告里说明它选了哪两期。
 
