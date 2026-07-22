@@ -598,6 +598,10 @@ textarea {
   gap: 12px;
 }
 
+.compact-form-grid .wide {
+  grid-column: 1 / -1;
+}
+
 .csv-box-header,
 .button-row {
   display: flex;

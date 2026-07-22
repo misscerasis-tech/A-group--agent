@@ -28,12 +28,14 @@ const starterCompetitorCsv = [
 ].join("\n");
 
 const importDraftStorageKey = "a-group-ecommerce-agent-import-draft-v1";
+const defaultStoreGoal = "同时看销量、利润、广告回本、库存风险和竞品压力";
 
 type ImportDraft = {
   storeName?: string;
   platform?: string;
   market?: string;
   category?: string;
+  goal?: string;
   metricsCsv?: string;
   competitorCsv?: string;
 };
@@ -72,6 +74,7 @@ export function DataImportPanel() {
   const [platform, setPlatform] = useState("Shopify");
   const [market, setMarket] = useState("美国");
   const [category, setCategory] = useState("智能温控/温显旅行杯");
+  const [goal, setGoal] = useState(defaultStoreGoal);
   const [metricsCsv, setMetricsCsv] = useState(starterMetricsCsv);
   const [competitorCsv, setCompetitorCsv] = useState(starterCompetitorCsv);
   const [hasRun, setHasRun] = useState(false);
@@ -88,6 +91,7 @@ export function DataImportPanel() {
         setPlatform(draft.platform ?? "Shopify");
         setMarket(draft.market ?? "美国");
         setCategory(draft.category ?? "智能温控/温显旅行杯");
+        setGoal(draft.goal ?? defaultStoreGoal);
         setMetricsCsv(draft.metricsCsv ?? starterMetricsCsv);
         setCompetitorCsv(draft.competitorCsv ?? starterCompetitorCsv);
       }
@@ -108,12 +112,13 @@ export function DataImportPanel() {
       platform,
       market,
       category,
+      goal,
       metricsCsv,
       competitorCsv,
     };
 
     window.localStorage.setItem(importDraftStorageKey, JSON.stringify(draft));
-  }, [category, competitorCsv, hasLoadedDraft, market, metricsCsv, platform, storeName]);
+  }, [category, competitorCsv, goal, hasLoadedDraft, market, metricsCsv, platform, storeName]);
 
   const importResult = useMemo(
     () =>
@@ -125,9 +130,10 @@ export function DataImportPanel() {
           platform,
           market,
           category,
+          goal,
         },
       }),
-    [category, competitorCsv, market, metricsCsv, platform, storeName],
+    [category, competitorCsv, goal, market, metricsCsv, platform, storeName],
   );
   const analysis = importResult.input ? analyzeEcommerceStore(importResult.input) : null;
   const markdownReport =
@@ -166,6 +172,21 @@ export function DataImportPanel() {
             <label className="form-row">
               <span className="field-label">类目</span>
               <input value={category} onChange={(event) => setCategory(event.target.value)} />
+            </label>
+            <label className="form-row wide">
+              <span className="field-label">本周目标</span>
+              <input
+                list="ecommerce-goal-options"
+                value={goal}
+                onChange={(event) => setGoal(event.target.value)}
+              />
+              <datalist id="ecommerce-goal-options">
+                <option value="同时看销量、利润、广告回本、库存风险和竞品压力" />
+                <option value="这周先保利润" />
+                <option value="这周先保销量" />
+                <option value="先看库存风险" />
+                <option value="先看广告回本" />
+              </datalist>
             </label>
           </div>
 
