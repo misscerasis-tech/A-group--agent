@@ -82,4 +82,20 @@ describe("ecommerce csv import", () => {
     expect(result.input?.currentWeek.products[0].revenue).toBe(450);
     expect(result.report.issues.some((issue) => issue.message.includes("最近两期"))).toBe(true);
   });
+
+  it("rejects impossible negative operating metrics", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "week,product_name,orders,revenue,units_sold,inventory",
+        "previous,黑杯,-1,500,12,20",
+        "current,黑杯,9,450,10,-3",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(false);
+    expect(result.report.issues.some((issue) => issue.message.includes("不能为负数"))).toBe(true);
+    expect(result.report.issues.some((issue) => issue.rowNumber === 3 && issue.message.includes("库存"))).toBe(
+      true,
+    );
+  });
 });

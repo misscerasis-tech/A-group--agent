@@ -40,6 +40,11 @@ type CsvTable = {
   rows: Array<Record<string, string>>;
 };
 
+type MetricSourceRow = {
+  row: Record<string, string>;
+  rowNumber: number;
+};
+
 type MetricField =
   | "week"
   | "startDate"
@@ -284,8 +289,50 @@ function requiredNumber(value: string, fieldLabel: string, issues: ImportIssue[]
   return parsed;
 }
 
-function optionalNumber(value: string) {
-  return parseNumber(value);
+function requireNonNegative(
+  value: number | null,
+  fieldLabel: string,
+  issues: ImportIssue[],
+  rowNumber: number,
+) {
+  if (value !== null && value < 0) {
+    issues.push({
+      severity: "error",
+      rowNumber,
+      message: `「${fieldLabel}」不能为负数，请检查导出数据。`,
+    });
+    return null;
+  }
+
+  return value;
+}
+
+function optionalNumber(
+  value: string,
+  fieldLabel?: string,
+  issues?: ImportIssue[],
+  rowNumber?: number,
+  options: { allowNegative?: boolean } = {},
+) {
+  const parsed = parseNumber(value);
+
+  if (
+    parsed !== null &&
+    parsed < 0 &&
+    !options.allowNegative &&
+    fieldLabel &&
+    issues &&
+    rowNumber
+  ) {
+    issues.push({
+      severity: "error",
+      rowNumber,
+      message: `「${fieldLabel}」不能为负数，请检查导出数据。`,
+    });
+    return null;
+  }
+
+  return parsed;
 }
 
 function normalizeWeek(value: string) {
@@ -397,10 +444,20 @@ function buildMetricRow(
     });
   }
 
-  const orders = requiredNumber(readField(row, mapping, "orders"), metricFieldLabels.orders, issues, rowNumber);
-  const revenue = requiredNumber(readField(row, mapping, "revenue"), metricFieldLabels.revenue, issues, rowNumber);
-  const unitsSold = requiredNumber(
-    readField(row, mapping, "unitsSold"),
+  const orders = requireNonNegative(
+    requiredNumber(readField(row, mapping, "orders"), metricFieldLabels.orders, issues, rowNumber),
+    metricFieldLabels.orders,
+    issues,
+    rowNumber,
+  );
+  const revenue = requireNonNegative(
+    requiredNumber(readField(row, mapping, "revenue"), metricFieldLabels.revenue, issues, rowNumber),
+    metricFieldLabels.revenue,
+    issues,
+    rowNumber,
+  );
+  const unitsSold = requireNonNegative(
+    requiredNumber(readField(row, mapping, "unitsSold"), metricFieldLabels.unitsSold, issues, rowNumber),
     metricFieldLabels.unitsSold,
     issues,
     rowNumber,
@@ -413,15 +470,22 @@ function buildMetricRow(
   return {
     productName: productName || sku,
     sku: sku || productName,
-    visitors: optionalNumber(readField(row, mapping, "visitors")),
+    visitors: optionalNumber(readField(row, mapping, "visitors"), metricFieldLabels.visitors, issues, rowNumber),
     orders,
     revenue,
     unitsSold,
-    adSpend: optionalNumber(readField(row, mapping, "adSpend")),
-    adRevenue: optionalNumber(readField(row, mapping, "adRevenue")),
-    inventory: optionalNumber(readField(row, mapping, "inventory")),
-    productCost: optionalNumber(readField(row, mapping, "productCost")),
-    grossProfit: optionalNumber(readField(row, mapping, "grossProfit")),
+    adSpend: optionalNumber(readField(row, mapping, "adSpend"), metricFieldLabels.adSpend, issues, rowNumber),
+    adRevenue: optionalNumber(readField(row, mapping, "adRevenue"), metricFieldLabels.adRevenue, issues, rowNumber),
+    inventory: optionalNumber(readField(row, mapping, "inventory"), metricFieldLabels.inventory, issues, rowNumber),
+    productCost: optionalNumber(
+      readField(row, mapping, "productCost"),
+      metricFieldLabels.productCost,
+      issues,
+      rowNumber,
+    ),
+    grossProfit: optionalNumber(readField(row, mapping, "grossProfit"), undefined, undefined, undefined, {
+      allowNegative: true,
+    }),
   };
 }
 
@@ -432,18 +496,18 @@ function buildWeeklyMetricSet({
   issues,
 }: {
   label: string;
-  rows: Array<Record<string, string>>;
+  rows: MetricSourceRow[];
   mapping: Map<MetricField, string>;
   issues: ImportIssue[];
 }): WeeklyMetricSet {
-  const firstRow = rows[0];
+  const firstRow = rows[0]?.row;
 
   return {
     label,
     startDate: firstRow ? readField(firstRow, mapping, "startDate") : "",
     endDate: firstRow ? readField(firstRow, mapping, "endDate") : "",
     products: rows
-      .map((row) => buildMetricRow(row, mapping, issues, rows.indexOf(row) + 2))
+      .map(({ row, rowNumber }) => buildMetricRow(row, mapping, issues, rowNumber))
       .filter((product): product is ProductMetric => product !== null),
   };
 }
@@ -548,12 +612,13 @@ export function buildEcommerceInputFromCsv({
     });
   }
 
-  const explicitPreviousRows: Array<Record<string, string>> = [];
-  const explicitCurrentRows: Array<Record<string, string>> = [];
+  const explicitPreviousRows: MetricSourceRow[] = [];
+  const explicitCurrentRows: MetricSourceRow[] = [];
   const inferredPeriods = inferTwoPeriods(metricsTable.rows, mapping, issues);
 
-  for (const row of metricsTable.rows) {
+  for (const [index, row] of metricsTable.rows.entries()) {
     const week = normalizeWeek(readField(row, mapping, "week"));
+    const sourceRow = { row, rowNumber: index + 2 };
     const effectiveWeek =
       week === "previous" || week === "current"
         ? week
@@ -564,9 +629,9 @@ export function buildEcommerceInputFromCsv({
             : week;
 
     if (effectiveWeek === "previous") {
-      explicitPreviousRows.push(row);
+      explicitPreviousRows.push(sourceRow);
     } else if (effectiveWeek === "current") {
-      explicitCurrentRows.push(row);
+      explicitCurrentRows.push(sourceRow);
     }
   }
 
