@@ -46,6 +46,14 @@
 7. 保存迁移结果。
 8. 后续任务、周报、提醒都走新的 active 连接。
 
+本地可以先用迁移草案脚本做无密钥检查：
+
+```bash
+npx pnpm@10.13.1 run feishu:migration-plan
+```
+
+如果 `.env` 或 `.env.local` 里还没有 `FEISHU_NEXT_APP_ID`，脚本会打印需要准备的非敏感配置模板。补齐新旧 App ID、tenant key、默认群或沉淀位置后，脚本会生成迁移检查项和回滚步骤；它不会修改飞书后台，也不会打印或读取 App Secret。
+
 ## 迁移记录字段
 
 | 字段 | 含义 |
@@ -76,6 +84,7 @@
 
 - 飞书连接配置契约。
 - 迁移计划生成函数。
+- 迁移草案脚本 `npx pnpm@10.13.1 run feishu:migration-plan`。
 - Secret 脱敏函数。
 - 迁移规则测试。
 - 页面保留“飞书回写预览”。

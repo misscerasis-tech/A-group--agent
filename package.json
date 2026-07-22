@@ -14,6 +14,7 @@
     "smoke:api": "tsx scripts/smoke-api.ts",
     "smoke:web": "tsx scripts/smoke-web.ts",
     "feishu:doctor": "tsx scripts/feishu-doctor.ts",
+    "feishu:migration-plan": "tsx scripts/feishu-migration-plan.ts",
     "feishu:worker": "tsx scripts/feishu-long-connection.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",

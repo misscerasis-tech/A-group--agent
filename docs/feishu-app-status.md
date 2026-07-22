@@ -61,3 +61,11 @@ npx pnpm@10.13.1 run feishu:worker
 ```
 
 7. 如果 worker 已连接但机器人不回复，再去版本管理页创建版本并发布。
+
+如果后续要迁移到另一个飞书自建应用或正式机器人，先运行：
+
+```bash
+npx pnpm@10.13.1 run feishu:migration-plan
+```
+
+这条命令只生成迁移草案和回滚清单，不会动飞书后台，也不会打印 App Secret。

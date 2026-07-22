@@ -82,6 +82,14 @@ npx pnpm@10.13.1 run feishu:worker
 
 13. 在同一个飞书会话里粘贴一段经营表，再问 `给我待办清单`。worker 应该使用刚粘贴的数据。然后继续粘贴广告表、库存/成本表、用户声音表或竞品表，机器人应该提示“已合并到当前会话数据”。再发 `清空这份数据`，它应该清除当前 chat 缓存；之后重新问待办时，会回到 `.env` 数据或样例店铺。
 
+如果要把测试机器人迁移到另一个飞书自建应用，先不要直接覆盖 `.env`。先运行：
+
+```bash
+npx pnpm@10.13.1 run feishu:migration-plan
+```
+
+它会生成迁移草案、切换前检查和回滚步骤。确认新机器人能收消息、能发回复、沉淀位置可写后，再切换 active 配置。
+
 ## 真实数据
 
 如果还没有整理格式，可以先复制 `data/templates/weekly-metrics-template.csv` 或 `data/templates/order-details-template.csv`，保留表头，把示例行替换成真实商品和订单。广告、库存/成本、用户声音和竞品也有对应模板。

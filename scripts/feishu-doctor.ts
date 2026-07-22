@@ -14,6 +14,7 @@ function printFeishuSetupNextSteps() {
   console.info("[feishu:doctor] 本地配置建议：cp .env.example .env，然后只在本机 .env 写入 FEISHU_APP_SECRET。");
   console.info("[feishu:doctor] 本地测试优先使用长连接：FEISHU_EVENT_SUBSCRIPTION_MODE=long_connection，不需要公网 HTTPS 回调。");
   console.info("[feishu:doctor] 事件订阅需要接收消息事件：im.message.receive_v1；如后台提示需发布，去版本管理创建版本并发布。");
+  console.info("[feishu:doctor] 如果后续要换机器人，先运行 npx pnpm@10.13.1 run feishu:migration-plan 生成迁移草案。");
 }
 
 function printFeishuRuntimeAcceptancePlan() {

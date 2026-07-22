@@ -2,6 +2,14 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.131-feishu-migration-plan-script] - 2026-07-23
+
+### Added
+
+- 新增 `feishu:migration-plan` 脚本，用于生成飞书机器人迁移草案、切换前检查和回滚步骤。
+- 迁移草案脚本只读取新旧连接的非敏感配置，不读取或打印 App Secret，也不会修改飞书后台。
+- `feishu:doctor`、飞书状态文档、用户返回清单和测试计划补充迁移草案入口。
+
 ## [v0.1.130-stale-competitor-observations] - 2026-07-23
 
 ### Changed

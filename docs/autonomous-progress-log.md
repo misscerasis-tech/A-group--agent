@@ -7,7 +7,7 @@
 ## 当前最新稳定点
 
 - 最新代码：`main`
-- 最新标签：`v0.1.130-stale-competitor-observations`
+- 最新标签：`v0.1.131-feishu-migration-plan-script`
 - 本地测试入口：`http://localhost:3001/agent`
 - 远端仓库：`misscerasis-tech/A-group--agent.git`
 
@@ -47,6 +47,7 @@
    - 发送回复失败时，同一事件重试不会被去重吞掉。
    - 未知消息兜底回复不再复述用户原文，降低误发敏感信息时被二次扩散的风险。
    - `feishu:doctor` 会给出飞书开放平台入口、App Secret 复制位置、长连接配置步骤、测试消息和通过标准。
+   - `feishu:migration-plan` 可以生成飞书机器人迁移草案、切换前检查和回滚步骤；它只使用非敏感配置，不读取或打印 App Secret。
 
 5. 真实竞品和隐私边界更清楚。
    - 演示竞品优先使用 Ember、Nextmug 和 VSITOO 官方商品页，Amazon 低价替代品明确标注价格边界。
