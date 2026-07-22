@@ -116,6 +116,20 @@ function main() {
   assert(inventoryImport.input?.currentWeek.products[0].inventory === 18, "库存/成本快照应该更新本周 SKU 库存。");
   assert(inventoryImport.input?.currentWeek.products[0].grossProfit === 270, "库存/成本快照应该补齐毛利。");
 
+  const feeAwareProfitImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "周期,商品名称,订单数,销售额,销量,商品成本,平台佣金,支付手续费,履约费",
+      "上周,黑杯,10,500,12,300,50,5,15",
+      "本周,黑杯,9,450,10,330,45,6,18",
+    ].join("\n"),
+  });
+
+  assert(feeAwareProfitImport.report.ok, "带平台/支付/履约费的经营表应该可以导入。");
+  assert(
+    feeAwareProfitImport.input?.currentWeek.products[0].grossProfit === 51,
+    "平台/支付/履约费应该折进派生毛利。",
+  );
+
   const adsImport = buildEcommerceInputFromCsv({
     metricsCsv: [
       "周期,商品名称,SKU,订单数,销售额,销量",

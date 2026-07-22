@@ -18,6 +18,10 @@ export type ProductMetric = {
   adRevenue: number | null;
   inventory: number | null;
   productCost?: number | null;
+  platformFee?: number | null;
+  paymentFee?: number | null;
+  fulfillmentCost?: number | null;
+  otherCost?: number | null;
   grossProfit?: number | null;
   refundOrders?: number | null;
   refundAmount?: number | null;
@@ -71,6 +75,10 @@ export type MetricTotals = {
   adSpend: number | null;
   adRevenue: number | null;
   productCost: number | null;
+  platformFee: number | null;
+  paymentFee: number | null;
+  fulfillmentCost: number | null;
+  otherCost: number | null;
   grossProfit: number | null;
   refundOrders: number | null;
   refundAmount: number | null;

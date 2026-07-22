@@ -208,10 +208,10 @@ export function buildDataRequestPlan(
       owner: "店铺负责人",
       priority: "should",
       status: (report?.inventoryRows ?? 0) > 0 ? "partial" : "missing",
-      ask: "请补 SKU 的商品成本、毛利、毛利率，或至少给单位成本。",
+      ask: "请补 SKU 的商品成本、毛利、毛利率，或至少给单位成本；如果有平台佣金、支付手续费、物流/履约费，也一起给。",
       whyItMatters: "没有利润口径时，销售额增长不一定代表真的赚钱。",
       whereToFind: "成本表、供应链报价、ERP、财务毛利表或商品成本快照。",
-      fields: ["SKU", "商品成本/单位成本", "毛利", "毛利率"],
+      fields: ["SKU", "商品成本/单位成本", "平台佣金/服务费", "支付/交易手续费", "物流/履约成本", "毛利", "毛利率"],
       homepageImpact: "首页会把“卖得多”进一步判断成“是否真的留下利润”。",
     });
   }

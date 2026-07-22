@@ -19,13 +19,39 @@ function sumNullable(values: Array<number | null>) {
   return values.reduce<number>((sum, value) => sum + (value ?? 0), 0);
 }
 
+function sumOptionalCost(values: Array<number | null | undefined>) {
+  if (values.some((value) => value === undefined || value === null)) {
+    return null;
+  }
+
+  return values.reduce<number>((sum, value) => sum + (value ?? 0), 0);
+}
+
+function productExtraCost(product: ProductMetric) {
+  return (
+    (product.platformFee ?? 0) +
+    (product.paymentFee ?? 0) +
+    (product.fulfillmentCost ?? 0) +
+    (product.otherCost ?? 0)
+  );
+}
+
+function hasExtraCostData(product: ProductMetric) {
+  return (
+    product.platformFee !== undefined ||
+    product.paymentFee !== undefined ||
+    product.fulfillmentCost !== undefined ||
+    product.otherCost !== undefined
+  );
+}
+
 function productGrossProfit(product: ProductMetric) {
   if (product.grossProfit !== undefined && product.grossProfit !== null) {
     return product.grossProfit;
   }
 
   if (product.productCost !== undefined && product.productCost !== null) {
-    return product.revenue - product.productCost;
+    return product.revenue - product.productCost - productExtraCost(product);
   }
 
   return null;
@@ -44,6 +70,10 @@ function toTotals(metricSet: WeeklyMetricSet): MetricTotals {
         product.productCost !== undefined ? product.productCost : null,
       ),
     ),
+    platformFee: sumOptionalCost(metricSet.products.map((product) => product.platformFee)),
+    paymentFee: sumOptionalCost(metricSet.products.map((product) => product.paymentFee)),
+    fulfillmentCost: sumOptionalCost(metricSet.products.map((product) => product.fulfillmentCost)),
+    otherCost: sumOptionalCost(metricSet.products.map((product) => product.otherCost)),
     grossProfit: sumNullable(metricSet.products.map(productGrossProfit)),
     refundOrders: sumNullable(
       metricSet.products.map((product) =>
@@ -308,6 +338,10 @@ function buildDataHealth(input: EcommerceAgentInput) {
     health.push("成本或毛利数据不完整，暂时只能判断销售表现，不能完整判断赚不赚钱。");
   } else {
     health.push("已有成本或毛利数据，可以判断销售增长是否真的带来利润。");
+  }
+
+  if (allProducts.some(hasExtraCostData)) {
+    health.push("已读取平台佣金、支付手续费、履约费或其他可变成本，会在没有明确毛利时折进利润判断。");
   }
 
   const refundDataRows = allProducts.filter(hasRefundData).length;

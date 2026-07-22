@@ -26,23 +26,23 @@ import { buildBeginnerWorkSession } from "../../lib/ecommerce-agent/work-session
 import { formatEcommerceAnalysisForFeishu } from "../../lib/integrations/feishu/agent-reply";
 
 const starterMetricsCsv = [
-  "week,start_date,end_date,product_name,sku,visitors,orders,revenue,units_sold,ad_spend,ad_revenue,inventory,gross_profit,refund_orders,refund_amount,refund_reason",
-  "previous,2026-07-06,2026-07-12,Aurora Cup 黑色 500ml,CUP-BLACK-500,4200,168,6048,176,1320,3960,320,2419,5,180,杯盖漏水 / 温控不准",
-  "current,2026-07-13,2026-07-19,Aurora Cup 黑色 500ml,CUP-BLACK-500,4380,122,4392,128,1510,2920,118,878,4,160,杯盖漏水 / 物流慢",
+  "week,start_date,end_date,product_name,sku,visitors,orders,revenue,units_sold,ad_spend,ad_revenue,inventory,product_cost,platform_fee,payment_fee,fulfillment_cost,gross_profit,refund_orders,refund_amount,refund_reason",
+  "previous,2026-07-06,2026-07-12,Aurora Cup 黑色 500ml,CUP-BLACK-500,4200,168,6048,176,1320,3960,320,3024,605,91,328,2000,5,180,杯盖漏水 / 温控不准",
+  "current,2026-07-13,2026-07-19,Aurora Cup 黑色 500ml,CUP-BLACK-500,4380,122,4392,128,1510,2920,118,2948,439,66,276,663,4,160,杯盖漏水 / 物流慢",
 ].join("\n");
 
 const platformHeaderMetricsTable = [
-  "周期,商品名称,商家编码,商品访客数,支付买家数,商品支付金额,支付商品件数,消耗,直接成交金额,可售件数,成本金额,毛利额,退款成功单数,退款成功金额,退款原因",
-  "上周,Aurora Cup 黑色 500ml,CUP-BLACK-500,4200,168,6048,176,1320,3960,320,3629,2419,5,180,杯盖漏水 / 温控不准",
-  "本周,Aurora Cup 黑色 500ml,CUP-BLACK-500,4380,122,4392,128,1510,2920,118,3514,878,4,160,杯盖漏水 / 物流慢",
+  "周期,商品名称,商家编码,商品访客数,支付买家数,商品支付金额,支付商品件数,消耗,直接成交金额,可售件数,成本金额,平台佣金,支付手续费,履约费,毛利额,退款成功单数,退款成功金额,退款原因",
+  "上周,Aurora Cup 黑色 500ml,CUP-BLACK-500,4200,168,6048,176,1320,3960,320,3024,605,91,328,2000,5,180,杯盖漏水 / 温控不准",
+  "本周,Aurora Cup 黑色 500ml,CUP-BLACK-500,4380,122,4392,128,1510,2920,118,2948,439,66,276,663,4,160,杯盖漏水 / 物流慢",
 ].join("\n");
 
 const orderDetailMetricsTable = [
-  "订单号,支付时间,商品名称,商家编码,购买数量,实付金额,退款金额,售后状态",
-  "O-1001,2026-07-08 10:11:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,2,79.8,,已完成",
-  "O-1002,2026-07-09 12:30:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,1,39.9,0,已完成",
-  "O-1003,2026-07-15 09:20:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,1,39.9,39.9,已退款",
-  "O-1004,2026-07-16 19:45:00,Aurora Cup 白色 500ml,CUP-WHITE-500,3,119.7,,已完成",
+  "订单号,支付时间,商品名称,商家编码,购买数量,实付金额,退款金额,单位成本,平台佣金,支付手续费,履约费,售后状态",
+  "O-1001,2026-07-08 10:11:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,2,79.8,,20,6,1,4,已完成",
+  "O-1002,2026-07-09 12:30:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,1,39.9,0,20,3,0.5,2,已完成",
+  "O-1003,2026-07-15 09:20:00,Aurora Cup 黑色 500ml,CUP-BLACK-500,1,39.9,39.9,20,3,0.5,2,已退款",
+  "O-1004,2026-07-16 19:45:00,Aurora Cup 白色 500ml,CUP-WHITE-500,3,119.7,,18,8,1.2,5,已完成",
 ].join("\n");
 
 const shopifyOrdersMetricsTable = [

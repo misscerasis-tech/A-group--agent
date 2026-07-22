@@ -69,6 +69,10 @@ type MetricField =
   | "adCostRate"
   | "inventory"
   | "productCost"
+  | "platformFee"
+  | "paymentFee"
+  | "fulfillmentCost"
+  | "otherCost"
   | "grossProfit"
   | "grossMarginRate"
   | "refundOrders"
@@ -110,6 +114,10 @@ type OrderDetailField =
   | "status"
   | "productCost"
   | "unitCost"
+  | "platformFee"
+  | "paymentFee"
+  | "fulfillmentCost"
+  | "otherCost"
   | "grossProfit";
 
 type InventoryField = "productName" | "sku" | "inventory" | "unitCost" | "grossMarginRate" | "observedAt";
@@ -158,6 +166,10 @@ const metricFieldLabels: Record<MetricField, string> = {
   adCostRate: "ACOS/广告成本占比",
   inventory: "库存",
   productCost: "商品成本",
+  platformFee: "平台佣金/服务费",
+  paymentFee: "支付/交易手续费",
+  fulfillmentCost: "物流/履约成本",
+  otherCost: "其他可变成本",
   grossProfit: "毛利",
   grossMarginRate: "毛利率",
   refundOrders: "退款/退货单数",
@@ -348,6 +360,93 @@ const metricAliases: Record<MetricField, string[]> = {
   ],
   inventory: ["inventory", "stock", "available_stock", "sellable_stock", "库存", "当前库存", "可售库存", "库存数", "可售件数"],
   productCost: ["product_cost", "cogs", "cost_of_goods", "cost_amount", "商品成本", "采购成本", "成本金额"],
+  platformFee: [
+    "platform_fee",
+    "platformfee",
+    "platform_commission",
+    "platformcommission",
+    "commission",
+    "commission_fee",
+    "commissionfee",
+    "referral_fee",
+    "referralfee",
+    "selling_fee",
+    "sellingfee",
+    "selling_fees",
+    "sellingfees",
+    "merchant_fee",
+    "merchantfee",
+    "平台费",
+    "平台服务费",
+    "平台佣金",
+    "销售佣金",
+    "交易佣金",
+    "佣金",
+    "技术服务费",
+  ],
+  paymentFee: [
+    "payment_fee",
+    "paymentfee",
+    "processing_fee",
+    "processingfee",
+    "payment_processing_fee",
+    "paymentprocessingfee",
+    "transaction_fee",
+    "transactionfee",
+    "stripe_fee",
+    "stripefee",
+    "paypal_fee",
+    "paypalfee",
+    "支付手续费",
+    "交易手续费",
+    "收款手续费",
+    "手续费",
+    "支付服务费",
+  ],
+  fulfillmentCost: [
+    "fulfillment_cost",
+    "fulfillmentcost",
+    "fulfillment_fee",
+    "fulfillmentfee",
+    "fba_fee",
+    "fbafee",
+    "shipping_cost",
+    "shippingcost",
+    "logistics_cost",
+    "logisticscost",
+    "freight_cost",
+    "freightcost",
+    "delivery_cost",
+    "deliverycost",
+    "配送成本",
+    "物流成本",
+    "运费成本",
+    "履约成本",
+    "履约费",
+    "FBA费",
+    "仓配费",
+    "配送费成本",
+    "发货成本",
+  ],
+  otherCost: [
+    "other_cost",
+    "othercost",
+    "other_fee",
+    "otherfee",
+    "service_fee",
+    "servicefee",
+    "packaging_cost",
+    "packagingcost",
+    "package_cost",
+    "packagecost",
+    "warehouse_fee",
+    "warehousefee",
+    "其他成本",
+    "其他费用",
+    "服务费",
+    "包装费",
+    "仓储费",
+  ],
   grossProfit: ["gross_profit", "grossprofit", "profit", "margin_amount", "毛利", "毛利润", "利润", "毛利额"],
   grossMarginRate: [
     "gross_margin",
@@ -499,6 +598,10 @@ const orderDetailFieldLabels: Record<OrderDetailField, string> = {
   status: "订单/售后状态",
   productCost: "商品成本",
   unitCost: "单位成本",
+  platformFee: "平台佣金/服务费",
+  paymentFee: "支付/交易手续费",
+  fulfillmentCost: "物流/履约成本",
+  otherCost: "其他可变成本",
   grossProfit: "毛利",
 };
 
@@ -664,6 +767,10 @@ const orderDetailAliases: Record<OrderDetailField, string[]> = {
     "单件成本",
     "件成本",
   ],
+  platformFee: metricAliases.platformFee,
+  paymentFee: metricAliases.paymentFee,
+  fulfillmentCost: metricAliases.fulfillmentCost,
+  otherCost: metricAliases.otherCost,
   grossProfit: metricAliases.grossProfit,
 };
 
@@ -1194,6 +1301,36 @@ function optionalNumber(
   return parsed;
 }
 
+function optionalCostComponent<TField extends string>(
+  row: Record<string, string>,
+  mapping: Map<TField, string>,
+  field: TField,
+  fieldLabel: string,
+  issues: ImportIssue[],
+  rowNumber: number,
+) {
+  if (!mapping.has(field)) {
+    return null;
+  }
+
+  const value = readField(row, mapping, field);
+
+  if (!value) {
+    return 0;
+  }
+
+  return optionalNumber(value, fieldLabel, issues, rowNumber);
+}
+
+function extraCostTotal(product: Pick<Partial<ProductMetric>, "platformFee" | "paymentFee" | "fulfillmentCost" | "otherCost">) {
+  return (
+    (product.platformFee ?? 0) +
+    (product.paymentFee ?? 0) +
+    (product.fulfillmentCost ?? 0) +
+    (product.otherCost ?? 0)
+  );
+}
+
 function normalizeWeek(value: string) {
   const normalized = value.trim().toLowerCase();
 
@@ -1442,6 +1579,17 @@ function buildMetricRow(
     issues,
     rowNumber,
   );
+  const platformFee = optionalCostComponent(row, mapping, "platformFee", metricFieldLabels.platformFee, issues, rowNumber);
+  const paymentFee = optionalCostComponent(row, mapping, "paymentFee", metricFieldLabels.paymentFee, issues, rowNumber);
+  const fulfillmentCost = optionalCostComponent(
+    row,
+    mapping,
+    "fulfillmentCost",
+    metricFieldLabels.fulfillmentCost,
+    issues,
+    rowNumber,
+  );
+  const otherCost = optionalCostComponent(row, mapping, "otherCost", metricFieldLabels.otherCost, issues, rowNumber);
   let grossProfit = optionalNumber(readField(row, mapping, "grossProfit"), undefined, undefined, undefined, {
     allowNegative: true,
   });
@@ -1449,6 +1597,10 @@ function buildMetricRow(
 
   if (grossProfit === null && grossMarginRate !== null) {
     grossProfit = roundMetric(revenue * grossMarginRate);
+  }
+
+  if (grossProfit === null && productCost !== null) {
+    grossProfit = roundMetric(revenue - productCost - extraCostTotal({ platformFee, paymentFee, fulfillmentCost, otherCost }));
   }
 
   let refundOrders = optionalNumber(
@@ -1501,6 +1653,10 @@ function buildMetricRow(
     adRevenue,
     inventory: optionalNumber(readField(row, mapping, "inventory"), metricFieldLabels.inventory, issues, rowNumber),
     productCost,
+    platformFee,
+    paymentFee,
+    fulfillmentCost,
+    otherCost,
     grossProfit,
     refundOrders,
     refundAmount,
@@ -1571,6 +1727,10 @@ function mergeProductsBySku(products: ProductMetric[], label: string, issues: Im
       adRevenue: sumOptionalProductField(group, "adRevenue"),
       inventory: lastOptionalProductField(group, "inventory"),
       productCost: sumOptionalProductField(group, "productCost"),
+      platformFee: sumOptionalProductField(group, "platformFee"),
+      paymentFee: sumOptionalProductField(group, "paymentFee"),
+      fulfillmentCost: sumOptionalProductField(group, "fulfillmentCost"),
+      otherCost: sumOptionalProductField(group, "otherCost"),
       grossProfit: sumOptionalProductField(group, "grossProfit"),
       refundOrders: sumOptionalProductField(group, "refundOrders"),
       refundAmount: sumOptionalProductField(group, "refundAmount"),
@@ -1628,6 +1788,10 @@ type ParsedOrderDetailRow = {
   refundAmount: number | null;
   status: string;
   productCost: number | null;
+  platformFee: number | null;
+  paymentFee: number | null;
+  fulfillmentCost: number | null;
+  otherCost: number | null;
   grossProfit: number | null;
 };
 
@@ -1640,6 +1804,10 @@ type OrderMetricGroup = {
   revenue: number;
   refundAmount: number | null;
   productCost: number | null;
+  platformFee: number | null;
+  paymentFee: number | null;
+  fulfillmentCost: number | null;
+  otherCost: number | null;
   grossProfit: number | null;
   refundReasons: Set<string>;
 };
@@ -1725,7 +1893,32 @@ function parseOrderDetailRows(
         rowNumber,
       );
       const unitCost = optionalNumber(readField(row, mapping, "unitCost"), orderDetailFieldLabels.unitCost, issues, rowNumber);
-      const grossProfit = optionalNumber(readField(row, mapping, "grossProfit"), undefined, undefined, undefined, {
+      const platformFee = optionalCostComponent(
+        row,
+        mapping,
+        "platformFee",
+        orderDetailFieldLabels.platformFee,
+        issues,
+        rowNumber,
+      );
+      const paymentFee = optionalCostComponent(
+        row,
+        mapping,
+        "paymentFee",
+        orderDetailFieldLabels.paymentFee,
+        issues,
+        rowNumber,
+      );
+      const fulfillmentCost = optionalCostComponent(
+        row,
+        mapping,
+        "fulfillmentCost",
+        orderDetailFieldLabels.fulfillmentCost,
+        issues,
+        rowNumber,
+      );
+      const otherCost = optionalCostComponent(row, mapping, "otherCost", orderDetailFieldLabels.otherCost, issues, rowNumber);
+      let grossProfit = optionalNumber(readField(row, mapping, "grossProfit"), undefined, undefined, undefined, {
         allowNegative: true,
       });
 
@@ -1741,6 +1934,10 @@ function parseOrderDetailRows(
         productCost = roundMetric(unitCost * (quantity ?? 1));
       }
 
+      if (grossProfit === null && productCost !== null) {
+        grossProfit = roundMetric(revenue - productCost - extraCostTotal({ platformFee, paymentFee, fulfillmentCost, otherCost }));
+      }
+
       return {
         rowNumber,
         orderId: readField(row, mapping, "orderId") || `row-${rowNumber}`,
@@ -1752,6 +1949,10 @@ function parseOrderDetailRows(
         refundAmount,
         status: readField(row, mapping, "status"),
         productCost,
+        platformFee,
+        paymentFee,
+        fulfillmentCost,
+        otherCost,
         grossProfit,
       };
     })
@@ -1783,6 +1984,10 @@ function buildOrderDetailProducts(rows: ParsedOrderDetailRow[]) {
         revenue: 0,
         refundAmount: 0,
         productCost: 0,
+        platformFee: 0,
+        paymentFee: 0,
+        fulfillmentCost: 0,
+        otherCost: 0,
         grossProfit: 0,
         refundReasons: new Set<string>(),
       };
@@ -1792,6 +1997,10 @@ function buildOrderDetailProducts(rows: ParsedOrderDetailRow[]) {
     group.revenue += row.revenue;
     group.refundAmount = addNullableSum(group.refundAmount, row.refundAmount);
     group.productCost = addNullableSum(group.productCost, row.productCost);
+    group.platformFee = addNullableSum(group.platformFee, row.platformFee);
+    group.paymentFee = addNullableSum(group.paymentFee, row.paymentFee);
+    group.fulfillmentCost = addNullableSum(group.fulfillmentCost, row.fulfillmentCost);
+    group.otherCost = addNullableSum(group.otherCost, row.otherCost);
     group.grossProfit = addNullableSum(group.grossProfit, row.grossProfit);
 
     if ((row.refundAmount !== null && row.refundAmount > 0) || isRefundLikeStatus(row.status)) {
@@ -1816,6 +2025,10 @@ function buildOrderDetailProducts(rows: ParsedOrderDetailRow[]) {
     adRevenue: null,
     inventory: null,
     productCost: group.productCost === null ? null : roundMetric(group.productCost),
+    platformFee: group.platformFee === null ? null : roundMetric(group.platformFee),
+    paymentFee: group.paymentFee === null ? null : roundMetric(group.paymentFee),
+    fulfillmentCost: group.fulfillmentCost === null ? null : roundMetric(group.fulfillmentCost),
+    otherCost: group.otherCost === null ? null : roundMetric(group.otherCost),
     grossProfit: group.grossProfit === null ? null : roundMetric(group.grossProfit),
     refundOrders: group.refundOrderIds.size,
     refundAmount: group.refundAmount === null ? null : roundMetric(group.refundAmount),
@@ -2177,7 +2390,7 @@ function applyInventorySnapshotsToMetricSet(
 
     if (nextProduct.grossProfit === undefined || nextProduct.grossProfit === null) {
       if (typeof nextProduct.productCost === "number") {
-        nextProduct.grossProfit = roundMetric(product.revenue - nextProduct.productCost);
+        nextProduct.grossProfit = roundMetric(product.revenue - nextProduct.productCost - extraCostTotal(nextProduct));
       } else if (typeof snapshot.grossMarginRate === "number") {
         nextProduct.grossProfit = roundMetric(product.revenue * snapshot.grossMarginRate);
         updatedCostCount += 1;

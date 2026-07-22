@@ -28,6 +28,16 @@ function formatRate(value: number | null) {
   return `${value >= 0 ? "+" : "-"}${Math.abs(value * 100).toFixed(1)}%`;
 }
 
+function sumVariableFees(totals: MetricTotals) {
+  const values = [totals.platformFee, totals.paymentFee, totals.fulfillmentCost, totals.otherCost];
+
+  if (values.every((value) => value === null)) {
+    return null;
+  }
+
+  return values.reduce<number>((sum, value) => sum + (value ?? 0), 0);
+}
+
 function metricTable(previous: MetricTotals, current: MetricTotals) {
   return [
     "| 指标 | 上周 | 本周 | 变化 |",
@@ -38,6 +48,7 @@ function metricTable(previous: MetricTotals, current: MetricTotals) {
     `| 销量 | ${previous.unitsSold} | ${current.unitsSold} | - |`,
     `| 广告花费 | ${formatNullableMoney(previous.adSpend)} | ${formatNullableMoney(current.adSpend)} | - |`,
     `| 广告成交额 | ${formatNullableMoney(previous.adRevenue)} | ${formatNullableMoney(current.adRevenue)} | - |`,
+    `| 平台/支付/履约费 | ${formatNullableMoney(sumVariableFees(previous))} | ${formatNullableMoney(sumVariableFees(current))} | - |`,
     `| 毛利 | ${formatNullableMoney(previous.grossProfit)} | ${formatNullableMoney(current.grossProfit)} | - |`,
     `| 退款/退货单数 | ${formatNullableCount(previous.refundOrders)} | ${formatNullableCount(current.refundOrders)} | - |`,
     `| 退款金额 | ${formatNullableMoney(previous.refundAmount)} | ${formatNullableMoney(current.refundAmount)} | - |`,

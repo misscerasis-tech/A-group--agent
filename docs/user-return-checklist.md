@@ -85,9 +85,9 @@ npx pnpm@10.13.1 run feishu:worker
 可以先不整理成完美模板。最小 CSV/TSV/Markdown 表格：
 
 ```csv
-week,product_name,sku,orders,revenue,units_sold,gross_profit,refund_orders,refund_amount,refund_reason
-previous,黑杯,CUP-BLACK,10,500,12,180,1,30,杯盖漏水
-current,黑杯,CUP-BLACK,8,420,9,90,2,80,杯盖漏水 / 物流慢
+week,product_name,sku,orders,revenue,units_sold,product_cost,platform_fee,payment_fee,fulfillment_cost,gross_profit,refund_orders,refund_amount,refund_reason
+previous,黑杯,CUP-BLACK,10,500,12,300,50,5,15,130,1,30,杯盖漏水
+current,黑杯,CUP-BLACK,8,420,9,310,42,6,18,44,2,80,杯盖漏水 / 物流慢
 ```
 
 回到 `/agent` 页，先填本周目标，再把经营表粘贴进“真实数据导入工作台”并点击“生成复盘”。导入提醒会分成“必须先修正”“建议你确认”“已自动处理”，优先处理红色阻断项即可。
@@ -96,11 +96,11 @@ current,黑杯,CUP-BLACK,8,420,9,90,2,80,杯盖漏水 / 物流慢
 
 如果粘贴内容前面带“这是导出的经营数据”“导出时间”这类说明行，或者用 `csv` / `text` 代码块包着，Agent 会跳过这些内容自己找表头。若数据异常，它会提示原始粘贴内容里的真实行号。
 
-如果手里只有订单明细，也可以直接粘贴订单号、支付时间、商品名称/SKU、购买数量、实付金额和退款金额；如果有单位成本，也一起给。订单明细需要覆盖最近两个自然周，Agent 会先自动聚合成 SKU 周报再复盘。Shopify Orders 的 `Paid at / Lineitem price` 和 Amazon 订单 TSV 的 `amazon-order-id / purchase-date / item-price` 也可以直接粘贴。
+如果手里只有订单明细，也可以直接粘贴订单号、支付时间、商品名称/SKU、购买数量、实付金额和退款金额；如果有单位成本、平台佣金、支付手续费、物流/履约费，也一起给。订单明细需要覆盖最近两个自然周，Agent 会先自动聚合成 SKU 周报再复盘。Shopify Orders 的 `Paid at / Lineitem price` 和 Amazon 订单 TSV 的 `amazon-order-id / purchase-date / item-price` 也可以直接粘贴。
 
 如果广告数据是单独导出的，就粘贴到“广告数据表”。最少需要 SKU 或商品名称，再给广告花费、广告成交额、ROAS 或 ACOS。Agent 会按上周/本周匹配广告口径，判断投放是否回本。
 
-如果库存或成本是单独导出的，就粘贴到“库存/成本快照表”。最少需要 SKU 或商品名称，再给当前库存、单位成本或毛利率。Agent 会把它匹配到经营数据，判断哪些 SKU 可能卖断，并补齐利润口径。
+如果库存或成本是单独导出的，就粘贴到“库存/成本快照表”。最少需要 SKU 或商品名称，再给当前库存、单位成本或毛利率。平台佣金、支付手续费、物流/履约费最好放在经营表或订单明细里。Agent 会把这些字段合在一起，判断哪些 SKU 可能卖断，并补齐利润口径。
 
 如果有客服备注、差评关键词、退款备注或售后问题导出，也可以粘贴到“用户声音/售后评价表”。这张表会帮助 Agent 把高退款商品解释到具体原因，例如杯盖漏水、物流慢、色差或礼盒破损。导出前尽量删除买家姓名、电话、邮箱和地址；如果忘记删除，Agent 会提醒这些字段不会参与复盘。
 

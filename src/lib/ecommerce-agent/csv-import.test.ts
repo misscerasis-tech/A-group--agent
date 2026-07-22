@@ -363,6 +363,44 @@ describe("ecommerce csv import", () => {
     expect(result.input?.currentWeek.products[0].grossProfit).toBe(120);
   });
 
+  it("folds platform payment and fulfillment fees into derived gross profit", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,订单数,销售额,销量,商品成本,平台佣金,支付手续费,履约费,包装费",
+        "上周,黑杯,10,500,12,300,50,5,15,0",
+        "本周,黑杯,9,450,10,330,45,6,18,3",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      productCost: 330,
+      platformFee: 45,
+      paymentFee: 6,
+      fulfillmentCost: 18,
+      otherCost: 3,
+      grossProfit: 48,
+    });
+  });
+
+  it("keeps explicit gross profit when cost component columns are also present", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,订单数,销售额,销量,商品成本,平台佣金,履约费,毛利",
+        "上周,黑杯,10,500,12,300,50,15,180",
+        "本周,黑杯,9,450,10,330,45,18,120",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      productCost: 330,
+      platformFee: 45,
+      fulfillmentCost: 18,
+      grossProfit: 120,
+    });
+  });
+
   it("imports refund and return fields from Chinese headers", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [
@@ -617,9 +655,9 @@ describe("ecommerce csv import", () => {
   it("multiplies unit cost in order detail exports by quantity", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [
-        "订单号,支付时间,商品名称,商家编码,购买数量,实付金额,单位成本,售后状态",
-        "O-1001,2026-07-08 10:11:00,黑杯,CUP-BLACK,2,100,20,已完成",
-        "O-1002,2026-07-15 09:20:00,黑杯,CUP-BLACK,3,150,20,已完成",
+        "订单号,支付时间,商品名称,商家编码,购买数量,实付金额,单位成本,平台佣金,履约费,售后状态",
+        "O-1001,2026-07-08 10:11:00,黑杯,CUP-BLACK,2,100,20,6,4,已完成",
+        "O-1002,2026-07-15 09:20:00,黑杯,CUP-BLACK,3,150,20,9,6,已完成",
       ].join("\n"),
     });
 
@@ -627,9 +665,15 @@ describe("ecommerce csv import", () => {
     expect(result.report.metricsInputKind).toBe("order_details");
     expect(result.input?.previousWeek.products[0]).toMatchObject({
       productCost: 40,
+      platformFee: 6,
+      fulfillmentCost: 4,
+      grossProfit: 50,
     });
     expect(result.input?.currentWeek.products[0]).toMatchObject({
       productCost: 60,
+      platformFee: 9,
+      fulfillmentCost: 6,
+      grossProfit: 75,
     });
   });
 
