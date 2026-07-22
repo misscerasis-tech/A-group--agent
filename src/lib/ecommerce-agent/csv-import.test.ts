@@ -593,6 +593,47 @@ describe("ecommerce csv import", () => {
     expect(result.report.issues.some((issue) => issue.message.includes("没有匹配"))).toBe(true);
   });
 
+  it("skips summary rows in auxiliary ecommerce tables", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "周期,商品名称,SKU,订单数,销售额,销量",
+        "上周,黑杯,CUP-BLACK,10,500,12",
+        "本周,黑杯,CUP-BLACK,9,450,10",
+      ].join("\n"),
+      adsCsv: [
+        "周期,商品名称,商家编码,广告花费,ROAS",
+        "上周,黑杯,CUP-BLACK,80,300%",
+        "本周,黑杯,CUP-BLACK,90,2",
+        "总计,合计,,170,2",
+      ].join("\n"),
+      inventoryCsv: [
+        "商品名称,商家编码,当前库存,单位成本",
+        "黑杯,CUP-BLACK,18,20",
+        "合计,,18,20",
+      ].join("\n"),
+      competitorsCsv: [
+        "竞品名称,价格,促销,核心卖点",
+        "竞品 A,39.9,满减,低价 / 大容量",
+        "总计,39.9,,",
+      ].join("\n"),
+      customerVoicesCsv: [
+        "商品名称,商家编码,问题类型,评价内容,出现次数",
+        "黑杯,CUP-BLACK,杯盖漏水,用户说杯盖渗水,4",
+        "汇总,,售后问题,汇总行,4",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      adSpend: 90,
+      adRevenue: 180,
+      inventory: 18,
+    });
+    expect(result.input?.competitors).toHaveLength(1);
+    expect(result.input?.customerVoices).toHaveLength(1);
+    expect(result.report.issues.filter((issue) => issue.message.includes("汇总行")).length).toBeGreaterThanOrEqual(4);
+  });
+
   it("uses product snapshot unit cost to fill gross profit", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

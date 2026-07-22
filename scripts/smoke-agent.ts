@@ -89,11 +89,28 @@ function main() {
       "本周,黑杯,CUP-BLACK,9,450,10",
       "本周,Total,,9,450,10",
     ].join("\n"),
+    adsCsv: [
+      "周期,商品名称,商家编码,广告花费,ROAS",
+      "上周,黑杯,CUP-BLACK,80,300%",
+      "本周,黑杯,CUP-BLACK,90,2",
+      "总计,合计,,170,2",
+    ].join("\n"),
+    inventoryCsv: ["商品名称,商家编码,当前库存", "黑杯,CUP-BLACK,18", "合计,,18"].join("\n"),
+    competitorsCsv: ["竞品名称,价格,促销,核心卖点", "竞品 A,39.9,满减,低价", "总计,39.9,,"].join("\n"),
+    customerVoicesCsv: [
+      "商品名称,商家编码,问题类型,评价内容,出现次数",
+      "黑杯,CUP-BLACK,杯盖漏水,用户说杯盖渗水,4",
+      "汇总,,售后问题,汇总行,4",
+    ].join("\n"),
   });
 
   assert(totalRowsImport.report.ok, "带总计/合计行的经营表应该可以导入。");
   assert(totalRowsImport.input?.currentWeek.products.length === 1, "总计/合计行不应该变成商品。");
   assert(totalRowsImport.input?.currentWeek.products[0].revenue === 450, "总计/合计行不应该重复计入销售额。");
+  assert(totalRowsImport.input?.currentWeek.products[0].adSpend === 90, "广告汇总行不应该重复计入广告花费。");
+  assert(totalRowsImport.input?.currentWeek.products[0].inventory === 18, "库存汇总行不应该污染 SKU 库存。");
+  assert(totalRowsImport.input?.competitors.length === 1, "竞品汇总行不应该变成竞品。");
+  assert(totalRowsImport.input?.customerVoices?.length === 1, "用户声音汇总行不应该变成问题反馈。");
 
   const templateOrderDetailImport = buildEcommerceInputFromCsv({
     metricsCsv: readSample("data/templates/order-details-template.csv"),

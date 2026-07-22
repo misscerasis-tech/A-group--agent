@@ -1257,6 +1257,22 @@ function isSummaryRowLabel(value: string) {
   ].includes(normalized);
 }
 
+function isSummaryImportRow<TField extends string>(
+  row: Record<string, string>,
+  mapping: Map<TField, string>,
+  fields: TField[],
+) {
+  return fields.some((field) => isSummaryRowLabel(readField(row, mapping, field)));
+}
+
+function addSummaryRowSkipIssue(issues: ImportIssue[], rowNumber: number, tableLabel: string) {
+  issues.push({
+    severity: "info",
+    rowNumber,
+    message: `识别到${tableLabel}里的总计/合计/汇总行，已跳过，避免把平台汇总重复计入商品分析。`,
+  });
+}
+
 function normalizeNumericSeparators(value: string) {
   const match = value.match(/^([-+]?[0-9.,]+)(.*)$/);
 
@@ -1627,7 +1643,14 @@ function inferTwoPeriods(
     return null;
   }
 
-  const uniqueWeeks = [...new Set(rows.map((row) => readField(row, mapping, "week")).filter(Boolean))];
+  const uniqueWeeks = [
+    ...new Set(
+      rows
+        .filter((row) => !isSummaryImportRow(row, mapping, ["week", "productName", "sku"]))
+        .map((row) => readField(row, mapping, "week"))
+        .filter(Boolean),
+    ),
+  ];
 
   if (uniqueWeeks.length < 2) {
     return null;
@@ -1658,12 +1681,8 @@ function buildMetricRow(
   const productName = readField(row, mapping, "productName");
   const sku = readField(row, mapping, "sku");
 
-  if (isSummaryRowLabel(productName) || isSummaryRowLabel(sku)) {
-    issues.push({
-      severity: "info",
-      rowNumber,
-      message: "识别到总计/合计/汇总行，已跳过，避免把平台汇总重复计入商品分析。",
-    });
+  if (isSummaryImportRow(row, mapping, ["productName", "sku"])) {
+    addSummaryRowSkipIssue(issues, rowNumber, "经营数据表");
     return null;
   }
 
@@ -2382,6 +2401,11 @@ function buildCompetitors(
     const name = readField(row, mapping, "name");
     const price = parseNumber(readField(row, mapping, "price"));
 
+    if (isSummaryImportRow(row, mapping, ["name"])) {
+      addSummaryRowSkipIssue(issues, rowNumber, "竞品数据表");
+      return [];
+    }
+
     if (!name || price === null) {
       issues.push({
         severity: "warning",
@@ -2460,6 +2484,11 @@ function buildCustomerVoices(
     const theme = readField(row, mapping, "theme");
     const voiceText = readField(row, mapping, "text");
 
+    if (isSummaryImportRow(row, mapping, ["productName", "sku"])) {
+      addSummaryRowSkipIssue(issues, rowNumber, "用户声音/售后评价表");
+      return [];
+    }
+
     if (!productName && !sku) {
       issues.push({
         severity: "warning",
@@ -2524,6 +2553,12 @@ function buildInventorySnapshots(
     const rowNumber = getCsvRowNumber(table, index);
     const productName = readField(row, mapping, "productName");
     const sku = readField(row, mapping, "sku");
+
+    if (isSummaryImportRow(row, mapping, ["productName", "sku"])) {
+      addSummaryRowSkipIssue(issues, rowNumber, "库存/成本快照表");
+      return [];
+    }
+
     const inventory = requireNonNegative(
       optionalNumber(readField(row, mapping, "inventory"), inventoryFieldLabels.inventory, issues, rowNumber),
       inventoryFieldLabels.inventory,
@@ -2668,7 +2703,14 @@ function inferTwoAdPeriods(
     return null;
   }
 
-  const uniqueWeeks = [...new Set(rows.map((row) => readField(row, mapping, "week")).filter(Boolean))];
+  const uniqueWeeks = [
+    ...new Set(
+      rows
+        .filter((row) => !isSummaryImportRow(row, mapping, ["week", "productName", "sku"]))
+        .map((row) => readField(row, mapping, "week"))
+        .filter(Boolean),
+    ),
+  ];
 
   if (uniqueWeeks.length < 2) {
     return null;
@@ -2736,6 +2778,11 @@ function buildAdSnapshots(
     const productName = readField(row, mapping, "productName");
     const sku = readField(row, mapping, "sku");
     const week = normalizeAdWeek(row, mapping, inferredPeriods);
+
+    if (isSummaryImportRow(row, mapping, ["week", "productName", "sku"])) {
+      addSummaryRowSkipIssue(issues, rowNumber, "广告数据表");
+      return [];
+    }
 
     if (!productName && !sku) {
       issues.push({
