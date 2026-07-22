@@ -135,7 +135,7 @@ export function detectFeishuReplyIntent(text: string): FeishuReplyIntent {
   }
 
   if (
-    ["需要什么数据", "准备什么", "数据", "指标", "字段", "首页", "重要", "关注", "看哪些"].some(
+    ["需要什么数据", "准备什么", "数据", "指标", "字段", "首页", "重要", "关注", "看哪些", "excel", "csv", "表格", "文件", "上传"].some(
       (keyword) => normalized.includes(keyword),
     )
   ) {

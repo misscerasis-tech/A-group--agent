@@ -34,8 +34,9 @@ describe("feishu agent reply", () => {
   it("detects beginner data checklist intent", () => {
     expect(detectFeishuReplyIntent("我需要准备什么数据")).toBe("data_checklist");
     expect(detectFeishuReplyIntent("首页怎么体现这些指标的重要性")).toBe("data_checklist");
+    expect(detectFeishuReplyIntent("Excel 文件可以直接发吗")).toBe("data_checklist");
 
-    const reply = buildFeishuAgentReply("我需要准备什么数据");
+    const reply = buildFeishuAgentReply("Excel 文件可以直接发吗");
 
     expect(reply).toContain("销售额");
     expect(reply).toContain("首页也是按这个重要性体现");

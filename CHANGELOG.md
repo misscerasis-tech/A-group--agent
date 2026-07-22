@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.111-feishu-file-table-intents] - 2026-07-23
+
+### Changed
+
+- 飞书里问“Excel 文件可以直接发吗”“CSV/表格/上传怎么给你”这类小白问法时，会进入数据准备说明，而不是未知消息兜底。
+
 ## [v0.1.110-feishu-secret-doc-clarity] - 2026-07-23
 
 ### Changed
