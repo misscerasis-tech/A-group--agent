@@ -637,9 +637,74 @@ textarea {
 }
 
 .mapping-list,
-.issue-list {
+.issue-list,
+.work-session-list {
   display: grid;
   gap: 8px;
+}
+
+.work-session-panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 12px;
+}
+
+.next-question {
+  margin: 0;
+  border-left: 3px solid var(--accent);
+  padding-left: 10px;
+  color: #344054;
+  line-height: 1.55;
+}
+
+.work-step {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px;
+}
+
+.work-step header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.work-step header span {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: #475467;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.work-step.done header span,
+.work-step.agent_can_run header span {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.work-step.needs_user header span {
+  background: var(--warning-soft);
+  color: #805500;
+}
+
+.work-step.later header span {
+  background: var(--surface-soft);
+  color: var(--muted);
+}
+
+.work-step p,
+.work-step small {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
 }
 
 .mapping-row {

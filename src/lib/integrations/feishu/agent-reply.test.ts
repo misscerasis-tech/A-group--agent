@@ -14,11 +14,20 @@ describe("feishu agent reply", () => {
 
   it("detects beginner data checklist intent", () => {
     expect(detectFeishuReplyIntent("我需要准备什么数据")).toBe("data_checklist");
+    expect(detectFeishuReplyIntent("首页怎么体现这些指标的重要性")).toBe("data_checklist");
 
     const reply = buildFeishuAgentReply("我需要准备什么数据");
 
-    expect(reply).toContain("订单数据");
+    expect(reply).toContain("销售额");
+    expect(reply).toContain("首页也是按这个重要性体现");
     expect(reply).toContain("不会假装看懂");
+  });
+
+  it("answers what the beginner should do next", () => {
+    const reply = buildFeishuAgentReply("我现在做什么");
+
+    expect(reply).toContain("经营数据 CSV");
+    expect(reply).toContain("Agent 动作");
   });
 
   it("answers goal-specific ecommerce questions", () => {

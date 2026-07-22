@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+### Added
+
+- 增加电商 KPI 统一词典，页面和飞书共用同一套指标解释。
+- 增加小白工作步骤 `workSession`，用于提示用户下一步要补什么、Agent 接下来会做什么。
+- `/api/agent/analyze` 增加 `workSession` 返回值。
+
 ## [v0.1.4-goal-aware-feishu-replies] - 2026-07-22
 
 ### Added

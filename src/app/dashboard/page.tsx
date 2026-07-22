@@ -5,7 +5,7 @@ import {
   demoProducts,
   demoProject,
   demoWorkspaceContext,
-  ecommerceMetricGuide,
+  ecommerceKpiGuide,
 } from "@/lib/demo-context";
 import { analyzeEcommerceStore } from "@/lib/ecommerce-agent/analysis";
 import { sampleEcommerceAgentInput } from "@/lib/ecommerce-agent/sample-data";
@@ -103,7 +103,7 @@ export default function DashboardPage() {
           <strong>红色变化和“优先处理”代表 Agent 认为需要先动手。</strong>
         </div>
         <div className="metric-guide-grid compact">
-          {ecommerceMetricGuide.slice(0, 6).map((metric) => (
+          {ecommerceKpiGuide.slice(0, 6).map((metric) => (
             <article className="metric-guide-card" key={metric.name}>
               <header>
                 <span>{metric.priority}</span>

@@ -40,6 +40,7 @@ http://localhost:3001/agent
 - `docs/a-group-user-prep.md`：用户需要准备什么。
 - `docs/a-group-mvp.md`：MVP 范围和评分映射。
 - `docs/a-group-data-contract.md`：Agent 第一版能理解的数据结构。
+- `docs/ecommerce-kpi-guide.md`：电商核心指标、小白解释和首页重要性排序。
 - `docs/a-group-demo-assumptions.md`：演示店铺、样例数据和真实竞品来源。
 - `docs/a-group-demo-script.md`：现场演示脚本。
 - `docs/feishu-connector-migration.md`：飞书机器人迁移能力设计。
@@ -54,7 +55,7 @@ http://localhost:3001/agent
 
 样例数据用于演示 Agent 工作流，不代表真实经营结果。拿到真实数据后优先替换样例数据，同时保留样例作为现场演示降级。
 
-首页已经提供“真实数据导入工作台”，可以直接粘贴或上传 CSV。飞书 worker 也可以通过 `.env` 的 `ECOMMERCE_WEEKLY_METRICS_CSV` 和 `ECOMMERCE_COMPETITORS_CSV` 指向本地 CSV 文件。
+首页已经提供“真实数据导入工作台”，可以直接粘贴或上传 CSV。工作台会显示 Agent 接手步骤、下一句要追问什么、字段识别结果和飞书回写预览。飞书 worker 也可以通过 `.env` 的 `ECOMMERCE_WEEKLY_METRICS_CSV` 和 `ECOMMERCE_COMPETITORS_CSV` 指向本地 CSV 文件。
 
 ## 本地开发
 

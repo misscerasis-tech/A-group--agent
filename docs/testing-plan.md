@@ -46,12 +46,14 @@ curl -X POST http://localhost:3001/api/agent/analyze \
 ```
 
 API 会返回 `analysis`、`feishuReply` 和 `markdownReport`。
+其中 `workSession` 会告诉前端或飞书：当前还缺什么、下一句应该问用户什么、Agent 接下来能不能继续跑。
 
 通过标准：
 
 - 字段缺失时，Agent 会追问，不会硬编。
 - 字段名称不同也能映射，例如“GMV/销售额/revenue”都能识别。
 - 输出仍然是小白可读的自然语言。
+- 返回的 `workSession.nextQuestion` 能直接作为 Agent 追问用户的下一句话。
 
 本地飞书 worker 也可以读取 CSV。`.env` 示例：
 

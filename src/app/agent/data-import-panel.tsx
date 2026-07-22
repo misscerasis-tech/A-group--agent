@@ -13,6 +13,7 @@ import {
 import { analyzeEcommerceStore } from "../../lib/ecommerce-agent/analysis";
 import { buildEcommerceInputFromCsv } from "../../lib/ecommerce-agent/csv-import";
 import { buildWeeklyMarkdownReport } from "../../lib/ecommerce-agent/report";
+import { buildBeginnerWorkSession } from "../../lib/ecommerce-agent/work-session";
 import { formatEcommerceAnalysisForFeishu } from "../../lib/integrations/feishu/agent-reply";
 
 const starterMetricsCsv = [
@@ -28,6 +29,17 @@ const starterCompetitorCsv = [
 
 function formatMoney(value: number) {
   return `$${value.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+}
+
+function formatWorkStepStatus(status: string) {
+  const labels: Record<string, string> = {
+    done: "已完成",
+    agent_can_run: "Agent 可继续",
+    needs_user: "等你补充",
+    later: "后续处理",
+  };
+
+  return labels[status] ?? status;
 }
 
 async function readFileIntoState(
@@ -71,6 +83,10 @@ export function DataImportPanel() {
   const markdownReport =
     importResult.input && analysis ? buildWeeklyMarkdownReport(importResult.input, analysis) : "";
   const requiredMappings = importResult.report.fieldMappings.filter((field) => field.required);
+  const workSession = useMemo(
+    () => buildBeginnerWorkSession(importResult.report),
+    [importResult.report],
+  );
 
   return (
     <section className="panel import-workbench">
@@ -172,6 +188,23 @@ export function DataImportPanel() {
         </div>
 
         <div className="import-output">
+          <div className="import-status work-session-panel">
+            <h4>Agent 接手步骤</h4>
+            <p className="next-question">{workSession.nextQuestion}</p>
+            <div className="work-session-list">
+              {workSession.steps.map((step) => (
+                <article className={`work-step ${step.status}`} key={step.title}>
+                  <header>
+                    <strong>{step.title}</strong>
+                    <span>{formatWorkStepStatus(step.status)}</span>
+                  </header>
+                  <p>{step.userAction}</p>
+                  <small>{step.output}</small>
+                </article>
+              ))}
+            </div>
+          </div>
+
           <div className="import-status">
             <h4>字段识别</h4>
             <div className="mapping-list">

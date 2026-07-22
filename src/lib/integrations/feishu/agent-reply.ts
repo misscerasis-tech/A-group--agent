@@ -1,11 +1,17 @@
 import { analyzeEcommerceStore } from "../../ecommerce-agent/analysis";
 import { buildEcommerceInputFromCsv } from "../../ecommerce-agent/csv-import";
+import { buildKpiGuideReply } from "../../ecommerce-agent/kpi-guide";
 import { sampleEcommerceAgentInput } from "../../ecommerce-agent/sample-data";
 import type { EcommerceAgentAnalysis, EcommerceAgentInput } from "../../ecommerce-agent/types";
+import {
+  buildBeginnerWorkSession,
+  formatBeginnerWorkSessionForFeishu,
+} from "../../ecommerce-agent/work-session";
 
 export type FeishuReplyIntent =
   | "store_review"
   | "data_checklist"
+  | "work_plan"
   | "usage"
   | "inventory"
   | "profit"
@@ -34,7 +40,11 @@ export function detectFeishuReplyIntent(text: string): FeishuReplyIntent {
     return "usage";
   }
 
-  if (["需要什么数据", "准备什么", "数据", "指标", "字段"].some((keyword) => normalized.includes(keyword))) {
+  if (
+    ["需要什么数据", "准备什么", "数据", "指标", "字段", "首页", "重要", "关注", "看哪些"].some(
+      (keyword) => normalized.includes(keyword),
+    )
+  ) {
     return "data_checklist";
   }
 
@@ -56,6 +66,14 @@ export function detectFeishuReplyIntent(text: string): FeishuReplyIntent {
 
   if (["竞品", "对手", "比价", "价格"].some((keyword) => normalized.includes(keyword))) {
     return "competitors";
+  }
+
+  if (
+    ["现在做什么", "现在要做什么", "我要做什么", "下一步", "先做什么", "带我", "接手", "开始工作"].some(
+      (keyword) => normalized.includes(keyword),
+    )
+  ) {
+    return "work_plan";
   }
 
   if (["复盘", "经营", "本周", "周报", "分析", "看看", "店铺", "测试"].some((keyword) => normalized.includes(keyword))) {
@@ -105,16 +123,11 @@ export function formatEcommerceAnalysisForFeishu(
 
 export function buildFeishuDataChecklistReply() {
   return [
-    "电商运营 Agent 第一优先要这些数据，我按“小白能理解”的方式说：",
+    buildKpiGuideReply(),
     "",
-    "1. 订单数据：看卖了多少钱、多少单、客单价有没有变。",
-    "2. 商品/SKU 数据：看是哪几个商品带来增长，哪几个在拖后腿。",
-    "3. 流量数据：看问题是没人进店，还是进店后不买。",
-    "4. 广告数据：看广告每花 1 元能带回多少成交，避免越投越亏。",
-    "5. 库存数据：看热卖品还能卖几天，提前提醒断货。",
-    "6. 竞品链接/价格：看竞品是否降价、做促销、换卖点。",
-    "",
-    "你现在不用一次给全。缺什么我会继续问，不会假装看懂。",
+    "最小 CSV 只要先有：week、product_name、orders、revenue、units_sold。",
+    "如果你有广告、库存、毛利和竞品，我会把结论从“能复盘”升级成“能安排动作”。",
+    "缺什么我会继续问，不会假装看懂。",
   ].join("\n");
 }
 
@@ -126,9 +139,14 @@ export function buildFeishuUsageReply() {
     "- “我需要准备什么数据？”",
     "- “先看库存风险”",
     "- “这周目标是保销量/保利润”",
+    "- “我现在做什么？”",
     "",
-    "第一版先用样例店铺验证机器人闭环；接下来把真实表格接进来后，我会改成根据你的店铺数据复盘。",
+    "也可以直接粘贴一小段 CSV。我会先检查字段，缺什么就问你，不会把缺失项说成确定结论。",
   ].join("\n");
+}
+
+export function buildWorkPlanReply() {
+  return formatBeginnerWorkSessionForFeishu(buildBeginnerWorkSession());
 }
 
 export function buildInventoryReply(analysis: EcommerceAgentAnalysis) {
@@ -272,6 +290,10 @@ export function buildFeishuAgentReply(
 
   if (intent === "data_checklist") {
     return buildFeishuDataChecklistReply();
+  }
+
+  if (intent === "work_plan") {
+    return buildWorkPlanReply();
   }
 
   if (intent === "inventory") {

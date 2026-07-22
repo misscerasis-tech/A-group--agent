@@ -9,7 +9,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
-import { demoWorkspaceContext, ecommerceMetricGuide } from "@/lib/demo-context";
+import { demoWorkspaceContext, ecommerceKpiGuide } from "@/lib/demo-context";
 import { analyzeEcommerceStore } from "@/lib/ecommerce-agent/analysis";
 import { sampleEcommerceAgentInput } from "@/lib/ecommerce-agent/sample-data";
 import { DataImportPanel } from "./data-import-panel";
@@ -180,7 +180,7 @@ export default function AgentPage() {
           <strong>先看结果，再找原因，最后安排动作。</strong>
         </div>
         <div className="metric-guide-grid">
-          {ecommerceMetricGuide.map((metric) => (
+          {ecommerceKpiGuide.map((metric) => (
             <article className="metric-guide-card" key={metric.name}>
               <header>
                 <span>{metric.priority}</span>
