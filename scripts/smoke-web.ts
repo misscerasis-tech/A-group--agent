@@ -29,6 +29,10 @@ const requiredRouteText: Record<string, string[]> = {
     "Amazon 订单样例",
     "复制模板",
     "电商一定关注哪些数据",
+    "Agent 接手步骤",
+    "下一份要补的数据",
+    "我会先提醒你",
+    "建议你确认",
     "已自动处理",
   ],
 };

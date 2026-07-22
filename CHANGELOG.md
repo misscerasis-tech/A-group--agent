@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.121-web-smoke-workbench-copy] - 2026-07-23
+
+### Added
+
+- `smoke:web` 增加 `/agent` 工作台关键文案检查，覆盖 Agent 接手步骤、下一份补数、导入提醒和建议确认区域。
+
 ## [v0.1.120-docs-order-revenue-warning] - 2026-07-23
 
 ### Changed
