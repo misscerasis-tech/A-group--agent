@@ -16,6 +16,18 @@ function printFeishuSetupNextSteps() {
   console.info("[feishu:doctor] 事件订阅需要接收消息事件：im.message.receive_v1；如后台提示需发布，去版本管理创建版本并发布。");
 }
 
+function printFeishuRuntimeAcceptancePlan() {
+  console.info("[feishu:doctor] worker 启动后，建议在飞书里按顺序发送这些测试消息：");
+  console.info("[feishu:doctor] 1. 我现在做什么");
+  console.info("[feishu:doctor]    通过标准：机器人回复 Agent 接手步骤，并给出可复制的最小经营表或下一句追问。");
+  console.info("[feishu:doctor] 2. 帮我看本周经营情况");
+  console.info("[feishu:doctor]    通过标准：机器人用当前导入数据或样例店铺生成人话复盘、风险商品和待办。");
+  console.info("[feishu:doctor] 3. Excel 文件可以直接发吗");
+  console.info("[feishu:doctor]    通过标准：机器人说明当前不会下载附件，并引导复制表头和几行数据或到 /agent 上传。");
+  console.info("[feishu:doctor] 4. 清空这份数据");
+  console.info("[feishu:doctor]    通过标准：机器人确认已清空当前会话缓存，后续会回到 .env 数据或样例店铺。");
+}
+
 function loadLocalEnvFile(fileName: string) {
   const envPath = resolve(process.cwd(), fileName);
 
@@ -122,6 +134,10 @@ function main() {
   if (!metricsCsv) {
     console.info("[feishu:doctor] 未配置 ECOMMERCE_WEEKLY_METRICS_CSV，worker 会使用样例店铺回复。");
     console.info("[feishu:doctor] 配置真实经营表后，worker 会按真实数据回复。");
+    if (!hasError) {
+      console.info("[feishu:doctor] 下一步可以运行：npx pnpm@10.13.1 run feishu:worker");
+      printFeishuRuntimeAcceptancePlan();
+    }
     process.exitCode = hasError ? 1 : 0;
     return;
   }
@@ -172,6 +188,7 @@ function main() {
   }
 
   console.info("[feishu:doctor] 下一步可以运行：npx pnpm@10.13.1 run feishu:worker");
+  printFeishuRuntimeAcceptancePlan();
 }
 
 main();

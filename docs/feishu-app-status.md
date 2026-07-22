@@ -46,7 +46,7 @@ FEISHU_EVENT_SUBSCRIPTION_MODE="long_connection"
 npx pnpm@10.13.1 run feishu:doctor
 ```
 
-doctor 会提示飞书开放平台入口、App Secret 复制位置、长连接模式、`im.message.receive_v1` 事件和发布提醒；如果 `.env` 里误填占位文案，也会继续当成缺密钥处理。
+doctor 会提示飞书开放平台入口、App Secret 复制位置、长连接模式、`im.message.receive_v1` 事件、发布提醒，以及 worker 启动后应该在飞书里发送的测试消息和通过标准；如果 `.env` 里误填占位文案，也会继续当成缺密钥处理。
 
 5. doctor 通过后启动长连接：
 

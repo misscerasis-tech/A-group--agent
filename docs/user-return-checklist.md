@@ -62,6 +62,7 @@ npx pnpm@10.13.1 run feishu:doctor
 
 即使 App Secret 还没填，doctor 也会先检查本地经营表路径和字段是否可分析。
 如果 `.env` 里仍然写着“只放本机”“不要提交”这类占位文案，doctor 会继续当成缺 App Secret，需要替换成飞书后台真实值。
+doctor 通过后还会直接打印飞书测试消息和通过标准，优先照它输出的顺序测。
 
 9. 确认 App Secret 和本地经营表配置没问题后，再启动 worker：
 

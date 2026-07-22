@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.127-feishu-doctor-acceptance-plan] - 2026-07-23
+
+### Added
+
+- `feishu:doctor` 在配置通过后会打印飞书测试消息和通过标准，包含“我现在做什么”“帮我看本周经营情况”“Excel 文件可以直接发吗”和“清空这份数据”。
+- 飞书状态文档和用户返回清单同步 doctor 的测试引导。
+
 ## [v0.1.126-workbook-table-sheet-selection] - 2026-07-23
 
 ### Changed

@@ -7,7 +7,7 @@
 ## 当前最新稳定点
 
 - 最新代码：`main`
-- 最新标签：`v0.1.126-workbook-table-sheet-selection`
+- 最新标签：`v0.1.127-feishu-doctor-acceptance-plan`
 - 本地测试入口：`http://localhost:3001/agent`
 - 远端仓库：`misscerasis-tech/A-group--agent.git`
 
@@ -45,7 +45,7 @@
    - 飞书里直接发文件、图片、富文本或卡片时，会明确提示当前不会下载附件，并引导复制表头和几行数据；如果这条提示发送失败，飞书重试不会被提前去重吞掉。
    - 发送回复失败时，同一事件重试不会被去重吞掉。
    - 未知消息兜底回复不再复述用户原文，降低误发敏感信息时被二次扩散的风险。
-   - `feishu:doctor` 会给出飞书开放平台入口、App Secret 复制位置和长连接配置步骤。
+   - `feishu:doctor` 会给出飞书开放平台入口、App Secret 复制位置、长连接配置步骤、测试消息和通过标准。
 
 5. 真实竞品和隐私边界更清楚。
    - 演示竞品优先使用 Ember、Nextmug 和 VSITOO 官方商品页，Amazon 低价替代品明确标注价格边界。
