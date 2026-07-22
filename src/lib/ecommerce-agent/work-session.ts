@@ -95,7 +95,7 @@ export function buildBeginnerWorkSession(
           title: "最小经营数据表",
           csv: minimumWeeklyMetricsCsv,
         }
-      : missingRequired.length > 0
+      : !canAnalyze
         ? {
             title: "经营数据表补字段参考",
             csv: minimumWeeklyMetricsCsv,

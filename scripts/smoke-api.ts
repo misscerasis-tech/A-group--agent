@@ -189,6 +189,12 @@ async function main() {
   });
   assert(missingFields.response.status === 422, `缺必填字段应该返回 422，实际 ${missingFields.response.status}`);
   assert(missingFields.body.workSession, "缺字段时应该返回 Agent 接手步骤。");
+  assert(
+    String(
+      (missingFields.body.workSession as { copyableTable?: { csv?: string } } | undefined)?.copyableTable?.csv ?? "",
+    ).includes("week,product_name,sku"),
+    "缺字段时 Agent 接手步骤应该给出可复制的经营表参考。",
+  );
   assert(Array.isArray(missingFields.body.kpiGuide), "缺字段时也应该返回 KPI 指南。");
   assert(Array.isArray(missingFields.body.tableTemplates), "缺字段时也应该返回数据表模板。");
   assert(

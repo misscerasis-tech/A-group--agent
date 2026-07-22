@@ -32,6 +32,21 @@ describe("beginner work session", () => {
     expect(formatted).toContain("Agent 动作");
   });
 
+  it("shows a reference table when rows exist but periods are incomplete", () => {
+    const importResult = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "week,product_name,orders,revenue,units_sold",
+        "current,黑杯,8,420,9",
+      ].join("\n"),
+    });
+    const session = buildBeginnerWorkSession(importResult.report);
+
+    expect(importResult.report.ok).toBe(false);
+    expect(session.nextQuestion).toContain("上周");
+    expect(session.copyableTable?.csv).toContain("previous");
+    expect(session.copyableTable?.csv).toContain("current");
+  });
+
   it("uses analysis questions as the next prompt after data can be analyzed", () => {
     const importResult = buildEcommerceInputFromCsv({
       metricsCsv: [

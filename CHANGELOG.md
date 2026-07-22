@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.95-incomplete-period-reference-table] - 2026-07-23
+
+### Changed
+
+- 当用户贴了经营表但还不能分析，例如只给了本周、缺上周或缺必填字段时，`workSession` 也会返回可复制的 `previous/current` 参考表。
+- API smoke 覆盖缺字段响应里的可复制经营表，确保前端或飞书能继续带用户补数。
+
 ## [v0.1.94-feishu-doctor-next-steps] - 2026-07-23
 
 ### Added
