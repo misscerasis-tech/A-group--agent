@@ -496,6 +496,10 @@ function main() {
   const returnsReply = buildFeishuAgentReply("退款退货怎么看");
   const taskReply = buildFeishuAgentReply("给我待办清单");
   const riskReply = buildFeishuAgentReply("给我风险商品表");
+  const calendarReply = buildFeishuAgentReply("给我本周运营计划");
+  const packageReply = buildFeishuAgentReply("生成周报包");
+  const reviewsReply = buildFeishuAgentReply("哪些需要人工确认");
+  const remindersReply = buildFeishuAgentReply("风险提醒怎么发");
   const dataRequestReply = buildFeishuAgentReply("我还缺什么数据");
   const fileQuestionReply = buildFeishuAgentReply("Excel 文件可以直接发吗");
 
@@ -521,6 +525,10 @@ function main() {
   assert(returnsReply.includes("售后把成交吃回去"), "飞书应该能单独回答退款/退货问题。");
   assert(taskReply.includes("优先级\t截止\t负责人"), "飞书应该能返回可复制的待办表格。");
   assert(riskReply.includes("排查状态\t优先级\t建议负责人"), "飞书应该能返回可复制的风险商品表。");
+  assert(calendarReply.includes("本周运营计划"), "飞书应该能返回运营计划。");
+  assert(packageReply.includes("飞书消息摘要"), "飞书应该能返回周报包。");
+  assert(reviewsReply.includes("审核队列"), "飞书应该能返回审核队列。");
+  assert(remindersReply.includes("提醒后动作"), "飞书应该能返回风险提醒规则。");
   assert(dataRequestReply.includes("最近两期经营对比表"), "飞书应该能回答下一份要补的数据。");
   assert(fileQuestionReply.includes("附件消息我暂时不会下载"), "飞书应该解释 Excel/CSV 文件怎么给。");
 

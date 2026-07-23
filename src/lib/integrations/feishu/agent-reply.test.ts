@@ -140,6 +140,27 @@ describe("feishu agent reply", () => {
     expect(reply).toContain("建议动作");
   });
 
+  it("answers operational workspace requests in Feishu", () => {
+    expect(detectFeishuReplyIntent("给我本周运营计划")).toBe("calendar");
+    expect(detectFeishuReplyIntent("生成周报包")).toBe("package");
+    expect(detectFeishuReplyIntent("哪些需要人工确认")).toBe("reviews");
+    expect(detectFeishuReplyIntent("风险提醒怎么发")).toBe("reminders");
+
+    const calendarReply = buildFeishuAgentReply("给我本周运营计划");
+    const packageReply = buildFeishuAgentReply("生成周报包");
+    const reviewsReply = buildFeishuAgentReply("哪些需要人工确认");
+    const remindersReply = buildFeishuAgentReply("风险提醒怎么发");
+
+    expect(calendarReply).toContain("本周运营计划");
+    expect(calendarReply).toContain("完成标准");
+    expect(packageReply).toContain("周报包");
+    expect(packageReply).toContain("飞书消息摘要");
+    expect(reviewsReply).toContain("审核队列");
+    expect(reviewsReply).toContain("需要人确认");
+    expect(remindersReply).toContain("风险提醒规则");
+    expect(remindersReply).toContain("提醒后动作");
+  });
+
   it("answers real testing and Feishu connection questions", () => {
     expect(detectFeishuReplyIntent("怎么真正测试，接入飞书吗")).toBe("testing");
     expect(detectFeishuReplyIntent("App Secret 要填到哪里")).toBe("testing");

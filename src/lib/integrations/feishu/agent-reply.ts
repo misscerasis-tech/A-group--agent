@@ -8,6 +8,10 @@ import {
   formatDataRequestPlanForFeishu,
 } from "../../ecommerce-agent/data-request";
 import { buildKpiGuideReply } from "../../ecommerce-agent/kpi-guide";
+import {
+  buildOperationalWorkspace,
+  operationalPriorityLabel,
+} from "../../ecommerce-agent/operational-workspace";
 import { buildOperationalTasksTsv, buildProductFindingsTsv } from "../../ecommerce-agent/report";
 import { sampleEcommerceAgentInput } from "../../ecommerce-agent/sample-data";
 import { buildTestingChecklistReply } from "../../ecommerce-agent/testing-checklist";
@@ -26,6 +30,10 @@ export type FeishuReplyIntent =
   | "data_checklist"
   | "data_request"
   | "work_plan"
+  | "calendar"
+  | "package"
+  | "reviews"
+  | "reminders"
   | "tasks"
   | "risks"
   | "testing"
@@ -125,6 +133,26 @@ export function detectFeishuReplyIntent(text: string): FeishuReplyIntent {
     )
   ) {
     return "testing";
+  }
+
+  if (["运营计划", "本周计划", "周计划", "排期", "日程"].some((keyword) => normalized.includes(keyword))) {
+    return "calendar";
+  }
+
+  if (
+    ["周报包", "周报文档", "飞书文档", "markdown", "报告包", "复盘包"].some((keyword) =>
+      normalized.includes(keyword),
+    )
+  ) {
+    return "package";
+  }
+
+  if (["审核中心", "审核队列", "人工确认", "确认队列", "需要确认"].some((keyword) => normalized.includes(keyword))) {
+    return "reviews";
+  }
+
+  if (["风险提醒", "提醒规则", "提醒中心", "预警"].some((keyword) => normalized.includes(keyword))) {
+    return "reminders";
   }
 
   if (["待办", "任务清单", "行动清单", "分工", "负责人", "验收标准"].some((keyword) => normalized.includes(keyword))) {
@@ -299,6 +327,69 @@ export function buildWorkPlanReply(report?: EcommerceCsvImportReport, questions:
 
 export function buildFeishuTestingReply() {
   return buildTestingChecklistReply();
+}
+
+export function buildCalendarReply(input: EcommerceAgentInput, analysis: EcommerceAgentAnalysis) {
+  const workspace = buildOperationalWorkspace(input, analysis);
+
+  return [
+    "这是我按当前复盘拆出来的本周运营计划：",
+    "",
+    ...workspace.calendar.map(
+      (item, index) =>
+        `${index + 1}. ${item.slot}｜${item.title}｜${item.owner}｜${operationalPriorityLabel(item.priority)}\n先做：${item.input}\n完成标准：${item.output}`,
+    ),
+    "",
+    "这不是固定模板；如果你补了真实经营表、广告表、库存/成本或竞品表，我会重新排优先级。",
+  ].join("\n");
+}
+
+export function buildPackageReply(input: EcommerceAgentInput, analysis: EcommerceAgentAnalysis) {
+  const workspace = buildOperationalWorkspace(input, analysis);
+
+  return [
+    "这是我已经准备好的周报包：",
+    "",
+    ...workspace.packageArtifacts.map(
+      (artifact, index) =>
+        `${index + 1}. ${artifact.title}｜${artifact.destination}｜${artifact.status === "ready" ? "已生成" : "等补数据"}：${artifact.summary}`,
+    ),
+    "",
+    "飞书消息摘要：",
+    analysis.feishuReply,
+    "",
+    "如果要发飞书文档，可以复制 `/agent` 里的 Markdown；API 里也已经返回 operationalWorkspace.weeklyMarkdown。",
+  ].join("\n");
+}
+
+export function buildReviewsReply(input: EcommerceAgentInput, analysis: EcommerceAgentAnalysis) {
+  const workspace = buildOperationalWorkspace(input, analysis);
+
+  return [
+    "这是需要人工确认的审核队列：",
+    "",
+    ...workspace.reviewQueue.slice(0, 6).map(
+      (item, index) =>
+        `${index + 1}. ${item.title}｜${item.owner}｜${operationalPriorityLabel(item.priority)}\n要确认：${item.decisionNeeded}\n第一步：${item.nextStep}`,
+    ),
+    "",
+    "我会自动生成建议，但改价、停广告、补货控量和用户承诺变更需要人确认后再执行。",
+  ].join("\n");
+}
+
+export function buildRemindersReply(input: EcommerceAgentInput, analysis: EcommerceAgentAnalysis) {
+  const workspace = buildOperationalWorkspace(input, analysis);
+
+  return [
+    "这是可以接到飞书的风险提醒规则：",
+    "",
+    ...workspace.reminders.slice(0, 6).map(
+      (rule, index) =>
+        `${index + 1}. ${rule.title}｜${operationalPriorityLabel(rule.level)}\n触发：${rule.trigger}\n提醒后动作：${rule.action}`,
+    ),
+    "",
+    "提醒不是只报警；每条都带负责人下一步动作，避免消息发出去没人接。",
+  ].join("\n");
 }
 
 export function buildTasksReply(analysis: EcommerceAgentAnalysis) {
@@ -836,7 +927,8 @@ export function buildFeishuAgentReply(
     return buildIncompleteImportReply(options.report);
   }
 
-  const analysis = analyzeEcommerceStore(options.input ?? sampleEcommerceAgentInput);
+  const activeInput = options.input ?? sampleEcommerceAgentInput;
+  const analysis = analyzeEcommerceStore(activeInput);
 
   if (intent === "data_request") {
     return buildDataRequestReply({
@@ -848,6 +940,22 @@ export function buildFeishuAgentReply(
 
   if (intent === "work_plan") {
     return buildWorkPlanReply(options.report, hasImportedContext ? analysis.questionsForUser : []);
+  }
+
+  if (intent === "calendar") {
+    return buildCalendarReply(activeInput, analysis);
+  }
+
+  if (intent === "package") {
+    return buildPackageReply(activeInput, analysis);
+  }
+
+  if (intent === "reviews") {
+    return buildReviewsReply(activeInput, analysis);
+  }
+
+  if (intent === "reminders") {
+    return buildRemindersReply(activeInput, analysis);
   }
 
   if (intent === "tasks") {
