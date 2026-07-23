@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.141-feishu-secret-setup-intents] - 2026-07-23
+
+### Added
+
+- 飞书对话意图识别补充 `App Secret`、`.env`、环境变量、凭证、密钥、飞书机器人等配置问法，统一进入真实测试/飞书接入步骤回复。
+- 飞书回复单测覆盖 App Secret 和 `.env` 配置问法，确认机器人会提示 `FEISHU_APP_ID` 和 `FEISHU_APP_SECRET`。
+
 ## [v0.1.140-chinese-date-periods] - 2026-07-23
 
 ### Added

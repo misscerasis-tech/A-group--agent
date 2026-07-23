@@ -103,7 +103,24 @@ export function detectFeishuReplyIntent(text: string): FeishuReplyIntent {
   }
 
   if (
-    ["怎么测", "测试", "真正测试", "接入飞书", "飞书怎么测", "长连接", "worker"].some(
+    [
+      "怎么测",
+      "测试",
+      "真正测试",
+      "接入飞书",
+      "飞书怎么测",
+      "长连接",
+      "worker",
+      "app secret",
+      "secret",
+      "凭证",
+      "密钥",
+      "环境变量",
+      ".env",
+      "配置飞书",
+      "飞书应用",
+      "飞书机器人",
+    ].some(
       (keyword) => normalized.includes(keyword),
     )
   ) {

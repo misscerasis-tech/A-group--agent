@@ -7,7 +7,7 @@
 ## 当前最新稳定点
 
 - 最新代码：`main`
-- 最新标签：`v0.1.140-chinese-date-periods`
+- 最新标签：`v0.1.141-feishu-secret-setup-intents`
 - 本地测试入口：`http://localhost:3001/agent`
 - 远端仓库：`misscerasis-tech/A-group--agent.git`
 
@@ -52,6 +52,7 @@
    - 发送回复失败时，同一事件重试不会被去重吞掉。
    - 未知消息兜底回复不再复述用户原文，降低误发敏感信息时被二次扩散的风险。
    - `feishu:doctor` 会给出飞书开放平台入口、App Secret 复制位置、长连接配置步骤、测试消息和通过标准。
+   - 飞书里问 `App Secret`、`.env`、环境变量、凭证或飞书机器人怎么配置时，会进入真实测试/飞书接入步骤，不会落到未知消息。
    - `feishu:migration-plan` 可以生成飞书机器人迁移草案、切换前检查和回滚步骤；它只使用非敏感配置，不读取或打印 App Secret。
    - `.env.example` 提供当前连接和目标连接的迁移变量模板，真实敏感值仍保持空白。
 

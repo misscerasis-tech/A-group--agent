@@ -142,11 +142,16 @@ describe("feishu agent reply", () => {
 
   it("answers real testing and Feishu connection questions", () => {
     expect(detectFeishuReplyIntent("怎么真正测试，接入飞书吗")).toBe("testing");
+    expect(detectFeishuReplyIntent("App Secret 要填到哪里")).toBe("testing");
+    expect(detectFeishuReplyIntent(".env 环境变量怎么配置飞书机器人")).toBe("testing");
 
     const reply = buildFeishuAgentReply("怎么真正测试，接入飞书吗");
+    const secretReply = buildFeishuAgentReply("App Secret 要填到哪里");
 
     expect(reply).toContain("先测 Agent 脑子");
     expect(reply).toContain("App Secret");
+    expect(secretReply).toContain("FEISHU_APP_ID");
+    expect(secretReply).toContain("FEISHU_APP_SECRET");
   });
 
   it("answers goal-specific ecommerce questions", () => {
