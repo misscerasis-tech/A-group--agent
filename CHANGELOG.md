@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.152-remove-unused-placeholder-page] - 2026-07-23
+
+### Removed
+
+- 删除已不再使用的 `PlaceholderPage` 组件，避免仓库残留“后续阶段开放”的旧占位页实现。
+
 ## [v0.1.151-feishu-workspace-test-guidance] - 2026-07-23
 
 ### Changed
