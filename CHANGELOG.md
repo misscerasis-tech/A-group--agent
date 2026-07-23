@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.154-testing-plan-operational-workspace] - 2026-07-23
+
+### Changed
+
+- `docs/testing-plan.md` 补充 `operationalWorkspace` API 字段说明，以及运营计划、周报包、审核队列、风险提醒的飞书测试话术和通过标准。
+
 ## [v0.1.153-feishu-status-workspace-checklist] - 2026-07-23
 
 ### Changed

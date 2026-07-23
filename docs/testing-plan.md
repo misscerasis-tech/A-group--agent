@@ -76,7 +76,7 @@ curl -X POST http://localhost:3001/api/agent/analyze \
   -d '{"metricsCsv":"week,product_name,orders,revenue,units_sold,refund_orders,refund_amount\nprevious,黑杯,10,500,12,1,30\ncurrent,黑杯,8,420,9,2,80","store":{"storeName":"测试店铺"}}'
 ```
 
-API 会返回 `analysis`、`feishuReply`、`taskTable`、`riskTable`、`dataRequestPlan`、`dataRequestTable`、`kpiGuide`、`tableTemplates` 和 `markdownReport`。其中 `analysis.operationalTasks` 是结构化运营待办，`taskTable` 是可直接粘贴到飞书表格/多维表格的待办 TSV，并默认带 `状态=待开始` 方便团队跟进，`riskTable` 是可直接粘贴给团队排查 SKU 的风险商品 TSV，并默认带 `排查状态=待排查` 和建议负责人，`dataRequestTable` 是可直接粘贴给团队补数的 TSV，`kpiGuide` 是给小白解释核心指标和首页重要性的结构化说明，`tableTemplates` 是可直接复制给用户填数的经营、广告、库存/成本、用户声音和竞品模板。
+API 会返回 `analysis`、`operationalWorkspace`、`feishuReply`、`taskTable`、`riskTable`、`dataRequestPlan`、`dataRequestTable`、`kpiGuide`、`tableTemplates` 和 `markdownReport`。其中 `analysis.operationalTasks` 是结构化运营待办，`operationalWorkspace` 会给出运营排期、审核队列、风险提醒、周报产物和复盘指标解释，`taskTable` 是可直接粘贴到飞书表格/多维表格的待办 TSV，并默认带 `状态=待开始` 方便团队跟进，`riskTable` 是可直接粘贴给团队排查 SKU 的风险商品 TSV，并默认带 `排查状态=待排查` 和建议负责人，`dataRequestTable` 是可直接粘贴给团队补数的 TSV，`kpiGuide` 是给小白解释核心指标和首页重要性的结构化说明，`tableTemplates` 是可直接复制给用户填数的经营、广告、库存/成本、用户声音和竞品模板。
 其中 `workSession` 会告诉前端或飞书：当前还缺什么、下一句应该问用户什么、Agent 接下来能不能继续跑。
 
 页面健康检查也可以自动跑一遍，专门确认导航页面不会再把原始 Prisma/DATABASE_URL 错误露给用户：
@@ -219,10 +219,15 @@ FEISHU_CHAT_CONTEXT_FILE=".agent-state/feishu-chat-contexts.json"
 - `竞品怎么看`
 - `给我待办清单`
 - `给我风险商品表`
+- `给我本周运营计划`
+- `生成周报包`
+- `哪些需要人工确认`
+- `风险提醒怎么发`
 - `清空这份数据`
 - `怎么用`
 
 `我现在做什么` 应该回复 Agent 接手步骤，并在还没有经营表时给出可直接复制的最小经营表。
+`给我本周运营计划`、`生成周报包`、`哪些需要人工确认` 和 `风险提醒怎么发` 应该分别返回排期、周报产物、审核队列和提醒规则。
 
 也可以直接在飞书里粘贴一小段经营 CSV/TSV/Markdown 表格：
 
