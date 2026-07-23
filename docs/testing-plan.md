@@ -119,7 +119,7 @@ SMOKE_BASE_URL=http://localhost:3000 npx pnpm@10.13.1 run smoke:web
 - 输出仍然是小白可读的自然语言。
 - 返回的 `workSession.nextQuestion` 能直接作为 Agent 追问用户的下一句话。
 - 返回的 `dataRequestPlan.nextQuestion` 能直接告诉小白下一份数据要补什么，并解释补了首页哪部分判断会更准。
-- API 收到非 JSON 请求体时会返回 400 和可读 JSON 错误，不会暴露 HTML 错误页或堆栈。
+- API 收到非 JSON、非对象 JSON、字段类型不对、`store` 不是对象或 `userLevel` 非法的请求体时会返回 400 和可读 JSON 错误，不会暴露 HTML 错误页或堆栈。
 - `smoke:api` 能通过平台中文表头、缺参数和缺必填字段三类接口检查。
 - `smoke:web` 里所有导航页面返回 200，并且不出现原始数据库配置错误。
 - 竞品 `price_note` 如果写了“无 featured offer”“无库存”“历史价”“仅用于价格带”或“不作为主动调价依据”，这条价格只能作为观察线索，不能触发主动降价建议。

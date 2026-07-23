@@ -24,11 +24,151 @@ type AnalyzeRequestBody = {
   store?: Partial<StoreProfile>;
 };
 
+const csvFieldNames = [
+  "metricsCsv",
+  "competitorsCsv",
+  "customerVoicesCsv",
+  "inventoryCsv",
+  "adsCsv",
+] as const;
+const storeStringFieldNames = ["storeName", "platform", "market", "category", "goal"] as const;
+const storeUserLevels = ["beginner", "operator", "leader"] as const;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function getOptionalStringField(source: Record<string, unknown>, fieldName: string) {
+  const value = source[fieldName];
+
+  if (value === undefined || value === null) {
+    return {
+      value: undefined,
+    };
+  }
+
+  if (typeof value !== "string") {
+    return {
+      error: `${fieldName} 需要是字符串。`,
+    };
+  }
+
+  return {
+    value,
+  };
+}
+
+function parseStoreProfile(value: unknown) {
+  if (value === undefined || value === null) {
+    return {
+      store: undefined,
+    };
+  }
+
+  if (!isRecord(value)) {
+    return {
+      error: "store 需要是对象。",
+    };
+  }
+
+  const store: Partial<StoreProfile> = {};
+
+  for (const fieldName of storeStringFieldNames) {
+    const parsed = getOptionalStringField(value, fieldName);
+
+    if (parsed.error) {
+      return {
+        error: `store.${parsed.error}`,
+      };
+    }
+
+    if (parsed.value) {
+      store[fieldName] = parsed.value;
+    }
+  }
+
+  const parsedUserLevel = getOptionalStringField(value, "userLevel");
+
+  if (parsedUserLevel.error) {
+    return {
+      error: `store.${parsedUserLevel.error}`,
+    };
+  }
+
+  if (parsedUserLevel.value) {
+    if (!storeUserLevels.includes(parsedUserLevel.value as StoreProfile["userLevel"])) {
+      return {
+        error: "store.userLevel 只能是 beginner、operator 或 leader。",
+      };
+    }
+
+    store.userLevel = parsedUserLevel.value as StoreProfile["userLevel"];
+  }
+
+  return {
+    store,
+  };
+}
+
+function parseAnalyzeRequestBody(value: unknown) {
+  if (!isRecord(value)) {
+    return {
+      error: "请求体需要是 JSON 对象。",
+    };
+  }
+
+  const body: AnalyzeRequestBody = {};
+
+  for (const fieldName of csvFieldNames) {
+    const parsed = getOptionalStringField(value, fieldName);
+
+    if (parsed.error) {
+      return {
+        error: parsed.error,
+      };
+    }
+
+    body[fieldName] = parsed.value;
+  }
+
+  const parsedStore = parseStoreProfile(value.store);
+
+  if (parsedStore.error) {
+    return {
+      error: parsedStore.error,
+    };
+  }
+
+  body.store = parsedStore.store;
+
+  return {
+    body,
+  };
+}
+
 export async function POST(request: Request) {
   let body: AnalyzeRequestBody;
 
   try {
-    body = (await request.json()) as AnalyzeRequestBody;
+    const parsed = parseAnalyzeRequestBody(await request.json());
+
+    if (!parsed.body) {
+      const dataRequestPlan = buildDataRequestPlan();
+
+      return NextResponse.json(
+        {
+          error: parsed.error,
+          kpiGuide: ecommerceKpiGuide,
+          tableTemplates: ecommerceTableTemplates,
+          workSession: buildBeginnerWorkSession(),
+          dataRequestPlan,
+          dataRequestTable: buildDataRequestPlanTsv(dataRequestPlan),
+        },
+        { status: 400 },
+      );
+    }
+
+    body = parsed.body;
   } catch {
     return NextResponse.json(
       {

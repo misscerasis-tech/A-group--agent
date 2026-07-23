@@ -104,6 +104,39 @@ async function main() {
   assert(malformedJson.response.status === 400, `非 JSON 请求体应该返回 400，实际 ${malformedJson.response.status}`);
   assert(String(malformedJson.body.error ?? "").includes("JSON"), "非 JSON 请求体应该返回可读 JSON 错误。");
 
+  const nonObjectJson = await postRawAnalyze("null");
+  assert(nonObjectJson.response.status === 400, `非对象 JSON 应该返回 400，实际 ${nonObjectJson.response.status}`);
+  assert(String(nonObjectJson.body.error ?? "").includes("JSON 对象"), "非对象 JSON 应该返回可读错误。");
+  assert(Array.isArray(nonObjectJson.body.tableTemplates), "非对象 JSON 也应该返回数据表模板。");
+
+  const wrongMetricsType = await postAnalyze({
+    metricsCsv: 42,
+  });
+  assert(
+    wrongMetricsType.response.status === 400,
+    `metricsCsv 类型错误应该返回 400，实际 ${wrongMetricsType.response.status}`,
+  );
+  assert(String(wrongMetricsType.body.error ?? "").includes("metricsCsv"), "metricsCsv 类型错误应该说明字段名。");
+
+  const wrongStoreShape = await postAnalyze({
+    metricsCsv: platformHeaderMetricsTable,
+    store: "不是对象",
+  });
+  assert(wrongStoreShape.response.status === 400, `store 非对象应该返回 400，实际 ${wrongStoreShape.response.status}`);
+  assert(String(wrongStoreShape.body.error ?? "").includes("store"), "store 非对象错误应该说明字段名。");
+
+  const wrongUserLevel = await postAnalyze({
+    metricsCsv: platformHeaderMetricsTable,
+    store: {
+      userLevel: "expert",
+    },
+  });
+  assert(
+    wrongUserLevel.response.status === 400,
+    `store.userLevel 非法值应该返回 400，实际 ${wrongUserLevel.response.status}`,
+  );
+  assert(String(wrongUserLevel.body.error ?? "").includes("userLevel"), "userLevel 错误应该说明字段名。");
+
   const success = await postAnalyze({
     store: {
       storeName: "A组接口测试店",
@@ -324,7 +357,7 @@ async function main() {
   );
 
   console.info(
-    `[smoke:api] /api/agent/analyze 非 JSON、平台表头、Analytics 表头、客单价补销售额、负数退款金额、订单明细、Shopify Orders、Shopify 折扣、Amazon 订单 TSV、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
+    `[smoke:api] /api/agent/analyze 非 JSON、非对象 JSON、字段类型、store 形状、平台表头、Analytics 表头、客单价补销售额、负数退款金额、订单明细、Shopify Orders、Shopify 折扣、Amazon 订单 TSV、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
   );
 }
 

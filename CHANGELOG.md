@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.139-api-json-shape-guard] - 2026-07-23
+
+### Added
+
+- `/api/agent/analyze` 增加 JSON 形状校验：非对象 JSON、表格字段非字符串、`store` 非对象或 `store.userLevel` 非法时返回 400 和可读错误，不再进入服务端异常。
+- `smoke:api` 覆盖非对象 JSON、`metricsCsv` 类型错误、`store` 非对象和非法 `userLevel` 场景。
+
 ## [v0.1.138-agent-readiness-check] - 2026-07-23
 
 ### Added

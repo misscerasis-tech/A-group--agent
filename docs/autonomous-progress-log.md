@@ -7,7 +7,7 @@
 ## 当前最新稳定点
 
 - 最新代码：`main`
-- 最新标签：`v0.1.138-agent-readiness-check`
+- 最新标签：`v0.1.139-api-json-shape-guard`
 - 本地测试入口：`http://localhost:3001/agent`
 - 远端仓库：`misscerasis-tech/A-group--agent.git`
 
@@ -73,7 +73,7 @@
 - `SMOKE_BASE_URL=http://localhost:3001 npx pnpm@10.13.1 run smoke:web`
 - `npx pnpm@10.13.1 run build`
 
-最新 API smoke 已额外覆盖非 JSON 请求体、Shopify Orders 的 `Discount Amount`、Analytics 风格表头、客单价补销售额和负数退款金额：非 JSON 会返回可读 JSON 错误；订单行收入会按单价乘件数后扣除折扣，再汇总到销售额；`net_sales` 和 `net_quantity` 会映射到销售额与销量；缺销售额但有订单数和客单价时会先补出销售额口径；退款金额为负数时会按绝对值进入退款金额口径。
+最新 API smoke 已额外覆盖非 JSON 请求体、非对象 JSON、字段类型错误、`store` 形状错误、Shopify Orders 的 `Discount Amount`、Analytics 风格表头、客单价补销售额和负数退款金额：格式错误会返回可读 JSON 错误；订单行收入会按单价乘件数后扣除折扣，再汇总到销售额；`net_sales` 和 `net_quantity` 会映射到销售额与销量；缺销售额但有订单数和客单价时会先补出销售额口径；退款金额为负数时会按绝对值进入退款金额口径。
 
 ## 用户回来后还必须亲自做
 
