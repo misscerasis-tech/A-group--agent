@@ -1,6 +1,7 @@
 import * as Lark from "@larksuiteoapi/node-sdk";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { decodeUploadedTableText } from "../src/lib/ecommerce-agent/text-decode";
 import { requireFeishuRuntimeConfig } from "../src/lib/integrations/feishu/config";
 import {
   buildFeishuAuxiliaryTableNeedsMetricsReply,
@@ -54,7 +55,7 @@ function readOptionalFile(pathValue: string | undefined) {
     throw new Error(`找不到导入数据文件：${filePath}`);
   }
 
-  return readFileSync(filePath, "utf8");
+  return decodeUploadedTableText(readFileSync(filePath));
 }
 
 function loadEcommerceContextFromEnv() {

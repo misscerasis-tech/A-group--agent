@@ -2,7 +2,7 @@ function replacementCount(text: string) {
   return [...text].filter((char) => char === "\uFFFD").length;
 }
 
-function decodeWithEncoding(buffer: ArrayBuffer, encoding: string) {
+function decodeWithEncoding(buffer: BufferSource, encoding: string) {
   try {
     return new TextDecoder(encoding).decode(buffer);
   } catch {
@@ -10,7 +10,7 @@ function decodeWithEncoding(buffer: ArrayBuffer, encoding: string) {
   }
 }
 
-export function decodeUploadedTableText(buffer: ArrayBuffer) {
+export function decodeUploadedTableText(buffer: BufferSource) {
   const utf8Text = decodeWithEncoding(buffer, "utf-8") ?? "";
   const utf8ReplacementCount = replacementCount(utf8Text);
 

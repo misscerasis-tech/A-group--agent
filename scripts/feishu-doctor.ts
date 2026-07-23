@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { buildEcommerceInputFromCsv } from "../src/lib/ecommerce-agent/csv-import";
 import { buildDataRequestPlan } from "../src/lib/ecommerce-agent/data-request";
+import { decodeUploadedTableText } from "../src/lib/ecommerce-agent/text-decode";
 import { resolveFeishuChatContextFile } from "../src/lib/integrations/feishu/chat-context-store";
 import { getFeishuEnvStatus } from "../src/lib/integrations/feishu/config";
 
@@ -66,7 +67,7 @@ function readConfiguredCsv(pathValue: string | undefined) {
 
   return {
     filePath,
-    content: readFileSync(filePath, "utf8"),
+    content: decodeUploadedTableText(readFileSync(filePath)),
   };
 }
 

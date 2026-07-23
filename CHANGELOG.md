@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.145-local-gb18030-data-files] - 2026-07-23
+
+### Changed
+
+- `feishu:worker`、`feishu:doctor` 和 `agent:readiness` 读取 `.env` 指向的本地经营表文件时，也复用 UTF-8 到 GB18030/GBK 的解码兜底。
+- 文本解码 helper 支持浏览器 `ArrayBuffer` 和 Node `Buffer/Uint8Array` 两类输入。
+
 ## [v0.1.144-marketplace-header-aliases] - 2026-07-23
 
 ### Added

@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { analyzeEcommerceStore } from "../src/lib/ecommerce-agent/analysis";
 import { buildEcommerceInputFromCsv } from "../src/lib/ecommerce-agent/csv-import";
 import { buildDataRequestPlan } from "../src/lib/ecommerce-agent/data-request";
+import { decodeUploadedTableText } from "../src/lib/ecommerce-agent/text-decode";
 import { buildBeginnerWorkSession } from "../src/lib/ecommerce-agent/work-session";
 import { resolveFeishuChatContextFile } from "../src/lib/integrations/feishu/chat-context-store";
 import { getFeishuEnvStatus } from "../src/lib/integrations/feishu/config";
@@ -91,7 +92,7 @@ function readTextFile(relativeOrAbsolutePath: string) {
     throw new Error(`找不到文件：${filePath}`);
   }
 
-  return readFileSync(filePath, "utf8");
+  return decodeUploadedTableText(readFileSync(filePath));
 }
 
 function readSampleBundle(): ImportableCsvBundle {

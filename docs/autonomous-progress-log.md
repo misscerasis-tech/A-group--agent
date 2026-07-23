@@ -7,7 +7,7 @@
 ## 当前最新稳定点
 
 - 最新代码：`main`
-- 最新标签：`v0.1.144-marketplace-header-aliases`
+- 最新标签：`v0.1.145-local-gb18030-data-files`
 - 本地测试入口：`http://localhost:3001/agent`
 - 远端仓库：`misscerasis-tech/A-group--agent.git`
 
@@ -16,6 +16,7 @@
 1. 数据导入更接近真实平台导出。
    - 支持 CSV、TSV、Markdown、Excel 和从表格直接复制的内容。
    - 上传文本表格时会在 UTF-8 乱码时尝试 GB18030/GBK 解码，兼容更多国内平台中文 CSV。
+   - `feishu:worker`、`feishu:doctor` 和 `agent:readiness` 读取本地 CSV 文件时也使用同一套解码兜底。
    - `/agent` 工作台粘贴大表时，如果浏览器草稿缓存超限，会提示本次分析不受影响，不让缓存失败中断复盘。
    - 从聊天、文档或平台后台复制表格时，表头前说明和表尾备注会被跳过，不会变成错误数据行。
    - Excel 上传会优先读取第一张像表格的数据工作表；空 sheet 或只有说明文字的 sheet 不会抢在真实数据前面。

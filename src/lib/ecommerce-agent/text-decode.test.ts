@@ -13,11 +13,6 @@ describe("uploaded table text decoding", () => {
     const gb18030Bytes = new Uint8Array([
       0xd6, 0xdc, 0xc6, 0xda, 0x2c, 0xc9, 0xcc, 0xc6, 0xb7, 0xc3, 0xfb, 0xb3, 0xc6, 0x0a,
     ]);
-    const buffer = gb18030Bytes.buffer.slice(
-      gb18030Bytes.byteOffset,
-      gb18030Bytes.byteOffset + gb18030Bytes.byteLength,
-    );
-
-    expect(decodeUploadedTableText(buffer)).toBe("周期,商品名称\n");
+    expect(decodeUploadedTableText(gb18030Bytes)).toBe("周期,商品名称\n");
   });
 });
