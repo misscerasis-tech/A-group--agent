@@ -745,6 +745,39 @@ describe("ecommerce csv import", () => {
     expect(result.report.issues.some((issue) => issue.message.includes("最近两期"))).toBe(true);
   });
 
+  it("sorts Chinese date period labels before selecting the latest two periods", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "统计周期,商品名称,订单数,销售额,销量",
+        "2026年6月29日,黑杯,8,400,9",
+        "2026年7月6日,黑杯,10,500,12",
+        "2026年7月13日,黑杯,9,450,10",
+      ].join("\n"),
+      adsCsv: [
+        "统计周期,商品名称,广告花费,ROAS",
+        "2026年6月29日,黑杯,70,2",
+        "2026年7月6日,黑杯,80,3",
+        "2026年7月13日,黑杯,90,2",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.previousWeek.startDate).toBe("2026-07-06");
+    expect(result.input?.previousWeek.endDate).toBe("2026-07-12");
+    expect(result.input?.currentWeek.startDate).toBe("2026-07-13");
+    expect(result.input?.currentWeek.endDate).toBe("2026-07-19");
+    expect(result.input?.previousWeek.products[0]).toMatchObject({
+      revenue: 500,
+      adSpend: 80,
+      adRevenue: 240,
+    });
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      revenue: 450,
+      adSpend: 90,
+      adRevenue: 180,
+    });
+  });
+
   it("uses start date as the period when a platform export has no week column", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [

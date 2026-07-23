@@ -295,6 +295,26 @@ function main() {
   assert(approximateChineseNumberImport.input?.currentWeek.products[0].adRevenue === 2600, "千元左右应该能解析。");
   assert(approximateChineseNumberImport.input?.currentWeek.products[0].inventory === 300, "百件应该能解析。");
 
+  const chineseDatePeriodImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "统计周期,商品名称,订单数,销售额,销量",
+      "2026年6月29日,黑杯,8,400,9",
+      "2026年7月6日,黑杯,10,500,12",
+      "2026年7月13日,黑杯,9,450,10",
+    ].join("\n"),
+    adsCsv: [
+      "统计周期,商品名称,广告花费,ROAS",
+      "2026年6月29日,黑杯,70,2",
+      "2026年7月6日,黑杯,80,3",
+      "2026年7月13日,黑杯,90,2",
+    ].join("\n"),
+  });
+
+  assert(chineseDatePeriodImport.report.ok, "中文日期周期经营表应该可以导入。");
+  assert(chineseDatePeriodImport.input?.previousWeek.startDate === "2026-07-06", "中文日期周期应该推导上周开始日期。");
+  assert(chineseDatePeriodImport.input?.currentWeek.endDate === "2026-07-19", "中文日期周期应该推导本周结束日期。");
+  assert(chineseDatePeriodImport.input?.currentWeek.products[0].adRevenue === 180, "中文日期广告周期应该匹配本周。");
+
   const rateFieldImport = buildEcommerceInputFromCsv({
     metricsCsv: [
       "周期,商品名称,订单数,销售额,销量,转化率,广告消耗,ROAS,毛利率,退款率,退款金额占比",

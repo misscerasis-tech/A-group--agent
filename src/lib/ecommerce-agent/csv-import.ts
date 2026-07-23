@@ -1560,6 +1560,12 @@ function periodSortValue(value: string) {
     return Number(isoWeek[1]) * 100 + Number(isoWeek[2]);
   }
 
+  const parsedImportDate = parseImportDate(trimmed);
+
+  if (parsedImportDate) {
+    return parsedImportDate.getTime();
+  }
+
   const dateLike = normalized.match(/\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/);
 
   if (dateLike) {
@@ -1637,6 +1643,45 @@ function formatIsoDate(date: Date) {
 function formatWeekRange(startDate: Date) {
   const endDate = addUtcDays(startDate, 6);
   return `${formatIsoDate(startDate)} 至 ${formatIsoDate(endDate)}`;
+}
+
+function parseImportDates(value: string) {
+  const chineseMatches = [...value.matchAll(/(\d{4})年(\d{1,2})月(\d{1,2})日?/g)];
+  const dashedMatches = [...value.matchAll(/(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/g)];
+  const matches = chineseMatches.length > 0 ? chineseMatches : dashedMatches;
+
+  return matches
+    .map((match) => {
+      const year = Number(match[1]);
+      const month = Number(match[2]);
+      const day = Number(match[3]);
+      const parsed = new Date(Date.UTC(year, month - 1, day));
+
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    })
+    .filter((date): date is Date => date !== null);
+}
+
+function inferMetricSetDateFields(firstRow: Record<string, string> | undefined, mapping: Map<MetricField, string>) {
+  if (!firstRow) {
+    return {
+      startDate: "",
+      endDate: "",
+    };
+  }
+
+  const explicitStartDate = readField(firstRow, mapping, "startDate");
+  const explicitEndDate = readField(firstRow, mapping, "endDate");
+  const periodDates = parseImportDates(readField(firstRow, mapping, "week"));
+  const inferredStartDate = periodDates[0];
+  const parsedExplicitStartDate = explicitStartDate ? parseImportDate(explicitStartDate) : null;
+  const dateForEnd = parsedExplicitStartDate ?? inferredStartDate;
+  const inferredEndDate = periodDates[1] ?? (dateForEnd ? addUtcDays(dateForEnd, 6) : null);
+
+  return {
+    startDate: explicitStartDate || (inferredStartDate ? formatIsoDate(inferredStartDate) : ""),
+    endDate: explicitEndDate || (inferredEndDate ? formatIsoDate(inferredEndDate) : ""),
+  };
 }
 
 function inferTwoPeriods(
@@ -1966,11 +2011,12 @@ function buildWeeklyMetricSet({
   issues: ImportIssue[];
 }): WeeklyMetricSet {
   const firstRow = rows[0]?.row;
+  const dateFields = inferMetricSetDateFields(firstRow, mapping);
 
   return {
     label,
-    startDate: firstRow ? readField(firstRow, mapping, "startDate") : "",
-    endDate: firstRow ? readField(firstRow, mapping, "endDate") : "",
+    startDate: dateFields.startDate,
+    endDate: dateFields.endDate,
     products: mergeProductsBySku(
       rows
         .map(({ row, rowNumber }) => buildMetricRow(row, mapping, issues, rowNumber))
