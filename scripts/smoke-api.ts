@@ -185,6 +185,32 @@ async function main() {
     Array.isArray((success.body.analysis as { operationalTasks?: unknown } | undefined)?.operationalTasks),
     "接口应该返回结构化运营待办。",
   );
+  const operationalWorkspace = success.body.operationalWorkspace as
+    | {
+        calendar?: unknown[];
+        reviewQueue?: unknown[];
+        reminders?: unknown[];
+        packageArtifacts?: Array<{ title?: string }>;
+        recapMetrics?: Array<{ name?: string }>;
+        weeklyMarkdown?: string;
+        taskTable?: string;
+        riskTable?: string;
+      }
+    | undefined;
+  assert(Array.isArray(operationalWorkspace?.calendar), "接口应该返回运营排期工作面。");
+  assert(Array.isArray(operationalWorkspace?.reviewQueue), "接口应该返回审核队列工作面。");
+  assert(Array.isArray(operationalWorkspace?.reminders), "接口应该返回风险提醒工作面。");
+  assert(
+    operationalWorkspace?.packageArtifacts?.some((artifact) => artifact.title === "经营周报 Markdown"),
+    "接口应该返回周报产物工作面。",
+  );
+  assert(
+    operationalWorkspace?.recapMetrics?.some((metric) => metric.name === "销售额"),
+    "接口应该返回复盘指标解释工作面。",
+  );
+  assert(String(operationalWorkspace?.weeklyMarkdown ?? "").includes("下周行动"), "工作面应该包含 Markdown 周报。");
+  assert(String(operationalWorkspace?.taskTable ?? "").includes("验收标准"), "工作面应该包含待办表。");
+  assert(String(operationalWorkspace?.riskTable ?? "").includes("人话原因"), "工作面应该包含风险商品表。");
   assert(String(success.body.taskTable ?? "").includes("状态\t优先级\t截止\t负责人"), "接口应该返回可粘贴的待办表格。");
   assert(String(success.body.riskTable ?? "").includes("排查状态\t优先级\t建议负责人"), "接口应该返回可粘贴的风险商品表。");
   assert(
@@ -357,7 +383,7 @@ async function main() {
   );
 
   console.info(
-    `[smoke:api] /api/agent/analyze 非 JSON、非对象 JSON、字段类型、store 形状、平台表头、Analytics 表头、客单价补销售额、负数退款金额、订单明细、Shopify Orders、Shopify 折扣、Amazon 订单 TSV、广告数据、库存/成本快照、缺参和缺字段检查均通过：${baseUrl}`,
+    `[smoke:api] /api/agent/analyze 非 JSON、非对象 JSON、字段类型、store 形状、平台表头、Analytics 表头、客单价补销售额、负数退款金额、订单明细、Shopify Orders、Shopify 折扣、Amazon 订单 TSV、广告数据、库存/成本快照、运营工作面、缺参和缺字段检查均通过：${baseUrl}`,
   );
 }
 

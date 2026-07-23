@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.149-api-operational-workspace] - 2026-07-23
+
+### Added
+
+- `/api/agent/analyze` 成功分析时新增 `operationalWorkspace`，返回运营排期、审核队列、风险提醒、周报产物、复盘指标解释和三种可复制产物，方便飞书或外部入口直接消费。
+- API 烟测新增运营工作面响应结构检查，同时保留旧的 `taskTable`、`riskTable` 和 `markdownReport` 字段，避免兼容性回退。
+
 ## [v0.1.148-dashboard-neutral-money] - 2026-07-23
 
 ### Changed

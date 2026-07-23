@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { analyzeEcommerceStore } from "@/lib/ecommerce-agent/analysis";
 import { buildEcommerceInputFromCsv } from "@/lib/ecommerce-agent/csv-import";
 import { buildDataRequestPlan, buildDataRequestPlanTsv } from "@/lib/ecommerce-agent/data-request";
-import {
-  buildOperationalTasksTsv,
-  buildProductFindingsTsv,
-  buildWeeklyMarkdownReport,
-} from "@/lib/ecommerce-agent/report";
+import { buildOperationalWorkspace } from "@/lib/ecommerce-agent/operational-workspace";
 import { ecommerceKpiGuide } from "@/lib/ecommerce-agent/kpi-guide";
 import { ecommerceTableTemplates } from "@/lib/ecommerce-agent/table-templates";
 import { buildBeginnerWorkSession } from "@/lib/ecommerce-agent/work-session";
@@ -221,6 +217,7 @@ export async function POST(request: Request) {
 
   const analysis = analyzeEcommerceStore(importResult.input);
   const dataRequestPlan = buildDataRequestPlan(importResult.report, analysis.questionsForUser);
+  const operationalWorkspace = buildOperationalWorkspace(importResult.input, analysis);
 
   return NextResponse.json({
     report: importResult.report,
@@ -230,9 +227,10 @@ export async function POST(request: Request) {
     dataRequestPlan,
     dataRequestTable: buildDataRequestPlanTsv(dataRequestPlan),
     analysis,
+    operationalWorkspace,
     feishuReply: formatEcommerceAnalysisForFeishu(analysis, "当前导入数据"),
-    taskTable: buildOperationalTasksTsv(analysis),
-    riskTable: buildProductFindingsTsv(analysis),
-    markdownReport: buildWeeklyMarkdownReport(importResult.input, analysis),
+    taskTable: operationalWorkspace.taskTable,
+    riskTable: operationalWorkspace.riskTable,
+    markdownReport: operationalWorkspace.weeklyMarkdown,
   });
 }
