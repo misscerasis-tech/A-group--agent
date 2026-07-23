@@ -24,9 +24,17 @@ function printFeishuRuntimeAcceptancePlan() {
   console.info("[feishu:doctor]    通过标准：机器人回复 Agent 接手步骤，并给出可复制的最小经营表或下一句追问。");
   console.info("[feishu:doctor] 2. 帮我看本周经营情况");
   console.info("[feishu:doctor]    通过标准：机器人用当前导入数据或样例店铺生成人话复盘、风险商品和待办。");
-  console.info("[feishu:doctor] 3. Excel 文件可以直接发吗");
+  console.info("[feishu:doctor] 3. 给我本周运营计划");
+  console.info("[feishu:doctor]    通过标准：机器人返回排期、负责人、先做什么和完成标准。");
+  console.info("[feishu:doctor] 4. 生成周报包");
+  console.info("[feishu:doctor]    通过标准：机器人返回飞书消息摘要、周报文档、待办表和风险商品表产物。");
+  console.info("[feishu:doctor] 5. 哪些需要人工确认");
+  console.info("[feishu:doctor]    通过标准：机器人返回审核队列，并说明高风险动作需要人确认。");
+  console.info("[feishu:doctor] 6. 风险提醒怎么发");
+  console.info("[feishu:doctor]    通过标准：机器人返回提醒触发条件和提醒后动作。");
+  console.info("[feishu:doctor] 7. Excel 文件可以直接发吗");
   console.info("[feishu:doctor]    通过标准：机器人说明当前不会下载附件，并引导复制表头和几行数据或到 /agent 上传。");
-  console.info("[feishu:doctor] 4. 清空这份数据");
+  console.info("[feishu:doctor] 8. 清空这份数据");
   console.info("[feishu:doctor]    通过标准：机器人确认已清空当前会话缓存，后续会回到 .env 数据或样例店铺。");
 }
 

@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.151-feishu-workspace-test-guidance] - 2026-07-23
+
+### Changed
+
+- `feishu:doctor`、`agent:readiness` 和用户回来清单补充运营计划、周报包、审核队列、风险提醒的飞书验收消息，用户回来后能按顺序测完整工作助手闭环。
+
 ## [v0.1.150-feishu-operational-workspace-intents] - 2026-07-23
 
 ### Added

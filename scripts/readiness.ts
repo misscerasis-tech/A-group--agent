@@ -279,7 +279,7 @@ async function main() {
   log("2. SMOKE_BASE_URL=http://localhost:3001 npx pnpm@10.13.1 run smoke:web");
   log("3. SMOKE_BASE_URL=http://localhost:3001 npx pnpm@10.13.1 run smoke:api");
   log("4. 补 FEISHU_APP_SECRET 后运行 npx pnpm@10.13.1 run feishu:doctor");
-  log("5. doctor 通过后运行 npx pnpm@10.13.1 run feishu:worker，并在飞书发“我现在做什么”。");
+  log("5. doctor 通过后运行 npx pnpm@10.13.1 run feishu:worker，并在飞书依次发“我现在做什么”“帮我看本周经营情况”“给我本周运营计划”“生成周报包”“哪些需要人工确认”“风险提醒怎么发”。");
 }
 
 void main();
