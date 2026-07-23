@@ -295,6 +295,23 @@ function main() {
   assert(approximateChineseNumberImport.input?.currentWeek.products[0].adRevenue === 2600, "千元左右应该能解析。");
   assert(approximateChineseNumberImport.input?.currentWeek.products[0].inventory === 300, "百件应该能解析。");
 
+  const marketplaceAliasImport = buildEcommerceInputFromCsv({
+    metricsCsv: [
+      "统计周期,商品标题,商品ID,成交笔数,买家实付,净销量",
+      "上期,黑杯,ITEM-001,10,500,12",
+      "本期,黑杯,ITEM-001,9,450,10",
+    ].join("\n"),
+    adsCsv: [
+      "统计周期,计划名称,商品ID,推广消耗,广告GMV",
+      "上期,品牌词,ITEM-001,80,240",
+      "本期,品牌词,ITEM-001,90,180",
+    ].join("\n"),
+  });
+
+  assert(marketplaceAliasImport.report.ok, "平台商品 ID 和广告 GMV 别名应该可以导入。");
+  assert(marketplaceAliasImport.input?.currentWeek.products[0].sku === "ITEM-001", "商品 ID 应该映射到 SKU。");
+  assert(marketplaceAliasImport.input?.currentWeek.products[0].adRevenue === 180, "广告 GMV 应该映射到广告成交额。");
+
   const chineseDatePeriodImport = buildEcommerceInputFromCsv({
     metricsCsv: [
       "统计周期,商品名称,订单数,销售额,销量",

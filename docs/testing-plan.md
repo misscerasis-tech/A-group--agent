@@ -97,6 +97,7 @@ SMOKE_BASE_URL=http://localhost:3000 npx pnpm@10.13.1 run smoke:web
 
 - 字段缺失时，Agent 会追问，不会硬编。
 - 字段名称不同也能映射，例如“GMV/销售额/revenue/net_sales/total_sales”都能识别。
+- 平台商品 ID 类字段也能作为跨表匹配键，例如 `商品ID/宝贝ID/ASIN/product_id/item_id`；广告表里的 `广告GMV/推广消耗/计划名称` 也能映射。
 - 退款字段也能映射，例如“refund_orders/returns/退款单数”“refund_amount/退款金额”和“refund_reason/退款原因”都能识别。
 - 金额和数量字段可以包含中文单位、约数和币种符号，例如 `约90单`、`1.2万元+`、`2.6千元左右`、`3百件`、`US$1,200.50`、`USD 80.25`、`RMB 90`、`￥980.00`；毛利等允许负数的字段可以用 `(30.5)` 这种会计负数写法。
 - 比率字段也能映射和反推，例如“转化率/CVR”“ROAS/投产比”“毛利率”“退款率/退货率”“退款金额占比”。

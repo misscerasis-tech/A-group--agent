@@ -202,6 +202,32 @@ describe("ecommerce csv import", () => {
     });
   });
 
+  it("maps marketplace product id and ad gmv aliases into matched sku metrics", () => {
+    const result = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "统计周期,商品标题,商品ID,成交笔数,买家实付,净销量",
+        "上期,黑杯,ITEM-001,10,500,12",
+        "本期,黑杯,ITEM-001,9,450,10",
+      ].join("\n"),
+      adsCsv: [
+        "统计周期,计划名称,商品ID,推广消耗,广告GMV",
+        "上期,品牌词,ITEM-001,80,240",
+        "本期,品牌词,ITEM-001,90,180",
+      ].join("\n"),
+    });
+
+    expect(result.report.ok).toBe(true);
+    expect(result.input?.currentWeek.products[0]).toMatchObject({
+      productName: "黑杯",
+      sku: "ITEM-001",
+      orders: 9,
+      revenue: 450,
+      unitsSold: 10,
+      adSpend: 90,
+      adRevenue: 180,
+    });
+  });
+
   it("skips total rows in weekly metric exports", () => {
     const result = buildEcommerceInputFromCsv({
       metricsCsv: [
