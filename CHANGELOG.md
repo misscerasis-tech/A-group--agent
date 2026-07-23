@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.155-demo-script-feishu-current-state] - 2026-07-23
+
+### Changed
+
+- 演示脚本把“后续接真实飞书机器人”改为当前可测的飞书长连接口径，避免现场讲解低估已完成的机器人能力。
+
 ## [v0.1.154-testing-plan-operational-workspace] - 2026-07-23
 
 ### Changed
