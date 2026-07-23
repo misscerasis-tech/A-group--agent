@@ -2,6 +2,12 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.153-feishu-status-workspace-checklist] - 2026-07-23
+
+### Changed
+
+- `docs/feishu-app-status.md` 的用户回来步骤补齐飞书工作面验收消息，和 `feishu:doctor` / `agent:readiness` 的测试顺序保持一致。
+
 ## [v0.1.152-remove-unused-placeholder-page] - 2026-07-23
 
 ### Removed
