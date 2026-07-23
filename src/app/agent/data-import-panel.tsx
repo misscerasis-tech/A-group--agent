@@ -30,6 +30,7 @@ import {
   getEcommerceTableTemplate,
   type EcommerceTableTemplateId,
 } from "../../lib/ecommerce-agent/table-templates";
+import { decodeUploadedTableText } from "../../lib/ecommerce-agent/text-decode";
 import { buildBeginnerWorkSession } from "../../lib/ecommerce-agent/work-session";
 import { formatEcommerceAnalysisForFeishu } from "../../lib/integrations/feishu/agent-reply";
 
@@ -298,15 +299,17 @@ async function readFileIntoState(
   }
 
   try {
+    const buffer = await file.arrayBuffer();
+
     if (/\.(xlsx|xls)$/i.test(file.name)) {
       const { workbookArrayBufferToCsv } = await import("../../lib/ecommerce-agent/workbook-import");
 
-      setValue(workbookArrayBufferToCsv(await file.arrayBuffer()));
+      setValue(workbookArrayBufferToCsv(buffer));
       setError(null);
       return;
     }
 
-    setValue(await file.text());
+    setValue(decodeUploadedTableText(buffer));
     setError(null);
   } catch (error) {
     const reason = error instanceof Error ? error.message : "文件内容无法读取。";
