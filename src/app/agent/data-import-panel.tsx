@@ -96,6 +96,7 @@ const starterCustomerVoiceCsv = [
 ].join("\n");
 
 const importDraftStorageKey = "a-group-ecommerce-agent-import-draft-v1";
+const maxImportDraftStorageChars = 1_500_000;
 const defaultStoreGoal = "同时看销量、利润、广告回本、库存风险、退款/退货和竞品压力";
 const tableFileAccept = [
   ".csv",
@@ -328,6 +329,7 @@ export function DataImportPanel() {
   const [adsCsv, setAdsCsv] = useState(starterAdsCsv);
   const [customerVoicesCsv, setCustomerVoicesCsv] = useState(starterCustomerVoiceCsv);
   const [fileImportError, setFileImportError] = useState<string | null>(null);
+  const [draftSaveWarning, setDraftSaveWarning] = useState<string | null>(null);
   const [hasRun, setHasRun] = useState(false);
   const [hasLoadedDraft, setHasLoadedDraft] = useState(false);
   const [copiedTarget, setCopiedTarget] = useState<CopyTarget | null>(null);
@@ -465,7 +467,20 @@ export function DataImportPanel() {
       customerVoicesCsv,
     };
 
-    window.localStorage.setItem(importDraftStorageKey, JSON.stringify(draft));
+    try {
+      const serializedDraft = JSON.stringify(draft);
+
+      if (serializedDraft.length > maxImportDraftStorageChars) {
+        window.localStorage.removeItem(importDraftStorageKey);
+        setDraftSaveWarning("当前表格比较大，我不会自动保存到浏览器缓存；本次分析不受影响。");
+        return;
+      }
+
+      window.localStorage.setItem(importDraftStorageKey, serializedDraft);
+      setDraftSaveWarning(null);
+    } catch {
+      setDraftSaveWarning("浏览器暂时无法保存草稿；本次分析不受影响。");
+    }
   }, [
     adsCsv,
     category,
@@ -774,6 +789,12 @@ export function DataImportPanel() {
             <p className="file-import-error">
               <AlertTriangle size={16} aria-hidden="true" />
               {fileImportError}
+            </p>
+          ) : null}
+          {draftSaveWarning ? (
+            <p className="file-import-error">
+              <AlertTriangle size={16} aria-hidden="true" />
+              {draftSaveWarning}
             </p>
           ) : null}
         </div>
