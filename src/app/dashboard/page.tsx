@@ -13,7 +13,7 @@ import { sampleEcommerceAgentInput } from "@/lib/ecommerce-agent/sample-data";
 export const dynamic = "force-dynamic";
 
 function formatMoney(value: number) {
-  return `$${value.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+  return value.toLocaleString("zh-CN", { maximumFractionDigits: 0 });
 }
 
 function formatPercent(value: number) {
@@ -44,7 +44,9 @@ export default function DashboardPage() {
         <div className="panel stat">
           <span className="muted">本周销售额</span>
           <strong>{formatMoney(analysis.totals.current.revenue)}</strong>
-          <small className="down">{formatPercent(analysis.totals.revenueChangeRate)}</small>
+          <small className="down">
+            {formatPercent(analysis.totals.revenueChangeRate)} · 金额单位按原表理解
+          </small>
         </div>
         <div className="panel stat">
           <span className="muted">本周订单</span>

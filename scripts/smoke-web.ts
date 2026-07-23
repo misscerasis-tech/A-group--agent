@@ -39,6 +39,7 @@ const requiredRouteText: Record<string, string[]> = {
     "已自动处理",
   ],
   "/calendar": ["运营计划", "排期依据", "完成标准"],
+  "/dashboard": ["经营概览", "金额单位按原表理解", "首页怎么体现指标重要性"],
   "/packages": ["周报包", "飞书消息预览", "经营周报 Markdown"],
   "/reviews": ["审核中心", "审核边界", "自动生成建议，人工确认执行"],
   "/reminders": ["风险提醒", "飞书提醒口径", "提醒后动作"],
