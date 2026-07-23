@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { analyzeEcommerceStore } from "./analysis";
+import { buildEcommerceInputFromCsv } from "./csv-import";
 import { sampleEcommerceAgentInput } from "./sample-data";
 
 describe("ecommerce agent analysis", () => {
@@ -395,6 +396,30 @@ describe("ecommerce agent analysis", () => {
     expect(analysis.competitorInsights.some((item) => item.includes("过期促销竞品 正在做促销"))).toBe(
       false,
     );
+  });
+
+  it("uses inferred period dates from imported csv when checking stale competitor observations", () => {
+    const importResult = buildEcommerceInputFromCsv({
+      metricsCsv: [
+        "统计周期,商品名称,订单数,销售额,销量",
+        "2026年7月6日,黑杯,10,1000,10",
+        "2026年7月13日,黑杯,9,900,9",
+      ].join("\n"),
+      competitorsCsv: [
+        "竞品名称,观察日期,价格,价格备注,促销,核心卖点",
+        "过期低价竞品,2026年5月1日,10,页面价快照,满减,低价",
+      ].join("\n"),
+    });
+
+    expect(importResult.report.ok).toBe(true);
+    expect(importResult.input?.currentWeek.endDate).toBe("2026-07-19");
+
+    const analysis = analyzeEcommerceStore(importResult.input!);
+
+    expect(analysis.competitorInsights[0]).toContain("竞品价格没有明显压过我们");
+    expect(analysis.competitorInsights.some((item) => item.includes("已超过 30 天"))).toBe(true);
+    expect(analysis.competitorInsights.some((item) => item.includes("过期低价竞品 的价格比我们低"))).toBe(false);
+    expect(analysis.competitorInsights.some((item) => item.includes("过期低价竞品 正在做促销"))).toBe(false);
   });
 
   it("changes next actions when the user goal is profit", () => {
