@@ -17,6 +17,7 @@ git tag --sort=-creatordate | head -1
 ```bash
 git pull
 npx pnpm@10.13.1 install
+npx pnpm@10.13.1 run agent:readiness
 npx pnpm@10.13.1 run agent:smoke
 ```
 

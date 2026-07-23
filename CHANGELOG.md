@@ -2,6 +2,13 @@
 
 所有重要变更都会记录在本文件中。
 
+## [v0.1.138-agent-readiness-check] - 2026-07-23
+
+### Added
+
+- 新增 `agent:readiness` 脚本，用一条命令检查当前 Git 版本、样例数据复盘、本地真实经营表配置、飞书配置缺口、本地页面状态和最短真测路径。
+- README、测试计划、用户返回清单和自主进展记录补充 readiness 入口，方便回来后先看全局状态再接飞书。
+
 ## [v0.1.137-api-malformed-json-smoke] - 2026-07-23
 
 ### Added

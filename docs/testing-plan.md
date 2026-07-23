@@ -26,6 +26,12 @@
 npx pnpm@10.13.1 run agent:smoke
 ```
 
+回来后也可以先跑 readiness 体检，它会用人话列出当前 Git 版本、样例数据是否能复盘、本地真实经营表是否已配置、飞书还缺什么，以及 `/agent` 页面是否在线：
+
+```bash
+npx pnpm@10.13.1 run agent:readiness
+```
+
 通过标准：
 
 - 页面不报错。

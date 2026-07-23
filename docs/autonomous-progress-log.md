@@ -7,7 +7,7 @@
 ## 当前最新稳定点
 
 - 最新代码：`main`
-- 最新标签：`v0.1.137-api-malformed-json-smoke`
+- 最新标签：`v0.1.138-agent-readiness-check`
 - 本地测试入口：`http://localhost:3001/agent`
 - 远端仓库：`misscerasis-tech/A-group--agent.git`
 
@@ -30,6 +30,7 @@
    - 订单明细同一订单号多行且收入列可能是整单金额时，会提醒用户复核，避免重复计算销售额。
 
 2. 小白工作流更明确。
+   - `agent:readiness` 会一次性输出当前版本、样例复盘状态、本地真实表配置、飞书缺口、本地页面状态和最短真测路径。
    - `workSession` 会告诉用户下一句该问什么。
    - 如果没有经营表或表还不能分析，会直接给可复制的最小经营表。
    - 飞书里发 `我现在做什么` 会进入 Agent 接手步骤。
@@ -67,6 +68,7 @@
 - `npx pnpm@10.13.1 eslint .`
 - `npx pnpm@10.13.1 vitest run`
 - `npx pnpm@10.13.1 run agent:smoke`
+- `npx pnpm@10.13.1 run agent:readiness`
 - `SMOKE_BASE_URL=http://localhost:3001 npx pnpm@10.13.1 run smoke:api`
 - `SMOKE_BASE_URL=http://localhost:3001 npx pnpm@10.13.1 run smoke:web`
 - `npx pnpm@10.13.1 run build`
